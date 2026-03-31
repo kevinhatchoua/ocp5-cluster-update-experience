@@ -146,7 +146,7 @@ export function RequiredUpdateModal({ isOpen, onClose, operators }: RequiredUpda
                             {op.newVersion}
                           </td>
                           <td className="py-[12px]">
-                            <span className="px-[8px] py-[2px] bg-[#e7f6fd] dark:bg-[rgba(43,154,243,0.15)] text-[#2b9af3] dark:text-[#73bcf7] rounded-[6px] text-[12px] font-semibold">
+                            <span className="px-[8px] py-[2px] bg-[#e7f6fd] dark:bg-[rgba(43,154,243,0.15)] text-[#2b9af3] dark:text-[#73bcf7] rounded-[999px] text-[12px] font-semibold">
                               {op.status}
                             </span>
                           </td>

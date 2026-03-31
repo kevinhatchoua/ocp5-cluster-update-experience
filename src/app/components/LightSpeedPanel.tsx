@@ -554,13 +554,13 @@ export default function LightSpeedPanel({
                 )}
 
                 <div className="flex items-center gap-[8px]">
-                  <button className="p-[6px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] rounded-[6px] transition-colors">
+                  <button className="p-[6px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] rounded-[999px] transition-colors">
                     <ThumbsUp className="size-[14px] text-[#4d4d4d] dark:text-[#b0b0b0]" />
                   </button>
-                  <button className="p-[6px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] rounded-[6px] transition-colors">
+                  <button className="p-[6px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] rounded-[999px] transition-colors">
                     <ThumbsDown className="size-[14px] text-[#4d4d4d] dark:text-[#b0b0b0]" />
                   </button>
-                  <button className="p-[6px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] rounded-[6px] transition-colors">
+                  <button className="p-[6px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] rounded-[999px] transition-colors">
                     <Copy className="size-[14px] text-[#4d4d4d] dark:text-[#b0b0b0]" />
                   </button>
                 </div>

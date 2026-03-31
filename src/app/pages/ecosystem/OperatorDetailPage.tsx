@@ -246,7 +246,7 @@ To use the guided installer to provision an environment, open the Installer link
                   </div>
                   <div className="flex flex-wrap gap-[8px]">
                     {operator.clusterServiceVersion.labels.map((label, index) => (
-                      <span key={index} className="px-[10px] py-[4px] bg-[#e7f6fd] dark:bg-[rgba(43,154,243,0.15)] text-[#2b9af3] dark:text-[#73bcf7] rounded-[6px] text-[12px] font-semibold">
+                      <span key={index} className="px-[10px] py-[4px] bg-[#e7f6fd] dark:bg-[rgba(43,154,243,0.15)] text-[#2b9af3] dark:text-[#73bcf7] rounded-[999px] text-[12px] font-semibold">
                         {label.key}={label.value || "''"}
                       </span>
                     ))}
@@ -325,7 +325,7 @@ To use the guided installer to provision an environment, open the Installer link
                     <select
                       value={selectedChannel}
                       onChange={(e) => handleChannelChange(e.target.value)}
-                      className="w-full px-[12px] py-[8px] bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[rgba(0,0,0,0.2)] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] text-[14px] text-[#151515] dark:text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0066cc]"
+                      className="w-full px-[12px] py-[8px] bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[rgba(0,0,0,0.2)] dark:border-[rgba(255,255,255,0.2)] rounded-[999px] text-[14px] text-[#151515] dark:text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0066cc]"
                     >
                       {CHANNELS.map((ch) => (
                         <option key={ch.name} value={ch.name}>{ch.name}</option>
@@ -346,7 +346,7 @@ To use the guided installer to provision an environment, open the Installer link
                     <select
                       value={selectedVersion}
                       onChange={(e) => setSelectedVersion(e.target.value)}
-                      className="w-full px-[12px] py-[8px] bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[rgba(0,0,0,0.2)] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] text-[14px] text-[#151515] dark:text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0066cc]"
+                      className="w-full px-[12px] py-[8px] bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[rgba(0,0,0,0.2)] dark:border-[rgba(255,255,255,0.2)] rounded-[999px] text-[14px] text-[#151515] dark:text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0066cc]"
                     >
                       {availableVersions.map((v) => (
                         <option key={v.version} value={v.version}>

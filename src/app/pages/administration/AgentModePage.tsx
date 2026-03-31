@@ -89,7 +89,7 @@ export default function AgentModePage() {
             <select
               value={channelPref}
               onChange={(e) => setChannelPref(e.target.value)}
-              className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[rgba(0,0,0,0.2)] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[8px] text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] cursor-pointer"
+              className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[rgba(0,0,0,0.2)] dark:border-[rgba(255,255,255,0.2)] rounded-[999px] px-[10px] py-[8px] text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] cursor-pointer"
             >
               <option value="fast">fast</option>
               <option value="stable">stable</option>
@@ -100,7 +100,7 @@ export default function AgentModePage() {
             <select
               value={riskTolerance}
               onChange={(e) => setRiskTolerance(e.target.value)}
-              className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[rgba(0,0,0,0.2)] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[8px] text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] cursor-pointer"
+              className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[rgba(0,0,0,0.2)] dark:border-[rgba(255,255,255,0.2)] rounded-[999px] px-[10px] py-[8px] text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] cursor-pointer"
             >
               <option value="low-auto">Low only (auto)</option>
               <option value="medium-manual">Medium (manual)</option>

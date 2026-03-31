@@ -139,7 +139,7 @@ export default function ComputePage() {
                   </Link>
                 </td>
                 <td className="px-[20px] py-[16px]">
-                  <span className="px-[10px] py-[4px] rounded-[6px] text-[12px] font-semibold text-[#3e8635] dark:text-[#81c784] bg-[#e8f5e9] dark:bg-[rgba(62,134,53,0.15)]">
+                  <span className="px-[10px] py-[4px] rounded-[999px] text-[12px] font-semibold text-[#3e8635] dark:text-[#81c784] bg-[#e8f5e9] dark:bg-[rgba(62,134,53,0.15)]">
                     {node.status}
                   </span>
                 </td>

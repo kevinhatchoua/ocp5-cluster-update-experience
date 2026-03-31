@@ -134,7 +134,7 @@ function Frame30() {
       <Apps />
       <Notifications />
       <Add />
-      <div className="content-stretch flex items-center justify-center p-[8px] relative rounded-[6px] shrink-0 size-[40px]" data-name="Lightspeed">
+      <div className="content-stretch flex items-center justify-center p-[8px] relative rounded-[999px] shrink-0 size-[40px]" data-name="Lightspeed">
         <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-ai-experience">
           <div className="absolute inset-[4.67%_4.68%_3.13%_3.11%]" data-name="icon">
             <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 14.7534 14.7519">
@@ -1962,13 +1962,13 @@ function DropdownCaretValidation1() {
 function Frame111() {
   return (
     <div className="content-stretch flex gap-[4px] items-center relative shrink-0">
-      <div className="content-stretch flex gap-[8px] h-[37px] items-center px-[16px] py-[8px] relative rounded-[6px] shrink-0 w-[181px]" data-name="Menu Toggle">
-        <div aria-hidden="true" className="absolute border-0 border-[rgba(255,255,255,0)] border-solid inset-0 pointer-events-none rounded-[6px]" />
+      <div className="content-stretch flex gap-[8px] h-[37px] items-center px-[16px] py-[8px] relative rounded-[999px] shrink-0 w-[181px]" data-name="Menu Toggle">
+        <div aria-hidden="true" className="absolute border-0 border-[rgba(255,255,255,0)] border-solid inset-0 pointer-events-none rounded-[999px]" />
         <ToggleContent />
         <DropdownCaretValidation />
       </div>
-      <div className="content-stretch flex gap-[8px] h-[37px] items-center px-[16px] py-[8px] relative rounded-[6px] shrink-0 w-[98px]" data-name="Menu Toggle">
-        <div aria-hidden="true" className="absolute border-0 border-[rgba(255,255,255,0)] border-solid inset-0 pointer-events-none rounded-[6px]" />
+      <div className="content-stretch flex gap-[8px] h-[37px] items-center px-[16px] py-[8px] relative rounded-[999px] shrink-0 w-[98px]" data-name="Menu Toggle">
+        <div aria-hidden="true" className="absolute border-0 border-[rgba(255,255,255,0)] border-solid inset-0 pointer-events-none rounded-[999px]" />
         <ToggleContent1 />
         <DropdownCaretValidation1 />
       </div>

@@ -241,7 +241,7 @@ export default function BuildsPage() {
                     </div>
                   </td>
                   <td className="px-[20px] py-[16px]">
-                    <span className="px-[10px] py-[4px] bg-[rgba(0,0,0,0.05)] dark:bg-[rgba(255,255,255,0.05)] rounded-[6px] text-[12px] text-[#151515] dark:text-white font-mono">
+                    <span className="px-[10px] py-[4px] bg-[rgba(0,0,0,0.05)] dark:bg-[rgba(255,255,255,0.05)] rounded-[999px] text-[12px] text-[#151515] dark:text-white font-mono">
                       {resource.namespace}
                     </span>
                   </td>
@@ -251,7 +251,7 @@ export default function BuildsPage() {
                   <td className="px-[20px] py-[16px]">
                     <div className="flex items-center gap-[6px]">
                       {getStatusIcon(resource.status)}
-                      <span className={`px-[10px] py-[4px] rounded-[6px] text-[12px] font-semibold ${getStatusColor(resource.status)}`}>
+                      <span className={`px-[10px] py-[4px] rounded-[999px] text-[12px] font-semibold ${getStatusColor(resource.status)}`}>
                         {resource.status}
                       </span>
                     </div>
@@ -280,7 +280,7 @@ export default function BuildsPage() {
                     {resource.age}
                   </td>
                   <td className="px-[20px] py-[16px]">
-                    <button className="p-[6px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[6px] transition-colors">
+                    <button className="p-[6px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[999px] transition-colors">
                       <MoreVertical className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" />
                     </button>
                   </td>

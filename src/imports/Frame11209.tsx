@@ -33,8 +33,8 @@ function Frame14() {
 
 function InputGroup() {
   return (
-    <div className="content-stretch flex gap-[8px] items-start justify-end relative rounded-[6px] shrink-0" data-name="Input group">
-      <div className="content-stretch flex items-center justify-center px-[16px] py-[8px] relative rounded-[6px] shrink-0 size-[37px]" data-name="Icon Button (Plain Button)">
+    <div className="content-stretch flex gap-[8px] items-start justify-end relative rounded-[999px] shrink-0" data-name="Input group">
+      <div className="content-stretch flex items-center justify-center px-[16px] py-[8px] relative rounded-[999px] shrink-0 size-[37px]" data-name="Icon Button (Plain Button)">
         <div className="h-[14px] relative shrink-0 w-[16px]" data-name="IconWrapper">
           <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 size-[16px] top-1/2" data-name="🖼️ Icon">
             <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 15.1951 14">
@@ -390,8 +390,8 @@ function DropdownCaretValidation() {
 function Input() {
   return (
     <div className="content-stretch flex gap-[4px] items-start relative shrink-0 w-full" data-name="Input">
-      <div className="bg-white flex-[1_0_0] h-[37px] min-h-px min-w-px relative rounded-[6px]" data-name="Menu Toggle">
-        <div aria-hidden="true" className="absolute border border-[#c7c7c7] border-solid inset-0 pointer-events-none rounded-[6px]" />
+      <div className="bg-white flex-[1_0_0] h-[37px] min-h-px min-w-px relative rounded-[999px]" data-name="Menu Toggle">
+        <div aria-hidden="true" className="absolute border border-[#c7c7c7] border-solid inset-0 pointer-events-none rounded-[999px]" />
         <div className="flex flex-row items-center size-full">
           <div className="content-stretch flex items-center px-[16px] py-[8px] relative size-full">
             <ToggleContent />
@@ -470,8 +470,8 @@ function ToggleTextFrame() {
 function Frame6() {
   return (
     <div className="content-stretch flex gap-[4px] items-center relative shrink-0 w-full">
-      <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-center p-[8px] relative rounded-[6px] shrink-0 size-[37px]" data-name="Icon Button (Plain Button)">
-        <div aria-hidden="true" className="absolute border-0 border-[rgba(255,255,255,0)] border-solid inset-0 pointer-events-none rounded-[6px]" />
+      <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-center p-[8px] relative rounded-[999px] shrink-0 size-[37px]" data-name="Icon Button (Plain Button)">
+        <div aria-hidden="true" className="absolute border-0 border-[rgba(255,255,255,0)] border-solid inset-0 pointer-events-none rounded-[999px]" />
         <div className="relative shrink-0 size-[16px]" data-name="IconWrapper">
           <div className="-translate-x-1/2 -translate-y-1/2 absolute left-[calc(50%+0.33px)] size-[16px] top-[calc(50%-0.11px)]" data-name="🖼️ Icon">
             <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 9.99631 6.45616">
@@ -515,7 +515,7 @@ function Frame8() {
 
 function Frame7() {
   return (
-    <div className="h-[37px] relative rounded-[6px] shrink-0 w-full">
+    <div className="h-[37px] relative rounded-[999px] shrink-0 w-full">
       <div className="overflow-clip rounded-[inherit] size-full">
         <div className="content-stretch flex items-start p-[8px] relative size-full">
           <p className="flex-[1_0_0] font-['Red_Hat_Text_VF:Regular',sans-serif] font-normal leading-[21px] min-h-px min-w-px relative self-stretch text-[#151515] text-[14px]">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
@@ -536,8 +536,8 @@ function ExpandableSection() {
             <div className="relative self-stretch shrink-0" data-name="Table Cell/Left controls">
               <div className="flex flex-row items-center size-full">
                 <div className="content-stretch flex gap-[8px] h-full items-center px-[8px] py-[16px] relative">
-                  <div className="bg-[rgba(255,255,255,0)] content-stretch flex h-[32px] items-center justify-center p-[8px] relative rounded-[6px] shrink-0" data-name="Icon Button (Plain Button)">
-                    <div aria-hidden="true" className="absolute border-0 border-[rgba(255,255,255,0)] border-solid inset-0 pointer-events-none rounded-[6px]" />
+                  <div className="bg-[rgba(255,255,255,0)] content-stretch flex h-[32px] items-center justify-center p-[8px] relative rounded-[999px] shrink-0" data-name="Icon Button (Plain Button)">
+                    <div aria-hidden="true" className="absolute border-0 border-[rgba(255,255,255,0)] border-solid inset-0 pointer-events-none rounded-[999px]" />
                     <div className="h-[14px] relative shrink-0 w-[16px]" data-name="IconWrapper">
                       <div className="-translate-x-1/2 -translate-y-1/2 absolute left-[calc(50%-0.09px)] size-[14px] top-[calc(50%-0.29px)]" data-name="🖼️ Icon">
                         <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 5.64865 8.75263">

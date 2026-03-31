@@ -95,7 +95,7 @@ function DetailPanel({ type, item, onClose }: { type: TabType; item: any; onClos
           <h3 className="font-semibold text-[15px] text-[#151515] dark:text-white truncate">{item.name}</h3>
           <p className="text-[12px] text-[#6a6e73]">{item.namespace}</p>
         </div>
-        <button onClick={onClose} className="p-[6px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] rounded-[6px]">
+        <button onClick={onClose} className="p-[6px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] rounded-[999px]">
           <X className="size-[16px] text-[#6a6e73]" />
         </button>
       </div>
@@ -124,7 +124,7 @@ function DetailPanel({ type, item, onClose }: { type: TabType; item: any; onClos
                 <p className="text-[11px] text-[#6a6e73] uppercase tracking-wider mb-[6px]">Ports</p>
                 <div className="flex flex-col gap-[4px]">
                   {svc.ports.map((p, i) => (
-                    <div key={i} className="flex items-center gap-[8px] px-[10px] py-[6px] rounded-[6px] bg-[rgba(0,0,0,0.02)] dark:bg-[rgba(255,255,255,0.03)] text-[12px] font-mono text-[#151515] dark:text-white">
+                    <div key={i} className="flex items-center gap-[8px] px-[10px] py-[6px] rounded-[999px] bg-[rgba(0,0,0,0.02)] dark:bg-[rgba(255,255,255,0.03)] text-[12px] font-mono text-[#151515] dark:text-white">
                       <ArrowLeftRight className="size-[12px] text-[#6a6e73]" />
                       {p.port} → {p.targetPort}/{p.protocol}
                       {p.nodePort && <span className="text-[#6a6e73] text-[11px]">(NodePort: {p.nodePort})</span>}
@@ -205,7 +205,7 @@ function DetailPanel({ type, item, onClose }: { type: TabType; item: any; onClos
                 <p className="text-[11px] text-[#6a6e73] uppercase tracking-wider mb-[6px]">Rules ({ing.rules.length})</p>
                 <div className="flex flex-col gap-[6px]">
                   {ing.rules.map((r, i) => (
-                    <div key={i} className="px-[10px] py-[8px] rounded-[6px] bg-[rgba(0,0,0,0.02)] dark:bg-[rgba(255,255,255,0.03)] text-[12px]">
+                    <div key={i} className="px-[10px] py-[8px] rounded-[999px] bg-[rgba(0,0,0,0.02)] dark:bg-[rgba(255,255,255,0.03)] text-[12px]">
                       <div className="font-mono text-[#151515] dark:text-white">{r.host}{r.path}</div>
                       <div className="text-[11px] text-[#6a6e73] mt-[2px]">→ {r.service}:{r.port}</div>
                     </div>
@@ -250,10 +250,10 @@ function DetailPanel({ type, item, onClose }: { type: TabType; item: any; onClos
       </div>
 
       <div className="px-[16px] py-[12px] border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)] flex gap-[8px]">
-        <button className="flex-1 flex items-center justify-center gap-[6px] px-[12px] py-[8px] bg-[#0066cc] hover:bg-[#004080] dark:bg-[#4dabf7] dark:hover:bg-[#339af0] text-white rounded-[6px] text-[12px] font-semibold transition-colors">
+        <button className="flex-1 flex items-center justify-center gap-[6px] px-[12px] py-[8px] bg-[#0066cc] hover:bg-[#004080] dark:bg-[#4dabf7] dark:hover:bg-[#339af0] text-white rounded-[999px] text-[12px] font-semibold transition-colors">
           <Edit className="size-[12px]" /> Edit YAML
         </button>
-        <button className="p-[8px] border border-[rgba(0,0,0,0.15)] dark:border-[rgba(255,255,255,0.15)] rounded-[6px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors" title="Delete">
+        <button className="p-[8px] border border-[rgba(0,0,0,0.15)] dark:border-[rgba(255,255,255,0.15)] rounded-[999px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors" title="Delete">
           <Trash2 className="size-[14px] text-[#c9190b]" />
         </button>
       </div>
@@ -336,13 +336,13 @@ export default function NetworkingPage() {
             <Search className="absolute left-[10px] top-1/2 -translate-y-1/2 size-[14px] text-[#6a6e73]" />
             <input type="text" placeholder={`Search ${activeTab}...`} value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-[32px] pr-[12px] py-[8px] bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[rgba(0,0,0,0.15)] dark:border-[rgba(255,255,255,0.15)] rounded-[6px] text-[13px] text-[#151515] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0066cc]" />
+              className="w-full pl-[32px] pr-[12px] py-[8px] bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[rgba(0,0,0,0.15)] dark:border-[rgba(255,255,255,0.15)] rounded-[999px] text-[13px] text-[#151515] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0066cc]" />
           </div>
           <select value={selectedNamespace} onChange={(e) => setSelectedNamespace(e.target.value)}
-            className="px-[12px] py-[8px] bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[rgba(0,0,0,0.15)] dark:border-[rgba(255,255,255,0.15)] rounded-[6px] text-[13px] text-[#151515] dark:text-white cursor-pointer">
+            className="px-[12px] py-[8px] bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[rgba(0,0,0,0.15)] dark:border-[rgba(255,255,255,0.15)] rounded-[999px] text-[13px] text-[#151515] dark:text-white cursor-pointer">
             {namespaces.map((ns) => <option key={ns} value={ns}>{ns === "all" ? "All Namespaces" : ns}</option>)}
           </select>
-          <button className="p-[8px] border border-[rgba(0,0,0,0.15)] dark:border-[rgba(255,255,255,0.15)] rounded-[6px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)]">
+          <button className="p-[8px] border border-[rgba(0,0,0,0.15)] dark:border-[rgba(255,255,255,0.15)] rounded-[999px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)]">
             <RefreshCw className="size-[14px] text-[#151515] dark:text-white" />
           </button>
         </div>

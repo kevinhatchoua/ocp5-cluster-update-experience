@@ -52,7 +52,7 @@ function UiIcon() {
 
 function Apps() {
   return (
-    <div className="content-stretch flex items-center justify-center p-[8px] relative shrink-0 size-[40px] cursor-pointer hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[6px] transition-colors" data-name="Apps">
+    <div className="content-stretch flex items-center justify-center p-[8px] relative shrink-0 size-[40px] cursor-pointer hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[999px] transition-colors" data-name="Apps">
       <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-switcher-menu">
         <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
           <g id="Bounding box">
@@ -79,7 +79,7 @@ function UiIcon1() {
 
 function Notifications() {
   return (
-    <div className="content-stretch flex items-center justify-center p-[8px] relative shrink-0 size-[40px] cursor-pointer hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[6px] transition-colors" data-name="Notifications">
+    <div className="content-stretch flex items-center justify-center p-[8px] relative shrink-0 size-[40px] cursor-pointer hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[999px] transition-colors" data-name="Notifications">
       <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-notification">
         <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
           <g id="Bounding box">
@@ -107,7 +107,7 @@ function UiIcon2() {
 
 function Add() {
   return (
-    <div className="content-stretch flex items-center justify-center p-[8px] relative shrink-0 size-[40px] cursor-pointer hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[6px] transition-colors" data-name="Add">
+    <div className="content-stretch flex items-center justify-center p-[8px] relative shrink-0 size-[40px] cursor-pointer hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[999px] transition-colors" data-name="Add">
       <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-add-circle">
         <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
           <g id="Bounding box">
@@ -136,7 +136,7 @@ function UiIcon3() {
 
 function Help() {
   return (
-    <div className="content-stretch flex items-center justify-center p-[8px] relative shrink-0 size-[40px] cursor-pointer hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[6px] transition-colors" data-name="Help">
+    <div className="content-stretch flex items-center justify-center p-[8px] relative shrink-0 size-[40px] cursor-pointer hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[999px] transition-colors" data-name="Help">
       <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-question-mark-circle">
         <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
           <g id="Bounding box">
@@ -309,7 +309,7 @@ function ThemeToggle() {
     <div className="relative">
       <div
         onClick={() => setIsExpanded(!isExpanded)}
-        className="content-stretch flex items-center justify-center p-[8px] relative shrink-0 size-[40px] cursor-pointer hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[6px] transition-colors"
+        className="content-stretch flex items-center justify-center p-[8px] relative shrink-0 size-[40px] cursor-pointer hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[999px] transition-colors"
         data-name="ThemeToggle"
       >
         {isDark ? (
@@ -339,7 +339,7 @@ function ThemeToggle() {
               <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] uppercase font-semibold mb-[8px]">Theme Mode</p>
               <button 
                 onClick={toggleTheme}
-                className="w-full px-[12px] py-[8px] text-left hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors flex items-center justify-between rounded-[6px]"
+                className="w-full px-[12px] py-[8px] text-left hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors flex items-center justify-between rounded-[999px]"
               >
                 <span className="text-[13px] text-[#151515] dark:text-white">{isDark ? 'Dark' : 'Light'}</span>
                 <div className={`size-[16px] rounded-full ${isDark ? 'bg-[#4dabf7]' : 'bg-[#f59f00]'} flex items-center justify-center`}>
@@ -361,7 +361,7 @@ function ThemeToggle() {
               <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] uppercase font-semibold mb-[8px]">Glass Effect</p>
               <button 
                 onClick={toggleGlass}
-                className="w-full px-[12px] py-[8px] text-left hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors flex items-center justify-between rounded-[6px]"
+                className="w-full px-[12px] py-[8px] text-left hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors flex items-center justify-between rounded-[999px]"
               >
                 <span className="text-[13px] text-[#151515] dark:text-white">{isGlass ? 'Enabled' : 'Disabled'}</span>
                 <div className={`w-[32px] h-[18px] rounded-full transition-colors ${isGlass ? 'bg-[#0066cc] dark:bg-[#4dabf7]' : 'bg-[#d2d2d2] dark:bg-[#4d4d4d]'} relative`}>
@@ -794,7 +794,7 @@ export default function Layout() {
             </div>
             <div 
               onClick={() => setIsAIOpen(true)}
-              className="bg-white dark:bg-[rgba(255,255,255,0.05)] flex items-center gap-[4px] h-[37px] min-w-[40px] px-[8px] relative rounded-[6px] shrink-0 cursor-pointer hover:bg-[rgba(0,0,0,0.03)] dark:hover:bg-[rgba(255,255,255,0.08)] transition-colors border border-[#8c8c8c] dark:border-[rgba(255,255,255,0.2)]"
+              className="bg-white dark:bg-[rgba(255,255,255,0.05)] flex items-center gap-[4px] h-[37px] min-w-[40px] px-[8px] relative rounded-[999px] shrink-0 cursor-pointer hover:bg-[rgba(0,0,0,0.03)] dark:hover:bg-[rgba(255,255,255,0.08)] transition-colors border border-[#8c8c8c] dark:border-[rgba(255,255,255,0.2)]"
             >
               <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-ai-experience">
                 <div className="absolute inset-[4.67%_4.68%_3.13%_3.11%]" data-name="icon">

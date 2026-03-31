@@ -272,7 +272,7 @@ export default function ObservePage() {
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-[4px]">
                     <p className="font-semibold text-[#151515] dark:text-white text-[14px]">High Memory Usage on Node worker-3</p>
-                    <span className="px-[10px] py-[4px] bg-[#d32f2f] dark:bg-[#ef5350] text-white rounded-[6px] text-[11px] font-semibold uppercase">Critical</span>
+                    <span className="px-[10px] py-[4px] bg-[#d32f2f] dark:bg-[#ef5350] text-white rounded-[999px] text-[11px] font-semibold uppercase">Critical</span>
                   </div>
                   <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] mb-[8px]">
                     Memory usage has exceeded 90% threshold (91.2% used)
@@ -288,7 +288,7 @@ export default function ObservePage() {
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-[4px]">
                     <p className="font-semibold text-[#151515] dark:text-white text-[14px]">Pod CrashLoopBackOff Detected</p>
-                    <span className="px-[10px] py-[4px] bg-[#d32f2f] dark:bg-[#ef5350] text-white rounded-[6px] text-[11px] font-semibold uppercase">Critical</span>
+                    <span className="px-[10px] py-[4px] bg-[#d32f2f] dark:bg-[#ef5350] text-white rounded-[999px] text-[11px] font-semibold uppercase">Critical</span>
                   </div>
                   <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] mb-[8px]">
                     Pod "nginx-deployment-7d8c9f6b-4xk2p" in namespace "production" is crash looping
@@ -304,7 +304,7 @@ export default function ObservePage() {
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-[4px]">
                     <p className="font-semibold text-[#151515] dark:text-white text-[14px]">High CPU Usage Detected</p>
-                    <span className="px-[10px] py-[4px] bg-[#ff9800] dark:bg-[#ffb74d] text-white rounded-[6px] text-[11px] font-semibold uppercase">Warning</span>
+                    <span className="px-[10px] py-[4px] bg-[#ff9800] dark:bg-[#ffb74d] text-white rounded-[999px] text-[11px] font-semibold uppercase">Warning</span>
                   </div>
                   <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] mb-[8px]">
                     Cluster CPU usage at 72%, approaching threshold

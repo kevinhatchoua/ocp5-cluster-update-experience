@@ -58,7 +58,7 @@ export default function NamespacesPage() {
                     {ns.name}
                   </td>
                   <td className="py-[16px] px-[16px]">
-                    <span className="bg-[#3e8635] text-white px-[12px] py-[4px] rounded-[6px] text-[13px] font-semibold">
+                    <span className="bg-[#3e8635] text-white px-[12px] py-[4px] rounded-[999px] text-[13px] font-semibold">
                       {ns.status}
                     </span>
                   </td>

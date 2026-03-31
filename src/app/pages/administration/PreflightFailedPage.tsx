@@ -339,7 +339,7 @@ export default function PreflightFailedPage() {
                       <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] mb-[8px]">
                         {check.message}
                       </p>
-                      <div className="bg-white dark:bg-[rgba(0,0,0,0.2)] rounded-[6px] p-[12px] mb-[8px]">
+                      <div className="bg-white dark:bg-[rgba(0,0,0,0.2)] rounded-[999px] p-[12px] mb-[8px]">
                         <p className="text-[12px] text-[#151515] dark:text-white">
                           <span className="font-semibold">Recommended action:</span> {check.remediation}
                         </p>

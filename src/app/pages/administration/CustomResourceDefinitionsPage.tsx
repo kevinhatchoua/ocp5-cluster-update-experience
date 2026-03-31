@@ -94,7 +94,7 @@ export default function CustomResourceDefinitionsPage() {
                   </td>
                   <td className="py-[16px] px-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]">{crd.group}</td>
                   <td className="py-[16px] px-[16px]">
-                    <span className="bg-[rgba(0,0,0,0.06)] dark:bg-[rgba(255,255,255,0.1)] px-[8px] py-[4px] rounded-[6px] text-[13px] font-semibold text-[#151515] dark:text-white">
+                    <span className="bg-[rgba(0,0,0,0.06)] dark:bg-[rgba(255,255,255,0.1)] px-[8px] py-[4px] rounded-[999px] text-[13px] font-semibold text-[#151515] dark:text-white">
                       {crd.version}
                     </span>
                   </td>

@@ -77,7 +77,7 @@ function IconText2() {
 
 function NavItem2() {
   return (
-    <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-between px-[16px] py-[8px] relative rounded-[6px] shrink-0 w-[243px]" data-name="Nav item">
+    <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-between px-[16px] py-[8px] relative rounded-[999px] shrink-0 w-[243px]" data-name="Nav item">
       <IconText2 />
       <div className="relative shrink-0 size-[21px]" data-name="IconWrapper">
         <div className="-translate-x-1/2 -translate-y-1/2 absolute left-[calc(50%+1.2px)] size-[16px] top-[calc(50%+0.5px)]" data-name="🖼️ Icon">
@@ -107,7 +107,7 @@ function IconText3() {
 
 function NavItem3() {
   return (
-    <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-between px-[16px] py-[8px] relative rounded-[6px] shrink-0 w-[243px]" data-name="Nav item">
+    <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-between px-[16px] py-[8px] relative rounded-[999px] shrink-0 w-[243px]" data-name="Nav item">
       <IconText3 />
       <div className="relative shrink-0 size-[21px]" data-name="IconWrapper">
         <div className="-translate-x-1/2 -translate-y-1/2 absolute left-[calc(50%+1.2px)] size-[16px] top-[calc(50%+0.5px)]" data-name="🖼️ Icon">
@@ -137,7 +137,7 @@ function IconText4() {
 
 function NavItem4() {
   return (
-    <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-between px-[16px] py-[8px] relative rounded-[6px] shrink-0 w-[243px]" data-name="Nav item">
+    <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-between px-[16px] py-[8px] relative rounded-[999px] shrink-0 w-[243px]" data-name="Nav item">
       <IconText4 />
       <div className="relative shrink-0 size-[21px]" data-name="IconWrapper">
         <div className="-translate-x-1/2 -translate-y-1/2 absolute left-[calc(50%+1.2px)] size-[16px] top-[calc(50%+0.5px)]" data-name="🖼️ Icon">

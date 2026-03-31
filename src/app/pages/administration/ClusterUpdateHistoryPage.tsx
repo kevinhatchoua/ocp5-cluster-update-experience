@@ -175,21 +175,21 @@ spec:
     switch (status) {
       case "completed":
         return (
-          <span className="inline-flex items-center gap-[6px] px-[10px] py-[4px] bg-[#e8f5e9] dark:bg-[rgba(62,134,53,0.15)] text-[#3e8635] dark:text-[#81c784] rounded-[6px] text-[12px] font-semibold">
+          <span className="inline-flex items-center gap-[6px] px-[10px] py-[4px] bg-[#e8f5e9] dark:bg-[rgba(62,134,53,0.15)] text-[#3e8635] dark:text-[#81c784] rounded-[999px] text-[12px] font-semibold">
             {getStatusIcon(status)}
             Completed
           </span>
         );
       case "failed":
         return (
-          <span className="inline-flex items-center gap-[6px] px-[10px] py-[4px] bg-[#fff4f4] dark:bg-[rgba(201,37,45,0.15)] text-[#c92325] dark:text-[#f5a1a3] rounded-[6px] text-[12px] font-semibold">
+          <span className="inline-flex items-center gap-[6px] px-[10px] py-[4px] bg-[#fff4f4] dark:bg-[rgba(201,37,45,0.15)] text-[#c92325] dark:text-[#f5a1a3] rounded-[999px] text-[12px] font-semibold">
             {getStatusIcon(status)}
             Failed
           </span>
         );
       case "in-progress":
         return (
-          <span className="inline-flex items-center gap-[6px] px-[10px] py-[4px] bg-[#e7f1fa] dark:bg-[rgba(43,154,243,0.15)] text-[#0066cc] dark:text-[#73bcf7] rounded-[6px] text-[12px] font-semibold">
+          <span className="inline-flex items-center gap-[6px] px-[10px] py-[4px] bg-[#e7f1fa] dark:bg-[rgba(43,154,243,0.15)] text-[#0066cc] dark:text-[#73bcf7] rounded-[999px] text-[12px] font-semibold">
             {getStatusIcon(status)}
             In Progress
           </span>
@@ -325,7 +325,7 @@ spec:
                         <div className="relative inline-block">
                           <button
                             onClick={() => toggleMenu(record.id)}
-                            className="p-[8px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] rounded-[6px] transition-colors"
+                            className="p-[8px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] rounded-[999px] transition-colors"
                           >
                             <MoreVertical className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" />
                           </button>
