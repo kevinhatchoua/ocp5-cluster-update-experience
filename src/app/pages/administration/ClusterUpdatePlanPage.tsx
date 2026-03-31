@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate, Link } from "react-router";
 import { ChevronDown, ChevronRight, ExternalLink, Sparkles, ArrowRight, CheckCircle, AlertTriangle, HelpCircle, Info, X, Send, Loader2, XCircle, Shield, Bot, Settings, RotateCcw, Play, Pause, Calendar, Bell, Clock, FileText, User, Zap, Eye, RefreshCw } from "lucide-react";
 import Breadcrumbs from "../../components/Breadcrumbs";
 
-type TabKey = "update-plan" | "cluster-operators" | "update-history";
+type TabKey = "update-plan" | "update-history";
 
 type OperatorIssue = {
   name: string;
@@ -28,11 +29,17 @@ type VersionGroup = {
   versions: VersionEntry[];
 };
 
-type PrecheckStatus = "idle" | "running" | "passed" | "failed";
+
+type ChatAction = {
+  label: string;
+  variant: "primary" | "secondary" | "link";
+  actionId: string;
+};
 
 type ChatMessage = {
   role: "assistant" | "user";
   text: string;
+  actions?: ChatAction[];
 };
 
 /* ─── Channel-specific version data ─── */
@@ -73,6 +80,20 @@ const channelVersions: Record<string, { groups: VersionGroup[]; banner?: { title
         versions: [
           { version: "5.0.8", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 0, bugFixes: 6, date: "Mar 18, 2026" },
           { version: "5.0.7", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 0, bugFixes: 4, date: "Mar 10, 2026" },
+          { version: "5.0.5", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 0, bugFixes: 5, date: "Feb 14, 2026" },
+          { version: "5.0.4", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 0, bugFixes: 3, date: "Jan 28, 2026" },
+          { version: "5.0.3", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 0, bugFixes: 7, date: "Jan 14, 2026" },
+          { version: "5.0.2", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 0, bugFixes: 2, date: "Dec 20, 2025" },
+          { version: "5.0.1", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 0, bugFixes: 4, date: "Dec 5, 2025" },
+        ],
+      },
+      {
+        label: "4.18",
+        versions: [
+          { version: "4.18.12", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 0, bugFixes: 3, date: "Nov 20, 2025" },
+          { version: "4.18.10", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 0, bugFixes: 5, date: "Nov 5, 2025" },
+          { version: "4.18.8", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 0, bugFixes: 4, date: "Oct 22, 2025" },
+          { version: "4.18.6", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 0, bugFixes: 6, date: "Oct 8, 2025" },
         ],
       },
     ],
@@ -87,6 +108,13 @@ const channelVersions: Record<string, { groups: VersionGroup[]; banner?: { title
       { label: "5.0", versions: [
           { version: "5.0.8", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 0, bugFixes: 6, date: "Mar 18, 2026" },
           { version: "5.0.6", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 0, bugFixes: 3, date: "Feb 20, 2026" },
+          { version: "5.0.4", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 0, bugFixes: 3, date: "Jan 28, 2026" },
+          { version: "5.0.2", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 0, bugFixes: 2, date: "Dec 20, 2025" },
+        ] },
+      { label: "4.18", versions: [
+          { version: "4.18.12", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 0, bugFixes: 3, date: "Nov 20, 2025" },
+          { version: "4.18.10", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 0, bugFixes: 5, date: "Nov 5, 2025" },
+          { version: "4.18.8", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 0, bugFixes: 4, date: "Oct 22, 2025" },
         ] },
     ],
   },
@@ -106,14 +134,29 @@ const channelVersions: Record<string, { groups: VersionGroup[]; banner?: { title
   },
 };
 
-const operatorUpdates = [
-  { name: "Abot Operator", category: "Catalog" as const, currentVersion: "2.9.1", availableVersion: "3.0.0", status: "Update available", autoUpdate: true, required: false, maxOCP: "5.1", compatible51: true },
-  { name: "Airflow Helm Operator", category: "Catalog" as const, currentVersion: "2.0.3", availableVersion: "2.1.0", status: "Update available", autoUpdate: false, required: false, maxOCP: "5.1", compatible51: true },
-  { name: "Ansible Automation Platform", category: "Catalog" as const, currentVersion: "3.1.0", availableVersion: null, status: "Up to date", autoUpdate: true, required: false, maxOCP: "5.1", compatible51: true },
-  { name: "Cert Manager", category: "Catalog" as const, currentVersion: "1.12.0", availableVersion: "1.13.1", status: "Update available", autoUpdate: true, required: false, maxOCP: "5.1", compatible51: true },
-  { name: "Elasticsearch Operator", category: "Catalog" as const, currentVersion: "5.7.2", availableVersion: null, status: "Up to date", autoUpdate: false, required: false, maxOCP: "5.0", compatible51: false },
-  { name: "Cluster Logging", category: "Platform" as const, currentVersion: "6.4.3", availableVersion: "6.5.1", status: "Update available", autoUpdate: false, required: true, maxOCP: "5.0", compatible51: false },
-  { name: "Operator Lifecycle Manager", category: "Platform" as const, currentVersion: "4.21.0", availableVersion: "4.22.0", status: "Update available", autoUpdate: false, required: true, maxOCP: "5.0", compatible51: false },
+type InstalledOperator = {
+  name: string;
+  namespace: string;
+  version: string;
+  channel: string;
+  source: string;
+  status: "Running" | "Degraded" | "Pending";
+  autoUpdate: boolean;
+};
+
+const installedOperators: InstalledOperator[] = [
+  { name: "Cluster Logging", namespace: "openshift-logging", version: "6.4.3", channel: "stable-6.4", source: "redhat-operators", status: "Running", autoUpdate: false },
+  { name: "Elasticsearch Operator", namespace: "openshift-operators-redhat", version: "5.7.2", channel: "stable-5.7", source: "redhat-operators", status: "Running", autoUpdate: false },
+  { name: "Cloud Credential Operator", namespace: "openshift-cloud-credential-operator", version: "5.0.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: true },
+  { name: "Operator Lifecycle Manager", namespace: "openshift-operator-lifecycle-manager", version: "4.21.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: false },
+  { name: "Cert Manager", namespace: "cert-manager-operator", version: "1.12.0", channel: "stable-v1", source: "redhat-operators", status: "Running", autoUpdate: true },
+  { name: "OpenShift DNS", namespace: "openshift-dns-operator", version: "5.0.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: true },
+  { name: "Ingress Operator", namespace: "openshift-ingress-operator", version: "5.0.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: true },
+  { name: "Machine Config Operator", namespace: "openshift-machine-config-operator", version: "5.0.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: true },
+  { name: "Monitoring Stack", namespace: "openshift-monitoring", version: "5.0.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: true },
+  { name: "Service Mesh", namespace: "openshift-operators", version: "2.5.1", channel: "stable", source: "redhat-operators", status: "Degraded", autoUpdate: false },
+  { name: "Web Terminal", namespace: "openshift-operators", version: "1.9.0", channel: "fast", source: "redhat-operators", status: "Running", autoUpdate: true },
+  { name: "Kiali Operator", namespace: "openshift-operators", version: "1.73.0", channel: "stable", source: "redhat-operators", status: "Running", autoUpdate: false },
 ];
 
 type UpdateHistoryEntry = {
@@ -138,14 +181,6 @@ const updateHistory: UpdateHistoryEntry[] = [
   { version: "4.17.8", status: "Rejected", method: "Agent", decision: "Rejected", initiatedBy: "admin@example.com", startedAt: "Nov 20, 2025 02:00 UTC", completedAt: "Nov 20, 2025 02:02 UTC", duration: "2m", preflight: { passed: 3, failed: 3, total: 6 }, compatSummary: "Multiple operator incompatibilities. 2 deprecated APIs in use. Admin rejected update plan." },
 ];
 
-const PRECHECK_ITEMS = [
-  { label: "Cluster health", description: "Verifying all cluster components are healthy" },
-  { label: "Operator compatibility", description: "Checking installed operators for version compatibility" },
-  { label: "API deprecation", description: "Scanning for deprecated API usage" },
-  { label: "Storage availability", description: "Ensuring sufficient storage for update" },
-  { label: "Certificate validity", description: "Validating cluster certificates" },
-  { label: "Node readiness", description: "Confirming all nodes are schedulable and ready" },
-];
 
 export default function ClusterUpdatePlanPage() {
   const navigate = useNavigate();
@@ -155,7 +190,7 @@ export default function ClusterUpdatePlanPage() {
   const [activeTab, setActiveTab] = useState<TabKey>("update-plan");
   const [selectedVersion, setSelectedVersion] = useState<string>("5.1.10");
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({ "5.1": true });
-  const [precheckVersion, setPrecheckVersion] = useState<string | null>(null);
+  
   const [chatbotOpen, setChatbotOpen] = useState(false);
   const [chatbotContext, setChatbotContext] = useState("");
 
@@ -181,14 +216,36 @@ export default function ClusterUpdatePlanPage() {
     setChatbotOpen(true);
   }, []);
 
+  useEffect(() => {
+    if (updateMode === "agent") {
+      setChatbotContext("agent-monitor");
+      setChatbotOpen(true);
+    } else {
+      setChatbotOpen(false);
+    }
+  }, [updateMode]);
+
+  const handleChatAction = useCallback((actionId: string) => {
+    switch (actionId) {
+      case "view-history":
+        setActiveTab("update-history");
+        break;
+      case "view-plan":
+        setActiveTab("update-plan");
+        break;
+      default:
+        break;
+    }
+  }, []);
+
   const tabs: { key: TabKey; label: string }[] = [
-    { key: "update-plan", label: "Update plan" },
-    { key: "cluster-operators", label: "Cluster operators" },
+    { key: "update-plan", label: "Update" },
     { key: "update-history", label: "Update history" },
   ];
 
   return (
-    <div className="p-[24px] pb-[48px]">
+    <div className="flex h-full relative">
+      <div className="flex-1 overflow-y-auto p-[24px] pb-[48px]">
       <Breadcrumbs items={[
         { label: "Administration", path: "/administration/cluster-update" },
         { label: "Cluster Update" },
@@ -219,6 +276,19 @@ export default function ClusterUpdatePlanPage() {
 
       {activeTab === "update-plan" && (
         <>
+          {channelData.banner && (
+            <div className="flex items-center gap-[12px] bg-[#e7f1fa] dark:bg-[rgba(0,102,204,0.08)] px-[16px] py-[12px] mb-[16px] rounded-[8px]" role="status">
+              <Info className="size-[18px] text-[#0066cc] dark:text-[#4dabf7] shrink-0" />
+              <p className="text-[#151515] dark:text-white text-[14px] font-['Red_Hat_Text:Regular',sans-serif] flex-1">
+                <span className="font-medium">{channelData.banner.title}</span> {channelData.banner.description}
+              </p>
+              <a href="https://docs.openshift.com/container-platform/latest/release_notes/ocp-4-18-release-notes.html" target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[13px] no-underline hover:underline whitespace-nowrap font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                {channelData.banner.link} <ArrowRight className="size-[14px]" />
+              </a>
+            </div>
+          )}
+
           {/* Update Method */}
           <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
             <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px] mb-[4px]">Update Method</h2>
@@ -255,9 +325,13 @@ export default function ClusterUpdatePlanPage() {
                     {updateMode === "agent" && <div className="size-[10px] rounded-full bg-[#0066cc] dark:bg-[#4dabf7]" />}
                   </div>
                   <span className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[15px]">Agent-based updates</span>
+                  <span className="text-[10px] px-[6px] py-[2px] rounded-[4px] font-semibold bg-[rgba(94,64,190,0.1)] text-[#5e40be] uppercase tracking-[0.5px] font-['Red_Hat_Text:Regular',sans-serif]">Experimental</span>
                 </div>
                 <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] ml-[28px]">
                   Let the AI agent manage updates automatically. It analyzes optimal windows and performs safety checks before updating.
+                </p>
+                <p className="text-[#6a6e73] dark:text-[#8a8d90] text-[11px] font-['Red_Hat_Text:Regular',sans-serif] ml-[28px] mt-[4px] italic">
+                  Experimental, not for implementation
                 </p>
               </button>
             </div>
@@ -285,22 +359,6 @@ export default function ClusterUpdatePlanPage() {
                     </a>
                   </div>
                   <div>
-                    <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Channel</p>
-                    <div className="flex items-center gap-[12px]">
-                      <select value={selectedChannel} onChange={(e) => handleChannelChange(e.target.value)}
-                        className="bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[4px] text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif] cursor-pointer">
-                        <option value="fast-5.1">fast-5.1</option>
-                        <option value="stable-5.1">stable-5.1</option>
-                        <option value="candidate-5.1">candidate-5.1</option>
-                        <option value="eus-5.0">eus-5.0</option>
-                      </select>
-                      <a href="https://docs.openshift.com/container-platform/latest/updating/understanding_updates/understanding-update-channels-releases.html" target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[13px] no-underline hover:underline font-['Red_Hat_Text:Regular',sans-serif]">
-                        Learn more about channels <ExternalLink className="size-[11px]" />
-                      </a>
-                    </div>
-                  </div>
-                  <div>
                     <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Cluster ID</p>
                     <p className="text-[#151515] dark:text-white text-[14px] font-['Red_Hat_Mono:Regular',sans-serif]">1c182077-5663-426d-92a3-5d26df31f146</p>
                   </div>
@@ -317,174 +375,48 @@ export default function ClusterUpdatePlanPage() {
                 setSelectedVersion={setSelectedVersion}
                 navigate={navigate}
                 setActiveTab={setActiveTab}
-                setPrecheckVersion={setPrecheckVersion}
                 openChatbot={openChatbot}
+                selectedChannel={selectedChannel}
+                handleChannelChange={handleChannelChange}
               />
+
+              <InstalledOperatorsSection />
             </>
           )}
         </>
       )}
 
-      {activeTab === "cluster-operators" && <ClusterOperatorsTab />}
       {activeTab === "update-history" && <UpdateHistoryTab />}
 
-      {/* Pre-check Modal */}
-      {precheckVersion && (
-        <PrecheckModal
-          version={precheckVersion}
-          hasOperatorIssues={channelData.groups.flatMap((g: VersionGroup) => g.versions).find((v: VersionEntry) => v.version === precheckVersion)?.operatorIssues?.length > 0}
-          onClose={() => setPrecheckVersion(null)}
-          onProceed={() => { setPrecheckVersion(null); navigate(`/administration/cluster-update/preflight?version=${precheckVersion}`, { state: { version: precheckVersion } }); }}
-        />
-      )}
+      
 
-      {/* OLS Chatbot Drawer */}
+      </div>
+
+      {/* OLS Chatbot Panel */}
       {chatbotOpen && (
         <OlsChatbot
           context={chatbotContext}
           selectedVersion={selectedVersion}
           selectedChannel={selectedChannel}
           onClose={() => setChatbotOpen(false)}
+          onAction={handleChatAction}
         />
+      )}
+
+      {/* Floating chatbot toggle */}
+      {updateMode === "agent" && !chatbotOpen && (
+        <button onClick={() => { setChatbotContext("agent-monitor"); setChatbotOpen(true); }}
+          className="absolute bottom-[24px] right-[24px] z-[30] size-[52px] rounded-full bg-[#ee0000] text-white shadow-[0_4px_16px_rgba(0,0,0,0.25)] flex items-center justify-center cursor-pointer hover:bg-[#cc0000] active:scale-95 transition-all border-0"
+          title="Open AI Assistant">
+          <Bot className="size-[24px]" />
+        </button>
       )}
     </div>
   );
 }
 
-/* ─── Pre-check Modal ─── */
-function PrecheckModal({ version, hasOperatorIssues, onClose, onProceed }: { version: string; hasOperatorIssues: boolean; onClose: () => void; onProceed: () => void }) {
-  const [status, setStatus] = useState<PrecheckStatus>("idle");
-  const [completedChecks, setCompletedChecks] = useState<number>(0);
-  const [checkResults, setCheckResults] = useState<("pass" | "fail")[]>([]);
-
-  const runChecks = useCallback(() => {
-    setStatus("running");
-    setCompletedChecks(0);
-    setCheckResults([]);
-
-    let i = 0;
-    const interval = setInterval(() => {
-      i++;
-      setCompletedChecks(i);
-      if (i >= PRECHECK_ITEMS.length) {
-        clearInterval(interval);
-        const results: ("pass" | "fail")[] = PRECHECK_ITEMS.map((_, idx) => {
-          if (hasOperatorIssues && idx === 1) return "fail";
-          return "pass";
-        });
-        setCheckResults(results);
-        setStatus(results.some((r) => r === "fail") ? "failed" : "passed");
-      }
-    }, 500);
-  }, [hasOperatorIssues]);
-
-  useEffect(() => {
-    runChecks();
-  }, [runChecks]);
-
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white dark:bg-[#1a1a1a] rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.2)] w-[560px] max-h-[80vh] overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between px-[24px] py-[16px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
-          <div className="flex items-center gap-[10px]">
-            <Shield className="size-[20px] text-[#0066cc] dark:text-[#4dabf7]" />
-            <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">
-              Update pre-check
-            </h2>
-          </div>
-          <button onClick={onClose} className="bg-transparent border-0 cursor-pointer text-[#4d4d4d] dark:text-[#b0b0b0] hover:text-[#151515] dark:hover:text-white p-[4px]">
-            <X className="size-[18px]" />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="px-[24px] py-[20px] overflow-y-auto flex-1">
-          <p className="text-[14px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[20px]">
-            Running pre-flight checks for update to <span className="font-semibold text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">{version}</span>
-          </p>
-
-          <div className="space-y-[12px]">
-            {PRECHECK_ITEMS.map((check, idx) => {
-              const isDone = idx < completedChecks;
-              const isRunning = status === "running" && idx === completedChecks;
-              const result = checkResults[idx];
-
-              return (
-                <div key={idx} className="flex items-start gap-[12px]">
-                  <div className="mt-[2px]">
-                    {isRunning && <Loader2 className="size-[16px] text-[#0066cc] dark:text-[#4dabf7] animate-spin" />}
-                    {isDone && result === "pass" && <CheckCircle className="size-[16px] text-[#3e8635]" />}
-                    {isDone && result === "fail" && <XCircle className="size-[16px] text-[#c9190b]" />}
-                    {!isDone && !isRunning && <div className="size-[16px] rounded-full border-2 border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)]" />}
-                  </div>
-                  <div className="flex-1">
-                    <p className={`text-[14px] font-['Red_Hat_Text:Regular',sans-serif] ${isDone ? (result === "fail" ? "text-[#c9190b] font-medium" : "text-[#151515] dark:text-white") : "text-[#4d4d4d] dark:text-[#b0b0b0]"}`}>
-                      {check.label}
-                    </p>
-                    <p className="text-[12px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif]">{check.description}</p>
-                    {isDone && result === "fail" && (
-                      <p className="text-[12px] text-[#c9190b] font-['Red_Hat_Text:Regular',sans-serif] mt-[2px]">
-                        Incompatible operators detected. Resolve before proceeding.
-                      </p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Result banner */}
-          {status === "passed" && (
-            <div className="mt-[20px] rounded-[8px] bg-[rgba(62,134,53,0.08)] border border-[rgba(62,134,53,0.2)] p-[14px] flex items-center gap-[10px]">
-              <CheckCircle className="size-[18px] text-[#3e8635] shrink-0" />
-              <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">
-                All pre-flight checks passed. The cluster is ready to update to <span className="font-semibold font-['Red_Hat_Mono:Regular',sans-serif]">{version}</span>.
-              </p>
-            </div>
-          )}
-          {status === "failed" && (
-            <div className="mt-[20px] rounded-[8px] bg-[rgba(201,25,11,0.06)] border border-[rgba(201,25,11,0.2)] p-[14px] flex items-start gap-[10px]">
-              <AlertTriangle className="size-[18px] text-[#c9190b] shrink-0 mt-[1px]" />
-              <div>
-                <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] mb-[4px]">
-                  Pre-flight checks failed. Resolve the issues before updating.
-                </p>
-                <a href="https://docs.openshift.com/container-platform/latest/support/troubleshooting/troubleshooting-operator-issues.html" target="_blank" rel="noopener noreferrer" className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[13px] no-underline hover:underline font-['Red_Hat_Text:Regular',sans-serif]">
-                  View logs <ExternalLink className="size-[11px]" />
-                </a>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-[12px] px-[24px] py-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
-          <button onClick={onClose}
-            className="bg-transparent text-[#151515] dark:text-white text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
-            Close
-          </button>
-          {status === "passed" && (
-            <button onClick={onProceed}
-              className="bg-[#0066cc] hover:bg-[#004080] text-white text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-              Update to {version}
-            </button>
-          )}
-          {status === "failed" && (
-            <button onClick={runChecks}
-              className="flex items-center gap-[6px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-              <RotateCcw className="size-[14px]" /> Re-run checks
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─── OLS Chatbot Drawer ─── */
-function OlsChatbot({ context, selectedVersion, selectedChannel, onClose }: { context: string; selectedVersion: string; selectedChannel: string; onClose: () => void }) {
+/* ─── OLS Chatbot Panel ─── */
+function OlsChatbot({ context, selectedVersion, selectedChannel, onClose, onAction }: { context: string; selectedVersion: string; selectedChannel: string; onClose: () => void; onAction: (actionId: string) => void }) {
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     const initial: ChatMessage[] = [
       { role: "assistant", text: `Hello! I'm OpenShift Lightspeed, your AI assistant for cluster operations.\n\nI can see your cluster is currently on version **5.0.0** using the **${selectedChannel}** channel, and you're considering an update to **${selectedVersion}**.` },
@@ -499,6 +431,64 @@ function OlsChatbot({ context, selectedVersion, selectedChannel, onClose }: { co
       initial.push({ role: "assistant", text: `Starting AI-powered pre-check for update to **${selectedVersion}**...\n\n✅ **Cluster Health** — All components healthy\n✅ **Node Status** — 6/6 nodes Ready\n✅ **Storage Health** — 85% available, all PVs bound\n✅ **Network Health** — OVN verified, no packet loss\n✅ **Certificates** — Valid for >90 days\n✅ **etcd** — Quorum established\n\n⚠️ **Operator Compatibility** — 2 operators need attention:\n• cluster-logging v6.4.3 (max OCP 5.0) → Update to v6.5.1+\n• elasticsearch-operator v5.7.2 (max OCP 5.0) → Update to v5.8.0+\n\n**Next steps:**\n1. Update the incompatible operators from the Cluster Operators tab\n2. Re-run the pre-check to confirm all clear\n3. Approve the update plan to proceed\n\nWould you like me to start the operator updates automatically?` });
     } else if (context === "compatibility-analysis") {
       initial.push({ role: "assistant", text: `I've analyzed the compatibility profile for updating to **${selectedVersion}** on the **${selectedChannel}** channel. Here's what I found:\n\n**Operator Issues:**\n• **Cluster Logging v6.4.3** — max supported OCP is 5.0. You need v6.5.1+ before upgrading.\n• **Elasticsearch Operator v5.7.2** — max supported OCP is 5.0. Upgrade to v5.8.0+.\n• **OLM v4.21.0** — recommended to update to v4.22.0 for full 5.1 support.\n\n**API Deprecations:**\n• \`flowcontrol.apiserver.k8s.io/v1beta2\` — migrate to \`v1\` before 5.2.\n\n**Recommendation:** Update the 2 incompatible operators first, then approve the update plan. I can generate a step-by-step remediation runbook if needed.` });
+    } else if (context === "agent-start") {
+      initial.push({ role: "assistant", text: `Starting AI-managed update to **${selectedVersion}**...\n\n**Agent Status:** Active\n**Current Phase:** Generating update plan\n\n📋 **Actions completed:**\n1. ✅ Cluster health verified — all components healthy\n2. ✅ Pre-flight checks passed (6/6)\n3. ✅ Compatibility analysis complete — 2 issues found\n4. ⏳ Awaiting plan approval\n\n**Next step:** Review the proposed update plan below and approve to proceed. The agent will execute the update during the optimal window.\n\nI'll keep you updated on progress. You can pause or cancel the agent at any time from the status bar above.` });
+    } else if (context === "agent-paused") {
+      initial.push({ role: "assistant", text: `⏸️ **Agent paused** at ${new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}\n\n**Status:** The update agent has been paused. No further actions will be taken until you resume.\n\n**State preserved:**\n• Update plan: Pending approval\n• Target version: ${selectedVersion}\n• Scheduled window: Wed Apr 2, 02:00–05:00 UTC\n\n**Actions available:**\n• **Resume** — Continue from where the agent left off\n• **Cancel** — Discard the plan and stop the agent\n\nThe scheduled execution window will be skipped while paused.` });
+    } else if (context === "agent-resumed") {
+      initial.push({ role: "assistant", text: `▶️ **Agent resumed** at ${new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}\n\n**Status:** The update agent is active again and will continue processing.\n\n**Current state:**\n• Update plan: Pending approval\n• Target: 5.0.0 → ${selectedVersion}\n• Next scheduled window: Wed Apr 2, 02:00–05:00 UTC\n\nThe agent will proceed with the update plan once approved. I'll notify you of any status changes.` });
+    } else if (context === "agent-cancelled") {
+      initial.push({ role: "assistant", text: `🛑 **Update cancelled** at ${new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}\n\n**Status:** The update agent has been stopped and the update plan has been discarded.\n\n**What was cleared:**\n• Proposed update plan\n• Accepted risks\n• Scheduled execution window\n\n**To start a new update:**\n1. Click "Start update with AI" to begin a fresh update session\n2. Or use "Update pre-check with AI" to run checks first\n\nYour cluster remains on version **5.0.0**. No changes were made.` });
+    } else if (context === "update-executing") {
+      initial.push({ role: "assistant", text: `🚀 **Update started** at ${new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}\n\n**Target:** 5.0.0 → ${selectedVersion}\n**Strategy:** Rolling update with automatic rollback\n\n**Current progress:**\n1. ✅ Pre-flight checks passed\n2. ✅ Operator updates initiated\n3. ⏳ Control plane nodes updating...\n4. ⏳ Worker nodes pending\n\n**Live monitoring active.** I'll alert you if any health check degrades.\n\n• API Server: Healthy\n• etcd: Healthy\n• Ingress: Healthy\n\nEstimated completion: ~1h 45m. The cluster remains operational during the rolling update.` });
+    } else if (context === "update-completed") {
+      initial.push({ role: "assistant", text: `✅ **Update complete!** at ${new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}\n\n**Cluster version:** ${selectedVersion}\n**Duration:** 1h 38m\n\n**Post-update verification:**\n✅ API server responding\n✅ All 6 nodes Ready\n✅ All cluster operators available\n✅ No degraded operators\n✅ Ingress healthy\n✅ Workloads stable\n\n**Operators updated:**\n• Cluster Logging: 6.4.3 → 6.5.1\n• Elasticsearch Operator: 5.7.2 → 5.8.0\n• OLM: 4.21.0 → 4.22.0\n\nYour cluster is now running **${selectedVersion}**. All health checks passed. You can view the full update log in the Update History tab.` });
+    } else if (context === "update-failed") {
+      initial.push({ role: "assistant", text: `❌ **Update failed** at ${new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}\n\n**Error:** Node master-2 failed to drain\n**Root cause:** Pod prometheus-k8s-0 has local storage and exceeded the 300s eviction timeout.\n\n**Cluster state:**\n• 2/3 control plane nodes updated\n• 0/3 worker nodes updated\n• Cluster is in a **partially updated** state\n\n**Recommended actions:**\n1. **Retry** — I can attempt to force-drain master-2 (will delete the local storage pod)\n2. **Rollback** — Revert all nodes to 5.0.0 (~30 min)\n3. **Manual fix** — Delete the blocking pod manually, then retry\n\nWould you like me to diagnose the blocking pod and suggest a fix?` });
+    } else if (context === "update-rollback") {
+      initial.push({ role: "assistant", text: `⏪ **Rollback initiated** at ${new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}\n\n**Reverting:** ${selectedVersion} → 5.0.0\n\n**Rollback plan:**\n1. ⏳ Reverting control plane nodes (3 nodes)\n2. ⏳ Restoring operator versions\n3. ⏳ Verifying cluster health\n\n**Estimated time:** ~30 minutes\n\nThe cluster will remain operational during rollback. I'll verify all health checks pass after completion.` });
+    } else if (context === "rollback-complete") {
+      initial.push({ role: "assistant", text: `✅ **Rollback complete** at ${new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}\n\n**Cluster version:** 5.0.0 (restored)\n\n**Verification:**\n✅ All 6 nodes on version 5.0.0\n✅ Operator versions restored\n✅ Cluster health verified\n✅ No degraded components\n\nYour cluster has been safely reverted. To attempt the update again:\n1. Resolve the drain issue on master-2\n2. Click "Start update with AI" when ready\n\nWould you like help troubleshooting the original failure?` });
+    } else if (context === "update-retry") {
+      initial.push({ role: "assistant", text: `🔄 **Retrying update** at ${new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}\n\n**Target:** 5.0.0 → ${selectedVersion}\n\n**Changes from previous attempt:**\n• Increased drain timeout to 600s\n• Added force-drain for pods with local storage\n• Skipping already-updated nodes where safe\n\n**Progress:**\n1. ✅ master-0 — already on ${selectedVersion}\n2. ✅ master-1 — already on ${selectedVersion}\n3. ⏳ master-2 — retrying drain...\n4. ⏳ Workers pending\n\nMonitoring closely. I'll alert you immediately if the same issue recurs.` });
+    }
+    const lastMsg = initial[initial.length - 1];
+    if (lastMsg && lastMsg.role === "assistant") {
+      const contextActions: Record<string, ChatAction[]> = {
+        "agent-precheck": [
+          { label: "Re-run pre-checks", variant: "secondary", actionId: "rerun-precheck" },
+        ],
+        "agent-start": [
+          { label: "Review update plan", variant: "primary", actionId: "view-plan" },
+        ],
+        "compatibility-analysis": [
+          { label: "Generate remediation plan", variant: "secondary", actionId: "remediation" },
+        ],
+        "agent-config": [
+          { label: "Review configuration", variant: "secondary", actionId: "view-plan" },
+        ],
+        "agent-monitor": [
+          { label: "View update plan", variant: "primary", actionId: "view-plan" },
+        ],
+        "update-completed": [
+          { label: "View update history", variant: "primary", actionId: "view-history" },
+        ],
+        "update-failed": [
+          { label: "View troubleshooting", variant: "link", actionId: "view-plan" },
+        ],
+        "agent-paused": [
+          { label: "View update plan", variant: "secondary", actionId: "view-plan" },
+        ],
+        "agent-cancelled": [
+          { label: "View update plan", variant: "primary", actionId: "view-plan" },
+        ],
+        "recommendations": [
+          { label: "View update plan", variant: "secondary", actionId: "view-plan" },
+        ],
+      };
+      if (contextActions[context]) {
+        lastMsg.actions = contextActions[context];
+      }
     }
     return initial;
   });
@@ -514,13 +504,30 @@ function OlsChatbot({ context, selectedVersion, selectedChannel, onClose }: { co
     const userMsg = input.trim();
     setInput("");
     setMessages((prev) => [...prev, { role: "user", text: userMsg }]);
+    const lowerMsg = userMsg.toLowerCase();
     setTimeout(() => {
-      setMessages((prev) => [...prev, { role: "assistant", text: "I'm analyzing your cluster configuration and update path. Based on the current state, I recommend resolving any operator compatibility issues before proceeding with the update. Would you like me to generate a step-by-step remediation plan?" }]);
+      let response: ChatMessage;
+      if (lowerMsg.includes("operator") || lowerMsg.includes("compatibility") || lowerMsg.includes("blocked")) {
+        response = { role: "assistant", text: "Based on my analysis, you have **2 operators** that need updating before proceeding:\n\n• **Cluster Logging v6.4.3** → Update to v6.5.1+\n• **Elasticsearch Operator v5.7.2** → Update to v5.8.0+\n\nI recommend updating these operators before approving the update plan. You can accept the known risks from the alert banner in the Available Updates section.", actions: [{ label: "Review update plan", variant: "primary", actionId: "view-plan" }] };
+      } else if (lowerMsg.includes("approve") || lowerMsg.includes("plan")) {
+        response = { role: "assistant", text: "The update plan is pending your approval. Here's a summary:\n\n• **Target:** 5.0.0 → 5.1.10\n• **Pre-flight:** 6/6 passed\n• **Compatibility:** 2 blocking issues\n• **Schedule:** Wed Apr 2, 02:00–05:00 UTC\n\nYou can approve the plan from the decision bar below the update plan, or accept the known risks to proceed despite the incompatibilities.", actions: [{ label: "Review update plan", variant: "primary", actionId: "view-plan" }] };
+      } else if (lowerMsg.includes("schedule") || lowerMsg.includes("window") || lowerMsg.includes("when")) {
+        response = { role: "assistant", text: "Based on your cluster's workload patterns, I recommend:\n\n• **Optimal window:** Wed Apr 2, 02:00–05:00 UTC\n• **Estimated duration:** 1h 45m\n• **Risk level:** Low\n\nThis window was selected because your cluster shows the lowest traffic during this period. You can adjust preferences in Agent Configuration → Scheduling." };
+      } else if (lowerMsg.includes("rollback") || lowerMsg.includes("revert")) {
+        response = { role: "assistant", text: "Automatic rollback is currently **enabled**. If health checks fail within 30 minutes of update completion, the agent will automatically revert to version 5.0.0.\n\n**Rollback details:**\n• Estimated time: ~30 minutes\n• All nodes will be reverted\n• Operator versions will be restored\n\nYou can configure this in Agent Configuration → Automatic Actions." };
+      } else if (lowerMsg.includes("history") || lowerMsg.includes("previous") || lowerMsg.includes("past")) {
+        response = { role: "assistant", text: "Your cluster has 6 previous updates on record:\n\n• **5.0.0** — Completed (Agent, 1h 48m)\n• **4.18.6** — Completed (Agent, auto-approved)\n• **4.18.4** — Completed (Manual, 1h 15m)\n• **4.17.9** — Failed (Agent, auto-rollback)\n• **4.17.8** — Rejected (pre-flight failures)\n\nWould you like details on any specific update?", actions: [{ label: "View full history", variant: "primary", actionId: "view-history" }] };
+      } else if (lowerMsg.includes("risk") || lowerMsg.includes("safe")) {
+        response = { role: "assistant", text: "**Risk assessment for 5.0.0 → 5.1.10:**\n\n• **Overall risk:** Low (based on community adoption and test coverage)\n• **Blocking issues:** 2 incompatible operators\n• **API deprecations:** 1 warning (non-blocking)\n• **Custom resources:** No incompatibilities found\n\nThe 2 blocking operators can be updated beforehand, or you can accept the risks and proceed. The agent will attempt automatic mitigation during the update if enabled." };
+      } else {
+        response = { role: "assistant", text: "I can help you with your cluster update. Here's what I can assist with:\n\n• **Operator compatibility** — Check which operators need updating\n• **Update plan** — Review the proposed update path\n• **Scheduling** — Optimal update window analysis\n• **Risk assessment** — Evaluate update risks\n• **History** — Review past updates\n\nWhat would you like to know more about?", actions: [{ label: "View update plan", variant: "primary", actionId: "view-plan" }, { label: "View history", variant: "secondary", actionId: "view-history" }] };
+      }
+      setMessages((prev) => [...prev, response]);
     }, 1200);
   };
 
   return (
-    <div className="fixed top-0 right-0 bottom-0 w-[420px] z-[90] bg-white dark:bg-[#1a1a1a] shadow-[-4px_0_24px_rgba(0,0,0,0.15)] flex flex-col border-l border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
+    <div className="w-[380px] shrink-0 bg-white dark:bg-[#1a1a1a] flex flex-col border-l border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
       {/* Header */}
       <div className="flex items-center justify-between px-[20px] py-[14px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] bg-[#151515] text-white">
         <div className="flex items-center gap-[10px]">
@@ -541,12 +548,26 @@ function OlsChatbot({ context, selectedVersion, selectedChannel, onClose }: { co
       <div className="flex-1 overflow-y-auto p-[16px] space-y-[16px]">
         {messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-[85%] rounded-[12px] px-[14px] py-[10px] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] leading-[1.5] whitespace-pre-wrap ${
+            <div className={`max-w-[90%] rounded-[12px] px-[14px] py-[10px] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] leading-[1.5] whitespace-pre-wrap ${
               msg.role === "user"
                 ? "bg-[#0066cc] text-white rounded-br-[4px]"
                 : "bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.05)] text-[#151515] dark:text-white rounded-bl-[4px]"
             }`}>
               {msg.text.split("**").map((part, j) => j % 2 === 1 ? <strong key={j}>{part}</strong> : part)}
+              {msg.actions && msg.actions.length > 0 && (
+                <div className="flex flex-wrap gap-[6px] mt-[10px] pt-[10px] border-t border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.1)]">
+                  {msg.actions.map((action, k) => (
+                    <button key={k} onClick={(e) => { e.stopPropagation(); onAction(action.actionId); }}
+                      className={`text-[12px] px-[10px] py-[5px] rounded-[6px] cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${
+                        action.variant === "primary" ? "bg-[#0066cc] hover:bg-[#004080] text-white border-0" :
+                        action.variant === "secondary" ? "bg-white dark:bg-[rgba(255,255,255,0.1)] hover:bg-[#f0f0f0] dark:hover:bg-[rgba(255,255,255,0.15)] text-[#0066cc] dark:text-[#4dabf7] border border-[#0066cc] dark:border-[#4dabf7]" :
+                        "bg-transparent text-[#0066cc] dark:text-[#4dabf7] hover:underline border-0 px-0"
+                      }`}>
+                      {action.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -589,7 +610,7 @@ function Toggle({ enabled, onChange, disabled }: { enabled: boolean; onChange: (
 
 /* ─── Agent Mode Panel ─── */
 function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: (ctx: string) => void; setActiveTab: (tab: TabKey) => void; navigate: ReturnType<typeof useNavigate> }) {
-  const [agentStatus, setAgentStatus] = useState<"idle" | "active" | "paused">("idle");
+  const [agentStatus, setAgentStatus] = useState<"idle" | "active" | "paused" | "updating" | "completed" | "failed" | "rolling-back">("idle");
   const [configTab, setConfigTab] = useState<"actions" | "compliance" | "scheduling" | "notifications">("actions");
 
   const [autoPreflight, setAutoPreflight] = useState(true);
@@ -619,6 +640,69 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
   const [planDecision, setPlanDecision] = useState<"pending" | "approved" | "rejected" | null>("pending");
   const [showRiskAcceptModal, setShowRiskAcceptModal] = useState(false);
   const [acceptedSlugs, setAcceptedSlugs] = useState<Set<string>>(new Set());
+  const [showPauseModal, setShowPauseModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [updateProgress, setUpdateProgress] = useState(0);
+  const [showRollbackModal, setShowRollbackModal] = useState(false);
+
+  const updateNodes = [
+    { name: "master-0", role: "control-plane", status: "done" as const },
+    { name: "master-1", role: "control-plane", status: "done" as const },
+    { name: "master-2", role: "control-plane", status: "in-progress" as const },
+    { name: "worker-0", role: "worker", status: "pending" as const },
+    { name: "worker-1", role: "worker", status: "pending" as const },
+    { name: "worker-2", role: "worker", status: "pending" as const },
+  ];
+
+  const updateOperators = [
+    { name: "Cluster Logging", from: "6.4.3", to: "6.5.1", status: "done" as const },
+    { name: "Elasticsearch Operator", from: "5.7.2", to: "5.8.0", status: "in-progress" as const },
+    { name: "Operator Lifecycle Manager", from: "4.21.0", to: "4.22.0", status: "pending" as const },
+  ];
+
+  const postUpdateChecks = [
+    { label: "API server responding", status: "pass" as const },
+    { label: "All nodes Ready", status: "pass" as const },
+    { label: "Cluster operators available", status: "pass" as const },
+    { label: "No degraded operators", status: "pass" as const },
+    { label: "Ingress healthy", status: "pass" as const },
+    { label: "Workloads stable", status: "pass" as const },
+  ];
+
+  useEffect(() => {
+    if (agentStatus === "updating" || agentStatus === "rolling-back") {
+      const timer = setInterval(() => {
+        setUpdateProgress((prev) => {
+          if (prev >= 100) { clearInterval(timer); return 100; }
+          return prev + 1;
+        });
+      }, 300);
+      return () => clearInterval(timer);
+    }
+  }, [agentStatus]);
+
+  const startUpdate = () => {
+    setAgentStatus("updating");
+    setUpdateProgress(0);
+    openChatbot("update-executing");
+  };
+
+  const simulateComplete = () => {
+    setAgentStatus("completed");
+    openChatbot("update-completed");
+  };
+
+  const simulateFailure = () => {
+    setAgentStatus("failed");
+    openChatbot("update-failed");
+  };
+
+  const startRollback = () => {
+    setShowRollbackModal(false);
+    setAgentStatus("rolling-back");
+    setUpdateProgress(0);
+    openChatbot("update-rollback");
+  };
 
   const agentPreflightChecks = [
     { label: "Cluster Health", status: "pass" as const, detail: "All cluster components reporting healthy" },
@@ -666,14 +750,28 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
       <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[20px]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-[12px]">
-            <div className={`size-[10px] rounded-full ${agentStatus === "active" ? "bg-[#3e8635] animate-pulse" : agentStatus === "paused" ? "bg-[#c58c00]" : "bg-[#8a8d90]"}`} />
+            <div className={`size-[10px] rounded-full ${
+              agentStatus === "active" || agentStatus === "updating" ? "bg-[#3e8635] animate-pulse" :
+              agentStatus === "paused" ? "bg-[#c58c00]" :
+              agentStatus === "completed" ? "bg-[#3e8635]" :
+              agentStatus === "failed" ? "bg-[#c9190b]" :
+              agentStatus === "rolling-back" ? "bg-[#c58c00] animate-pulse" :
+              "bg-[#8a8d90]"
+            }`} />
             <Bot className="size-[20px] text-[#6753ac]" />
             <span className="text-[15px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white">
-              {agentStatus === "active" ? "Update Agent Active" : agentStatus === "paused" ? "Update Agent Paused" : "Update Agent Ready"}
+              {agentStatus === "active" ? "Update Agent Active" :
+               agentStatus === "paused" ? "Update Agent Paused" :
+               agentStatus === "updating" ? "Updating Cluster" :
+               agentStatus === "completed" ? "Update Complete" :
+               agentStatus === "failed" ? "Update Failed" :
+               agentStatus === "rolling-back" ? "Rolling Back" :
+               "Update Agent Ready"}
             </span>
-            {agentStatus === "active" && (
+            {(agentStatus === "active" || agentStatus === "updating") && (
               <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
-                Target: <span className="font-['Red_Hat_Mono:Regular',sans-serif] text-[#151515] dark:text-white">5.1.10</span> &middot; Next check: <span className="font-['Red_Hat_Mono:Regular',sans-serif] text-[#151515] dark:text-white">Tomorrow 02:00 UTC</span>
+                Target: <span className="font-['Red_Hat_Mono:Regular',sans-serif] text-[#151515] dark:text-white">5.1.10</span>
+                {agentStatus === "updating" && <> &middot; <span className="font-['Red_Hat_Mono:Regular',sans-serif] text-[#151515] dark:text-white">{updateProgress}%</span></>}
               </span>
             )}
           </div>
@@ -691,42 +789,64 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
             )}
             {agentStatus === "active" && (
               <>
-                <button onClick={() => setAgentStatus("paused")} className="flex items-center gap-[6px] bg-transparent text-[#151515] dark:text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+                <button onClick={() => setShowPauseModal(true)} className="flex items-center gap-[6px] bg-transparent text-[#151515] dark:text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
                   <Pause className="size-[13px]" /> Pause agent
                 </button>
-                <button onClick={() => setAgentStatus("idle")} className="flex items-center gap-[6px] bg-transparent text-[#c9190b] text-[13px] px-[14px] py-[6px] rounded-[6px] border border-[#c9190b]/40 cursor-pointer hover:bg-[#c9190b]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                <button onClick={() => setShowCancelModal(true)} className="flex items-center gap-[6px] bg-transparent text-[#151515] dark:text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
                   Cancel update
                 </button>
               </>
             )}
             {agentStatus === "paused" && (
               <>
-                <button onClick={() => setAgentStatus("active")} className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                <button onClick={() => { setAgentStatus("active"); openChatbot("agent-resumed"); }} className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
                   <Play className="size-[13px]" /> Resume agent
                 </button>
-                <button onClick={() => setAgentStatus("idle")} className="flex items-center gap-[6px] bg-transparent text-[#c9190b] text-[13px] px-[14px] py-[6px] rounded-[6px] border border-[#c9190b]/40 cursor-pointer hover:bg-[#c9190b]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                <button onClick={() => setShowCancelModal(true)} className="flex items-center gap-[6px] bg-transparent text-[#151515] dark:text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
                   Cancel update
                 </button>
               </>
+            )}
+            {agentStatus === "updating" && (
+              <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] flex items-center gap-[6px]">
+                <Loader2 className="size-[14px] animate-spin text-[#0066cc]" /> Update in progress&hellip;
+              </span>
+            )}
+            {agentStatus === "completed" && (
+              <button onClick={() => { setAgentStatus("idle"); setPlanDecision("pending"); }} className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                Done
+              </button>
+            )}
+            {agentStatus === "failed" && (
+              <>
+                <button onClick={() => setShowRollbackModal(true)} className="flex items-center gap-[6px] bg-transparent text-[#151515] dark:text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+                  <RotateCcw className="size-[13px]" /> Rollback
+                </button>
+                <button onClick={() => { setAgentStatus("updating"); setUpdateProgress(0); openChatbot("update-retry"); }} className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                  <RefreshCw className="size-[13px]" /> Retry update
+                </button>
+              </>
+            )}
+            {agentStatus === "rolling-back" && (
+              <span className="text-[12px] text-[#c58c00] font-['Red_Hat_Text:Regular',sans-serif] flex items-center gap-[6px]">
+                <Loader2 className="size-[14px] animate-spin" /> Rolling back to 5.0.0&hellip;
+              </span>
             )}
           </div>
         </div>
       </div>
 
       {/* Agent Configuration — Tabbed */}
-      <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] overflow-hidden">
-        <div className="flex items-center justify-between px-[24px] py-[16px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] bg-[#fafafa] dark:bg-[rgba(255,255,255,0.02)]">
-          <div className="flex items-center gap-[10px]">
-            <Settings className="size-[18px] text-[#6753ac]" />
-            <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px]">Agent Configuration</h2>
-          </div>
+      <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
+        <div className="flex items-center justify-between mb-[4px]">
+          <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Agent Configuration</h2>
           <button onClick={() => openChatbot("agent-config")}
             className="flex items-center gap-[6px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[12px] px-[10px] py-[5px] rounded-[6px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
             AI setup assistant <Sparkles className="size-[12px]" />
           </button>
         </div>
 
-        <div className="flex border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
+        <div className="flex border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] mb-[16px]">
           {configTabs.map((t) => (
             <button key={t.key} onClick={() => setConfigTab(t.key)}
               className={`flex items-center gap-[6px] px-[16px] py-[10px] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] border-0 bg-transparent cursor-pointer transition-colors relative ${configTab === t.key ? "text-[#151515] dark:text-white font-medium" : "text-[#4d4d4d] dark:text-[#b0b0b0] hover:text-[#151515] dark:hover:text-white"}`}>
@@ -737,7 +857,7 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
           ))}
         </div>
 
-        <div className="p-[24px]">
+        <div>
           {/* Automatic Actions */}
           {configTab === "actions" && (
             <div className="space-y-[12px]">
@@ -914,21 +1034,19 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
 
       {/* Agent Proposed Update Plan */}
       {(agentStatus === "active" || agentStatus === "paused") && (
-        <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] overflow-hidden">
-          <div className="px-[24px] py-[16px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] bg-[#fafafa] dark:bg-[rgba(255,255,255,0.02)]">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-[10px]">
-                <FileText className="size-[18px] text-[#6753ac]" />
-                <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px]">Agent&apos;s Proposed Update Plan</h2>
-                {planDecision === "pending" && <span className="text-[11px] px-[8px] py-[2px] rounded-full bg-[#e7f1fa] text-[#0066cc] font-semibold font-['Red_Hat_Text:Regular',sans-serif]">Pending approval</span>}
-                {planDecision === "approved" && <span className="text-[11px] px-[8px] py-[2px] rounded-full bg-[rgba(62,134,53,0.1)] text-[#3e8635] font-semibold font-['Red_Hat_Text:Regular',sans-serif]">Approved</span>}
-                {planDecision === "rejected" && <span className="text-[11px] px-[8px] py-[2px] rounded-full bg-[rgba(201,25,11,0.1)] text-[#c9190b] font-semibold font-['Red_Hat_Text:Regular',sans-serif]">Rejected</span>}
-              </div>
-              <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Generated Mar 30, 2026 02:15 UTC</span>
+        <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
+          <div className="flex items-center justify-between mb-[4px]">
+            <div className="flex items-center gap-[10px]">
+              <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Agent&apos;s Proposed Update Plan</h2>
+              {planDecision === "pending" && <span className="text-[11px] px-[8px] py-[2px] rounded-full bg-[#e7f1fa] text-[#0066cc] font-semibold font-['Red_Hat_Text:Regular',sans-serif]">Pending approval</span>}
+              {planDecision === "approved" && <span className="text-[11px] px-[8px] py-[2px] rounded-full bg-[rgba(62,134,53,0.1)] text-[#3e8635] font-semibold font-['Red_Hat_Text:Regular',sans-serif]">Approved</span>}
+              {planDecision === "rejected" && <span className="text-[11px] px-[8px] py-[2px] rounded-full bg-[rgba(201,25,11,0.1)] text-[#c9190b] font-semibold font-['Red_Hat_Text:Regular',sans-serif]">Rejected</span>}
             </div>
+            <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Generated Mar 30, 2026 02:15 UTC</span>
           </div>
+          <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[14px] mb-[16px] font-['Red_Hat_Text:Regular',sans-serif]">AI-generated update plan for your cluster</p>
 
-          <div className="p-[24px] space-y-[20px]">
+          <div className="space-y-[20px]">
             {/* Pre-Flight Checks Module */}
             <div>
               <div className="flex items-center gap-[8px] mb-[12px]">
@@ -993,12 +1111,9 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
                       <span>
                         {op.action ? (
                           <div className="flex items-center gap-[6px]">
-                            <button onClick={() => setActiveTab("cluster-operators")} className="bg-transparent border-0 p-0 text-[#0066cc] dark:text-[#4dabf7] text-[11px] cursor-pointer hover:underline font-['Red_Hat_Text:Regular',sans-serif] font-medium whitespace-nowrap">
-                              Update now
-                            </button>
                             {op.docUrl && (
-                              <a href={op.docUrl} target="_blank" rel="noopener noreferrer" className="text-[#4d4d4d] dark:text-[#b0b0b0] hover:text-[#0066cc] dark:hover:text-[#4dabf7]" title="View documentation">
-                                <ExternalLink className="size-[11px]" />
+                              <a href={op.docUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[11px] no-underline hover:underline font-['Red_Hat_Text:Regular',sans-serif]">
+                                View docs <ExternalLink className="size-[11px]" />
                               </a>
                             )}
                           </div>
@@ -1010,45 +1125,6 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
                   ))}
                 </div>
               </div>
-
-              {/* Resolution summary when issues exist */}
-              {(incompatibleOps.length > 0 || warningOps.length > 0) && (
-                <div className="rounded-[8px] border border-[#c58c00]/30 bg-[#fdf7e7] dark:bg-[rgba(197,140,0,0.06)] p-[14px] mb-[12px]">
-                  <div className="flex items-start gap-[10px]">
-                    <AlertTriangle className="size-[16px] text-[#c58c00] shrink-0 mt-[1px]" />
-                    <div className="flex-1">
-                      <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-semibold mb-[8px]">
-                        {incompatibleOps.length} blocking issue{incompatibleOps.length !== 1 ? "s" : ""} must be resolved before this update can proceed
-                      </p>
-                      <div className="space-y-[6px] mb-[12px]">
-                        {compatAnalysis.operators.filter(o => o.status !== "compatible").map((op) => (
-                          <div key={op.name} className="flex items-center gap-[8px] text-[12px] font-['Red_Hat_Text:Regular',sans-serif]">
-                            {op.status === "incompatible" ? <XCircle className="size-[12px] text-[#c9190b] shrink-0" /> : <AlertTriangle className="size-[12px] text-[#c58c00] shrink-0" />}
-                            <span className="text-[#151515] dark:text-white font-medium">{op.name}</span>
-                            <span className="text-[#4d4d4d] dark:text-[#b0b0b0]">→</span>
-                            <span className="text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">{op.action}</span>
-                            {op.docUrl && (
-                              <a href={op.docUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-[3px] text-[#0066cc] dark:text-[#4dabf7] no-underline hover:underline">
-                                Docs <ExternalLink className="size-[10px]" />
-                              </a>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                      <div className="flex items-center gap-[8px]">
-                        <button onClick={() => setActiveTab("cluster-operators")}
-                          className="bg-[#0066cc] hover:bg-[#004080] text-white text-[12px] px-[12px] py-[5px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-                          Go to cluster operators
-                        </button>
-                        <button onClick={() => openChatbot("compatibility-analysis")}
-                          className="flex items-center gap-[5px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[12px] px-[12px] py-[5px] rounded-[6px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-                          Get AI remediation plan <Sparkles className="size-[11px]" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {/* API Deprecations */}
               <div className="grid grid-cols-2 gap-[12px]">
@@ -1132,97 +1208,380 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
               </p>
             </div>
 
-            {/* Explicit Decision Workflow */}
-            {incompatibleOps.length > 0 && (
-              <div className="rounded-[8px] border-2 border-[#c9190b]/40 bg-[rgba(201,25,11,0.03)] dark:bg-[rgba(201,25,11,0.06)] p-[14px]">
-                <div className="flex items-start gap-[10px]">
-                  <XCircle className="size-[16px] text-[#c9190b] shrink-0 mt-[1px]" />
-                  <div className="flex-1">
-                    <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-semibold mb-[6px]">
-                      Resolve {incompatibleOps.length} blocking issue{incompatibleOps.length !== 1 ? "s" : ""} before approving
-                    </p>
-                    <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[10px]">
-                      The following operators are incompatible with the target version and must be updated first. You can also choose to accept risks and proceed.
-                    </p>
-                    <div className="space-y-[4px] mb-[12px]">
-                      {incompatibleOps.map((op) => (
-                        <div key={op.name} className="flex items-center gap-[6px] text-[12px] font-['Red_Hat_Text:Regular',sans-serif]">
-                          <span className="text-[#c9190b]">&#x2022;</span>
-                          <span className="text-[#151515] dark:text-white font-medium">{op.name} {op.currentVersion}</span>
-                          <span className="text-[#4d4d4d] dark:text-[#b0b0b0]">→ {op.action}</span>
+            {/* Decision Bar */}
+            <div className="border-t border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] pt-[20px]">
+              {incompatibleOps.length > 0 && (
+                <div className="flex items-start gap-[8px] bg-[#fdf7e7] dark:bg-[rgba(197,140,0,0.06)] rounded-[8px] px-[14px] py-[10px] mb-[14px] border border-[#c58c00]/30">
+                  <AlertTriangle className="size-[14px] text-[#c58c00] shrink-0 mt-[2px]" />
+                  <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">
+                    <span className="font-semibold">{incompatibleOps.length} blocking issue{incompatibleOps.length !== 1 ? "s" : ""}</span> must be resolved before approving, or you can accept the risks and proceed.
+                  </p>
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
+                  Target: <span className="font-['Red_Hat_Mono:Regular',sans-serif] text-[#151515] dark:text-white font-medium">5.0.0 → 5.1.10</span>
+                </p>
+                <div className="flex items-center gap-[10px]">
+                  {incompatibleOps.length > 0 ? (
+                    <>
+                      <button onClick={() => setShowRiskAcceptModal(true)}
+                        className="text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-transparent text-[#151515] dark:text-white cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+                        Accept risks &amp; approve
+                      </button>
+                      <div className="relative group">
+                        <button disabled
+                          className="text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed">
+                          Approve plan
+                        </button>
+                        <div className="absolute bottom-full right-0 mb-[6px] hidden group-hover:block z-10">
+                          <div className="bg-[#151515] text-white text-[11px] px-[10px] py-[6px] rounded-[6px] shadow-lg whitespace-nowrap font-['Red_Hat_Text:Regular',sans-serif]">
+                            Resolve {incompatibleOps.length} blocking issue{incompatibleOps.length !== 1 ? "s" : ""} to approve
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                    <div className="flex items-center gap-[8px]">
-                      <button onClick={() => setActiveTab("cluster-operators")}
-                        className="bg-[#0066cc] hover:bg-[#004080] text-white text-[12px] px-[12px] py-[5px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-                        Resolve in cluster operators
-                      </button>
-                      <button onClick={() => openChatbot("compatibility-analysis")}
-                        className="flex items-center gap-[5px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[12px] px-[12px] py-[5px] rounded-[6px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-                        Get AI remediation plan <Sparkles className="size-[11px]" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {incompatibleOps.length === 0 && warningOps.length > 0 && (
-              <div className="rounded-[8px] border-2 border-[#5e40be] bg-white dark:bg-[rgba(94,64,190,0.06)] p-[14px]">
-                <div className="flex items-start gap-[10px]">
-                  <Info className="size-[16px] text-[#5e40be] shrink-0 mt-[1px]" />
-                  <div>
-                    <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">
-                      <span className="font-semibold">Acknowledged risks:</span> Approving this plan will set <span className="font-['Red_Hat_Mono:Regular',sans-serif] text-[#5e40be]">desiredUpdate.acceptedRisks</span>.
-                      {warningOps.length > 0 && ` ${warningOps.length} warning${warningOps.length > 1 ? "s" : ""} will be logged but won't block the update.`}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="border-t border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] pt-[20px] flex items-center justify-between">
-              <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
-                Target: <span className="font-['Red_Hat_Mono:Regular',sans-serif] text-[#151515] dark:text-white font-medium">5.0.0 → 5.1.10</span>
-              </p>
-              <div className="flex items-center gap-[10px]">
-                <button onClick={() => setPlanDecision("rejected")}
-                  className={`text-[14px] px-[16px] py-[8px] rounded-[6px] border cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${planDecision === "rejected" ? "bg-[rgba(201,25,11,0.1)] text-[#c9190b] border-[#c9190b]" : "bg-transparent text-[#c9190b] border-[#c9190b] hover:bg-[rgba(201,25,11,0.05)]"}`}>
-                  Reject plan
-                </button>
-                <button onClick={() => { setScheduleMode("fixed"); setConfigTab("scheduling"); }}
-                  className="bg-transparent text-[#151515] dark:text-white text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
-                  Modify schedule
-                </button>
-                {incompatibleOps.length > 0 ? (
-                  <div className="relative group">
-                    <button disabled
-                      className="text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed">
-                      Approve plan
-                    </button>
-                    <div className="absolute bottom-full right-0 mb-[6px] hidden group-hover:block z-10">
-                      <div className="bg-[#151515] text-white text-[11px] px-[10px] py-[6px] rounded-[6px] shadow-lg whitespace-nowrap font-['Red_Hat_Text:Regular',sans-serif]">
-                        Resolve {incompatibleOps.length} blocking issue{incompatibleOps.length !== 1 ? "s" : ""} to approve
                       </div>
-                    </div>
-                  </div>
-                ) : (
-                  <button onClick={() => setPlanDecision("approved")}
-                    className={`text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${planDecision === "approved" ? "bg-[#3e8635] text-white" : "bg-[#0066cc] hover:bg-[#004080] text-white"}`}>
-                    {planDecision === "approved" ? "✓ Plan approved" : "Approve plan"}
-                  </button>
-                )}
-                {incompatibleOps.length > 0 && (
-                  <button onClick={() => setShowRiskAcceptModal(true)}
-                    className="text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#c58c00] text-[#c58c00] bg-transparent cursor-pointer hover:bg-[rgba(197,140,0,0.05)] transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-                    Accept risks &amp; approve
-                  </button>
-                )}
+                    </>
+                  ) : (
+                    planDecision === "approved" ? (
+                      <button onClick={startUpdate}
+                        className="text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium bg-[#0066cc] hover:bg-[#004080] text-white flex items-center gap-[6px]">
+                        <Play className="size-[14px]" /> Start update
+                      </button>
+                    ) : (
+                      <button onClick={() => setPlanDecision("approved")}
+                        className="text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium bg-[#0066cc] hover:bg-[#004080] text-white">
+                        Approve plan
+                      </button>
+                    )
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Update Progress Panel */}
+      {(agentStatus === "updating" || agentStatus === "rolling-back") && (
+        <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] overflow-hidden">
+          <div className="px-[24px] py-[16px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] bg-[#fafafa] dark:bg-[rgba(255,255,255,0.02)]">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-[10px]">
+                <Loader2 className={`size-[18px] animate-spin ${agentStatus === "rolling-back" ? "text-[#c58c00]" : "text-[#0066cc]"}`} />
+                <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px]">
+                  {agentStatus === "rolling-back" ? "Rolling Back to 5.0.0" : "Updating to 5.1.10"}
+                </h2>
+              </div>
+              <div className="flex items-center gap-[12px]">
+                <span className="text-[13px] font-['Red_Hat_Mono:Regular',sans-serif] text-[#151515] dark:text-white font-medium">{updateProgress}%</span>
+                <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
+                  Est. remaining: {Math.max(0, Math.round((100 - updateProgress) * 0.6))}m
+                </span>
+              </div>
+            </div>
+            <div className="mt-[12px] h-[6px] bg-[#e0e0e0] dark:bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden">
+              <div className={`h-full rounded-full transition-all duration-300 ${agentStatus === "rolling-back" ? "bg-[#c58c00]" : "bg-[#0066cc]"}`} style={{ width: `${updateProgress}%` }} />
+            </div>
+          </div>
+
+          <div className="p-[24px] space-y-[20px]">
+            {/* Node Rollout */}
+            <div>
+              <div className="flex items-center gap-[8px] mb-[12px]">
+                <Shield className="size-[16px] text-[#0066cc]" />
+                <h3 className="text-[15px] font-semibold text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">
+                  {agentStatus === "rolling-back" ? "Node rollback" : "Node rollout"}
+                </h3>
+                <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
+                  {updateNodes.filter(n => n.status === "done").length}/{updateNodes.length} complete
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-[8px]">
+                {updateNodes.map((node) => (
+                  <div key={node.name} className="flex items-center gap-[8px] bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[12px] py-[10px]">
+                    {node.status === "done" && <CheckCircle className="size-[14px] text-[#3e8635] shrink-0" />}
+                    {node.status === "in-progress" && <Loader2 className="size-[14px] text-[#0066cc] animate-spin shrink-0" />}
+                    {node.status === "pending" && <Clock className="size-[14px] text-[#8a8d90] shrink-0" />}
+                    <div>
+                      <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">{node.name}</p>
+                      <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{node.role}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Operator Updates */}
+            {agentStatus !== "rolling-back" && (
+              <div className="border-t border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] pt-[20px]">
+                <div className="flex items-center gap-[8px] mb-[12px]">
+                  <Settings className="size-[16px] text-[#6753ac]" />
+                  <h3 className="text-[15px] font-semibold text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">Operator updates</h3>
+                  <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
+                    {updateOperators.filter(o => o.status === "done").length}/{updateOperators.length} complete
+                  </span>
+                </div>
+                <div className="space-y-[6px]">
+                  {updateOperators.map((op) => (
+                    <div key={op.name} className="flex items-center justify-between bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[14px] py-[10px]">
+                      <div className="flex items-center gap-[10px]">
+                        {op.status === "done" && <CheckCircle className="size-[14px] text-[#3e8635]" />}
+                        {op.status === "in-progress" && <Loader2 className="size-[14px] text-[#0066cc] animate-spin" />}
+                        {op.status === "pending" && <Clock className="size-[14px] text-[#8a8d90]" />}
+                        <span className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium">{op.name}</span>
+                      </div>
+                      <span className="text-[12px] font-['Red_Hat_Mono:Regular',sans-serif] text-[#4d4d4d] dark:text-[#b0b0b0]">{op.from} → {op.to}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Live Health */}
+            <div className="border-t border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] pt-[20px]">
+              <div className="flex items-center gap-[8px] mb-[12px]">
+                <Eye className="size-[16px] text-[#3e8635]" />
+                <h3 className="text-[15px] font-semibold text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">Live health monitoring</h3>
+              </div>
+              <div className="grid grid-cols-4 gap-[8px]">
+                {[
+                  { label: "API Server", value: "Healthy", ok: true },
+                  { label: "etcd", value: "Healthy", ok: true },
+                  { label: "Ingress", value: "Healthy", ok: true },
+                  { label: "Node Pressure", value: "None", ok: true },
+                ].map((h) => (
+                  <div key={h.label} className="bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[12px] py-[8px]">
+                    <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">{h.label}</p>
+                    <p className={`text-[12px] font-semibold font-['Red_Hat_Text:Regular',sans-serif] flex items-center gap-[4px] ${h.ok ? "text-[#3e8635]" : "text-[#c9190b]"}`}>
+                      {h.ok ? <CheckCircle className="size-[10px]" /> : <XCircle className="size-[10px]" />} {h.value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Simulate actions for demo */}
+            <div className="border-t border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] pt-[16px] flex items-center gap-[10px]">
+              <span className="text-[11px] text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif] italic">Demo:</span>
+              {agentStatus === "updating" && (
+                <>
+                  <button onClick={simulateComplete} className="text-[11px] px-[10px] py-[4px] rounded-[4px] border border-[#3e8635] text-[#3e8635] bg-transparent cursor-pointer hover:bg-[rgba(62,134,53,0.05)] font-['Red_Hat_Text:Regular',sans-serif]">Simulate success</button>
+                  <button onClick={simulateFailure} className="text-[11px] px-[10px] py-[4px] rounded-[4px] border border-[#c9190b] text-[#c9190b] bg-transparent cursor-pointer hover:bg-[rgba(201,25,11,0.05)] font-['Red_Hat_Text:Regular',sans-serif]">Simulate failure</button>
+                </>
+              )}
+              {agentStatus === "rolling-back" && (
+                <button onClick={() => { setAgentStatus("idle"); setPlanDecision("pending"); openChatbot("rollback-complete"); }} className="text-[11px] px-[10px] py-[4px] rounded-[4px] border border-[#3e8635] text-[#3e8635] bg-transparent cursor-pointer hover:bg-[rgba(62,134,53,0.05)] font-['Red_Hat_Text:Regular',sans-serif]">Simulate rollback complete</button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Update Complete Panel */}
+      {agentStatus === "completed" && (
+        <div className="rounded-[16px] border-2 border-[#3e8635] overflow-hidden">
+          <div className="px-[24px] py-[20px] bg-[rgba(62,134,53,0.06)]">
+            <div className="flex items-center gap-[12px] mb-[16px]">
+              <div className="size-[40px] rounded-full bg-[#3e8635] flex items-center justify-center">
+                <CheckCircle className="size-[22px] text-white" />
+              </div>
+              <div>
+                <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Cluster updated to 5.1.10</h2>
+                <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Completed at {new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })} &middot; Duration: 1h 38m</p>
+              </div>
+            </div>
+
+            {/* Post-update verification */}
+            <div className="mb-[16px]">
+              <div className="flex items-center gap-[8px] mb-[10px]">
+                <Shield className="size-[14px] text-[#3e8635]" />
+                <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-semibold">Post-update health verification</p>
+                <span className="text-[12px] text-[#3e8635] font-semibold px-[8px] py-[1px] rounded-full bg-[rgba(62,134,53,0.1)] font-['Red_Hat_Text:Regular',sans-serif]">
+                  {postUpdateChecks.length}/{postUpdateChecks.length} passed
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-[6px]">
+                {postUpdateChecks.map((c) => (
+                  <div key={c.label} className="flex items-center gap-[6px] bg-white dark:bg-[rgba(255,255,255,0.03)] rounded-[6px] px-[10px] py-[6px] border border-[rgba(62,134,53,0.2)]">
+                    <CheckCircle className="size-[12px] text-[#3e8635] shrink-0" />
+                    <span className="text-[12px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">{c.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Summary */}
+            <div className="grid grid-cols-4 gap-[12px]">
+              <div className="bg-white dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[14px] py-[10px] border border-[rgba(0,0,0,0.06)]">
+                <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Previous version</p>
+                <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">5.0.0</p>
+              </div>
+              <div className="bg-white dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[14px] py-[10px] border border-[rgba(0,0,0,0.06)]">
+                <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Current version</p>
+                <p className="text-[14px] text-[#3e8635] font-['Red_Hat_Mono:Regular',sans-serif] font-semibold">5.1.10</p>
+              </div>
+              <div className="bg-white dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[14px] py-[10px] border border-[rgba(0,0,0,0.06)]">
+                <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Nodes updated</p>
+                <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">6/6</p>
+              </div>
+              <div className="bg-white dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[14px] py-[10px] border border-[rgba(0,0,0,0.06)]">
+                <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Operators updated</p>
+                <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">3/3</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Update Failed Panel */}
+      {agentStatus === "failed" && (
+        <div className="rounded-[16px] border-2 border-[#c9190b] overflow-hidden">
+          <div className="px-[24px] py-[20px] bg-[rgba(201,25,11,0.04)]">
+            <div className="flex items-center gap-[12px] mb-[16px]">
+              <div className="size-[40px] rounded-full bg-[#c9190b] flex items-center justify-center">
+                <XCircle className="size-[22px] text-white" />
+              </div>
+              <div>
+                <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Update to 5.1.10 failed</h2>
+                <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Failed at {new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })} &middot; Node master-2 failed to drain</p>
+              </div>
+            </div>
+
+            <div className="rounded-[8px] border border-[#c9190b]/30 bg-white dark:bg-[rgba(255,255,255,0.02)] p-[14px] mb-[16px]">
+              <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-semibold mb-[6px]">Error details</p>
+              <div className="bg-[#151515] rounded-[6px] p-[12px] font-['Red_Hat_Mono:Regular',sans-serif] text-[12px] text-[#e0e0e0] overflow-x-auto">
+                <p className="text-[#c9190b]">error: node/master-2 drain failed</p>
+                <p className="text-[#8a8d90] mt-[4px]">  pods with local storage: prometheus-k8s-0</p>
+                <p className="text-[#8a8d90]">  eviction timeout: 300s exceeded</p>
+                <p className="text-[#c58c00] mt-[4px]">warning: cluster version is partially updated</p>
+                <p className="text-[#8a8d90]">  completed: 2/3 control-plane, 0/3 worker</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-[8px] mb-[16px]">
+              {updateNodes.map((node) => {
+                const failed = node.name === "master-2";
+                return (
+                  <div key={node.name} className="flex items-center gap-[8px] bg-white dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[12px] py-[10px] border border-[rgba(0,0,0,0.06)]">
+                    {node.status === "done" && <CheckCircle className="size-[14px] text-[#3e8635] shrink-0" />}
+                    {failed && <XCircle className="size-[14px] text-[#c9190b] shrink-0" />}
+                    {!failed && node.status !== "done" && <Clock className="size-[14px] text-[#8a8d90] shrink-0" />}
+                    <div>
+                      <p className={`text-[13px] font-['Red_Hat_Mono:Regular',sans-serif] ${failed ? "text-[#c9190b]" : "text-[#151515] dark:text-white"}`}>{node.name}</p>
+                      <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{failed ? "Drain failed" : node.status === "done" ? "Complete" : "Not started"}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center gap-[10px]">
+              <button onClick={() => setShowRollbackModal(true)}
+                className="flex items-center gap-[6px] bg-transparent text-[#151515] dark:text-white text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+                <RotateCcw className="size-[14px]" /> Rollback to 5.0.0
+              </button>
+              <button onClick={() => { setAgentStatus("updating"); setUpdateProgress(0); openChatbot("update-retry"); }}
+                className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] text-white text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                <RefreshCw className="size-[14px]" /> Retry update
+              </button>
+              <button onClick={() => openChatbot("update-failed")}
+                className="flex items-center gap-[6px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                Get AI diagnosis <Sparkles className="size-[14px]" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rollback confirmation modal */}
+      {showRollbackModal && createPortal(
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40" onClick={() => setShowRollbackModal(false)}>
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.2)] max-w-[480px] w-full mx-[16px]" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-[24px] py-[16px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
+              <h3 className="text-[16px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#c9190b]">Rollback to 5.0.0?</h3>
+              <button onClick={() => setShowRollbackModal(false)} className="bg-transparent border-0 cursor-pointer text-[#6a6e73] hover:text-[#151515] dark:hover:text-white p-[4px]"><X className="size-[16px]" /></button>
+            </div>
+            <div className="px-[24px] py-[16px]">
+              <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] mb-[8px]">This will revert your cluster from the partially updated state back to version 5.0.0.</p>
+              <ul className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] list-disc pl-[18px] space-y-[4px]">
+                <li>All nodes will be reverted to 5.0.0</li>
+                <li>Operator versions will be restored</li>
+                <li>Workloads may experience brief disruption</li>
+                <li>Estimated rollback time: ~30 minutes</li>
+              </ul>
+            </div>
+            <div className="flex items-center justify-end gap-[10px] px-[24px] py-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
+              <button onClick={() => setShowRollbackModal(false)} className="text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-transparent text-[#151515] dark:text-white cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+                Cancel
+              </button>
+              <button onClick={startRollback}
+                className="flex items-center gap-[6px] text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 bg-[#c9190b] hover:bg-[#a2150a] text-white cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                <RotateCcw className="size-[14px]" /> Start rollback
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Pause confirmation modal */}
+      {showPauseModal && createPortal(
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40" onClick={() => setShowPauseModal(false)}>
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.2)] max-w-[440px] w-full mx-[16px]" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-[24px] py-[16px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
+              <h3 className="text-[16px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white">Pause update agent?</h3>
+              <button onClick={() => setShowPauseModal(false)} className="bg-transparent border-0 cursor-pointer text-[#6a6e73] hover:text-[#151515] dark:hover:text-white p-[4px]"><X className="size-[16px]" /></button>
+            </div>
+            <div className="px-[24px] py-[16px]">
+              <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] mb-[8px]">The update agent will stop processing and no further actions will be taken until you resume.</p>
+              <ul className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] list-disc pl-[18px] space-y-[4px]">
+                <li>Current update progress will be preserved</li>
+                <li>Scheduled execution window will be skipped</li>
+                <li>You can resume at any time</li>
+              </ul>
+            </div>
+            <div className="flex items-center justify-end gap-[10px] px-[24px] py-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
+              <button onClick={() => setShowPauseModal(false)} className="text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-transparent text-[#151515] dark:text-white cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+                Keep running
+              </button>
+              <button onClick={() => { setAgentStatus("paused"); setShowPauseModal(false); openChatbot("agent-paused"); }}
+                className="text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 bg-[#0066cc] hover:bg-[#004080] text-white cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                Pause agent
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Cancel confirmation modal */}
+      {showCancelModal && createPortal(
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40" onClick={() => setShowCancelModal(false)}>
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.2)] max-w-[440px] w-full mx-[16px]" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-[24px] py-[16px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
+              <h3 className="text-[16px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#c9190b]">Cancel update?</h3>
+              <button onClick={() => setShowCancelModal(false)} className="bg-transparent border-0 cursor-pointer text-[#6a6e73] hover:text-[#151515] dark:hover:text-white p-[4px]"><X className="size-[16px]" /></button>
+            </div>
+            <div className="px-[24px] py-[16px]">
+              <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] mb-[8px]">This will stop the update agent and discard the current update plan. This action cannot be undone.</p>
+              <ul className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] list-disc pl-[18px] space-y-[4px]">
+                <li>The proposed update plan will be discarded</li>
+                <li>Any accepted risks will be cleared</li>
+                <li>You will need to start a new update session</li>
+              </ul>
+            </div>
+            <div className="flex items-center justify-end gap-[10px] px-[24px] py-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
+              <button onClick={() => setShowCancelModal(false)} className="text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-transparent text-[#151515] dark:text-white cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+                Go back
+              </button>
+              <button onClick={() => { setAgentStatus("idle"); setPlanDecision("pending"); setAcceptedSlugs(new Set()); setShowCancelModal(false); openChatbot("agent-cancelled"); }}
+                className="text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 bg-[#c9190b] hover:bg-[#a2150a] text-white cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                Cancel update
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* Per-risk acceptance modal */}
@@ -1231,13 +1590,14 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
           ...incompatibleOps.map((op) => ({ slug: op.slug!, name: op.name, severity: "critical" as const, detail: `${op.name} ${op.currentVersion} (max OCP ${op.maxOCP}) — ${op.action}` })),
           ...warningOps.map((op) => ({ slug: op.slug!, name: op.name, severity: "warning" as const, detail: `${op.name} ${op.currentVersion} (max OCP ${op.maxOCP}) — ${op.action}` })),
         ];
-        const allAccepted = allRisks.every((r) => acceptedSlugs.has(r.slug));
+        const selectedCount = allRisks.filter((r) => acceptedSlugs.has(r.slug)).length;
+        const anySelected = selectedCount > 0;
         const toggleSlug = (slug: string) => {
           setAcceptedSlugs((prev) => { const next = new Set(prev); if (next.has(slug)) next.delete(slug); else next.add(slug); return next; });
         };
-        return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white dark:bg-[#1a1a1a] rounded-[12px] shadow-2xl w-[560px] max-h-[80vh] overflow-auto">
+        return createPortal(
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40" onClick={() => setShowRiskAcceptModal(false)}>
+            <div className="bg-white dark:bg-[#1a1a1a] rounded-[12px] shadow-2xl w-[560px] max-h-[80vh] overflow-auto" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
               <div className="flex items-center justify-between px-[24px] py-[18px] border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)]">
                 <h3 className="text-[16px] font-semibold text-[#151515] dark:text-white font-['Red_Hat_Display:SemiBold',sans-serif]">Accept known risks</h3>
                 <button onClick={() => setShowRiskAcceptModal(false)} className="bg-transparent border-0 cursor-pointer text-[#4d4d4d] dark:text-[#b0b0b0] hover:text-[#151515] dark:hover:text-white">
@@ -1250,12 +1610,12 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
                   <AlertTriangle className="size-[16px] text-[#c58c00] shrink-0 mt-[1px]" />
                   <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">
                     Acknowledging these risks will set <span className="font-['Red_Hat_Mono:Regular',sans-serif] text-[#5e40be]">desiredUpdate.acceptedRisks</span> on the ClusterVersion resource.
-                    The update will proceed despite known incompatibilities.
+                    The update will proceed despite known incompatibilities. You may accept some or all risks.
                   </p>
                 </div>
 
                 <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[12px] font-semibold uppercase tracking-wide">
-                  {allRisks.length} risk{allRisks.length !== 1 ? "s" : ""} identified
+                  {allRisks.length} risk{allRisks.length !== 1 ? "s" : ""} identified{anySelected ? ` · ${selectedCount} selected` : ""}
                 </p>
 
                 <div className="space-y-[8px] mb-[16px]">
@@ -1284,16 +1644,79 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
                   className="bg-transparent text-[#4d4d4d] dark:text-[#b0b0b0] text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
                   Cancel
                 </button>
-                <button disabled={!allAccepted}
+                <button disabled={!anySelected}
                   onClick={() => { setPlanDecision("approved"); setShowRiskAcceptModal(false); }}
-                  className={`text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${allAccepted ? "bg-[#0066cc] hover:bg-[#004080] text-white cursor-pointer" : "bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed"}`}>
-                  Accept {allRisks.length} risk{allRisks.length !== 1 ? "s" : ""} &amp; approve plan
+                  className={`text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${anySelected ? "bg-[#0066cc] hover:bg-[#004080] text-white cursor-pointer" : "bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed"}`}>
+                  Accept {selectedCount} risk{selectedCount !== 1 ? "s" : ""} &amp; approve plan
                 </button>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         );
       })()}
+
+      {/* Sticky Approval Footer */}
+      {(agentStatus === "active" || agentStatus === "paused") && planDecision === "pending" && createPortal(
+        <div className="fixed bottom-0 left-0 right-0 z-[80] bg-white dark:bg-[#1a1a1a] border-t border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)] px-[24px] py-[14px] shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
+          <div className="flex items-center justify-between max-w-full">
+            <div className="flex items-center gap-[10px]">
+              {incompatibleOps.length > 0 && <AlertTriangle className="size-[16px] text-[#c58c00]" />}
+              <span className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">
+                {incompatibleOps.length > 0 ? (
+                  <><span className="font-semibold">{incompatibleOps.length} blocking issue{incompatibleOps.length !== 1 ? "s" : ""}</span> must be resolved before approving, or you can accept the risks and proceed.</>
+                ) : (
+                  <>Update plan ready for approval</>
+                )}
+                <span className="text-[#4d4d4d] dark:text-[#b0b0b0] ml-[12px]">Target: <span className="font-['Red_Hat_Mono:Regular',sans-serif] font-medium text-[#151515] dark:text-white">5.0.0 → 5.1.10</span></span>
+              </span>
+            </div>
+            <div className="flex items-center gap-[10px]">
+              {incompatibleOps.length > 0 ? (
+                <>
+                  <button onClick={() => setShowRiskAcceptModal(true)}
+                    className="text-[13px] px-[14px] py-[7px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-transparent text-[#151515] dark:text-white cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+                    Accept risks &amp; approve
+                  </button>
+                  <div className="relative group">
+                    <button disabled className="text-[13px] px-[14px] py-[7px] rounded-[6px] border-0 bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                      Approve plan
+                    </button>
+                    <div className="absolute bottom-full right-0 mb-[6px] hidden group-hover:block z-10">
+                      <div className="bg-[#151515] text-white text-[11px] px-[10px] py-[6px] rounded-[6px] shadow-lg whitespace-nowrap font-['Red_Hat_Text:Regular',sans-serif]">
+                        Resolve {incompatibleOps.length} blocking issue{incompatibleOps.length !== 1 ? "s" : ""} to approve
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <button onClick={() => setPlanDecision("approved")}
+                  className="text-[13px] px-[14px] py-[7px] rounded-[6px] border-0 cursor-pointer bg-[#0066cc] hover:bg-[#004080] text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium transition-colors">
+                  Approve plan
+                </button>
+              )}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+      {(agentStatus === "active" || agentStatus === "paused") && planDecision === "approved" && createPortal(
+        <div className="fixed bottom-0 left-0 right-0 z-[80] bg-white dark:bg-[#1a1a1a] border-t border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)] px-[24px] py-[14px] shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-[8px]">
+              <CheckCircle className="size-[16px] text-[#3e8635]" />
+              <span className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">
+                Plan approved &middot; Target: <span className="font-['Red_Hat_Mono:Regular',sans-serif] font-medium">5.0.0 → 5.1.10</span>
+              </span>
+            </div>
+            <button onClick={startUpdate}
+              className="text-[13px] px-[14px] py-[7px] rounded-[6px] border-0 cursor-pointer bg-[#0066cc] hover:bg-[#004080] text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium transition-colors flex items-center gap-[6px]">
+              <Play className="size-[13px]" /> Start update
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
@@ -1337,48 +1760,43 @@ function InfoTooltip() {
 function AvailableUpdatesSection({
   channelData, showZStreamOnly, setShowZStreamOnly,
   expandedGroups, setExpandedGroups,
-  selectedVersion, setSelectedVersion, navigate, setActiveTab, setPrecheckVersion, openChatbot,
+  selectedVersion, setSelectedVersion, navigate, setActiveTab, openChatbot,
+  selectedChannel, handleChannelChange,
 }: any) {
   const [updateAllOps, setUpdateAllOps] = useState(false);
   const filteredGroups: VersionGroup[] = showZStreamOnly
-    ? channelData.groups.filter((g: VersionGroup) => g.label.startsWith("5.0"))
-    : channelData.groups;
+    ? channelData.groups
+    : channelData.groups.filter((g: VersionGroup) => g.label === "5.1");
 
   return (
-    <div>
+    <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
       <div className="flex items-center justify-between mb-[16px]">
         <div className="flex items-center gap-[6px]">
           <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Available Updates</h2>
           <InfoTooltip />
         </div>
-        <div className="flex items-center gap-[12px]">
-          <div className="flex items-center gap-[8px]">
-            <span className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">Show only 5.0 Z-stream updates</span>
-            <button onClick={() => setShowZStreamOnly(!showZStreamOnly)}
-              className={`relative w-[36px] h-[20px] rounded-full border-0 cursor-pointer transition-colors ${showZStreamOnly ? "bg-[#0066cc]" : "bg-[#8a8d90]"}`}>
-              <div className={`absolute top-[2px] size-[16px] rounded-full bg-white transition-transform ${showZStreamOnly ? "left-[18px]" : "left-[2px]"}`} />
-            </button>
-          </div>
-          <button onClick={() => openChatbot("recommendations")}
-            className="flex items-center gap-[8px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[13px] px-[12px] py-[6px] rounded-[6px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 dark:hover:bg-[#4dabf7]/10 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-            AI recommendations
-            <Sparkles className="size-[13px]" />
-          </button>
-        </div>
+        <button onClick={() => openChatbot("recommendations")}
+          className="flex items-center gap-[8px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[13px] px-[12px] py-[6px] rounded-[6px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 dark:hover:bg-[#4dabf7]/10 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+          AI recommendations
+          <Sparkles className="size-[13px]" />
+        </button>
       </div>
 
-      {!showZStreamOnly && channelData.banner && (
-        <div className="flex items-center gap-[12px] bg-white dark:bg-[rgba(94,64,190,0.06)] px-[16px] py-[12px] mb-[20px] rounded-[16px] border-2 border-[#5e40be]" role="status">
-          <Info className="size-[18px] text-[#5e40be] dark:text-[#b2a3e0] shrink-0" />
-          <p className="text-[#151515] dark:text-white text-[14px] font-['Red_Hat_Text:Regular',sans-serif] flex-1">
-            <span className="font-medium">{channelData.banner.title}</span> {channelData.banner.description}
-          </p>
-          <a href="https://docs.openshift.com/container-platform/latest/release_notes/ocp-4-18-release-notes.html" target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[13px] no-underline hover:underline whitespace-nowrap font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-            {channelData.banner.link} <ArrowRight className="size-[14px]" />
-          </a>
-        </div>
-      )}
+      {/* Channel selector */}
+      <div className="flex items-center gap-[12px] mb-[16px] pb-[16px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
+        <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] font-medium">Channel</p>
+        <select value={selectedChannel} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleChannelChange(e.target.value)}
+          className="bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[5px] text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif] cursor-pointer">
+          <option value="fast-5.1">fast-5.1</option>
+          <option value="stable-5.1">stable-5.1</option>
+          <option value="candidate-5.1">candidate-5.1</option>
+          <option value="eus-5.0">eus-5.0</option>
+        </select>
+        <a href="https://docs.openshift.com/container-platform/latest/updating/understanding_updates/understanding-update-channels-releases.html" target="_blank" rel="noopener noreferrer"
+          className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[13px] no-underline hover:underline font-['Red_Hat_Text:Regular',sans-serif]">
+          Learn more about channels <ExternalLink className="size-[11px]" />
+        </a>
+      </div>
 
       {filteredGroups.length === 0 && (
         <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[14px] font-['Red_Hat_Text:Regular',sans-serif] py-[20px]">No updates available for this channel and filter combination.</p>
@@ -1388,20 +1806,104 @@ function AvailableUpdatesSection({
         <VersionGroupComponent key={group.label} label={group.label} versions={group.versions}
           expanded={!!expandedGroups[group.label]}
           setExpanded={(val: boolean) => setExpandedGroups((prev: Record<string, boolean>) => ({ ...prev, [group.label]: val }))}
-          selectedVersion={selectedVersion} setSelectedVersion={setSelectedVersion} navigate={navigate} setActiveTab={setActiveTab} setPrecheckVersion={setPrecheckVersion}
+          selectedVersion={selectedVersion} setSelectedVersion={setSelectedVersion} navigate={navigate} setActiveTab={setActiveTab}
           updateAllOps={updateAllOps} setUpdateAllOps={setUpdateAllOps} />
       ))}
+
+      {/* Show older versions toggle — bottom left */}
+      <div className="flex items-center gap-[8px] mt-[16px] pt-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
+        <button onClick={() => setShowZStreamOnly(!showZStreamOnly)}
+          className={`relative w-[36px] h-[20px] rounded-full border-0 cursor-pointer transition-colors ${showZStreamOnly ? "bg-[#0066cc]" : "bg-[#8a8d90]"}`}>
+          <div className={`absolute top-[2px] size-[16px] rounded-full bg-white transition-transform ${showZStreamOnly ? "left-[18px]" : "left-[2px]"}`} />
+        </button>
+        <span className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">Show all versions</span>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Installed Operators Section ─── */
+function InstalledOperatorsSection() {
+  const [search, setSearch] = useState("");
+  const filtered = search
+    ? installedOperators.filter((op) => op.name.toLowerCase().includes(search.toLowerCase()) || op.namespace.toLowerCase().includes(search.toLowerCase()))
+    : installedOperators;
+  const degradedCount = installedOperators.filter((op) => op.status === "Degraded").length;
+
+  return (
+    <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
+      <div className="flex items-center justify-between mb-[12px]">
+        <div className="flex items-center gap-[6px]">
+          <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Operators on this cluster</h2>
+          <InfoTooltip />
+        </div>
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Filter operators..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="text-[13px] px-[12px] py-[7px] pr-[32px] rounded-[6px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.2)] bg-white dark:bg-[#1a1a1a] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] w-[220px] outline-none focus:border-[#0066cc] transition-colors"
+          />
+          {search && (
+            <button onClick={() => setSearch("")} className="absolute right-[8px] top-1/2 -translate-y-1/2 bg-transparent border-0 cursor-pointer text-[#6a6e73] hover:text-[#151515] dark:hover:text-white p-0">
+              <X className="size-[14px]" />
+            </button>
+          )}
+        </div>
+      </div>
+      <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] mb-[16px]">
+        {installedOperators.length} operators installed
+        {degradedCount > 0 && <span className="text-[#c9190b] font-medium"> · {degradedCount} degraded</span>}
+      </p>
+
+      <div className="grid grid-cols-[1fr_100px_100px_90px_90px] gap-[8px] px-[4px] py-[8px] text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)]">
+        <span>Operator</span><span>Version</span><span>Channel</span><span>Status</span><span>Auto-update</span>
+      </div>
+      {filtered.length === 0 ? (
+        <div className="px-[4px] py-[20px] text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
+          No operators match your filter.
+        </div>
+      ) : (
+        filtered.map((op, i) => (
+          <div key={i} className="grid grid-cols-[1fr_100px_100px_90px_90px] gap-[8px] items-center px-[4px] py-[10px] border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] last:border-0 hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)] transition-colors">
+            <div className="min-w-0">
+              <span className="text-[#0066cc] dark:text-[#4dabf7] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] font-medium">{op.name}</span>
+              <p className="text-[11px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Mono:Regular',sans-serif] truncate mt-[1px]">{op.namespace}</p>
+            </div>
+            <span className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">{op.version}</span>
+            <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{op.channel}</span>
+            <span>
+              {op.status === "Running" ? (
+                <span className="flex items-center gap-[4px] text-[11px] text-[#3e8635] font-semibold"><CheckCircle className="size-[12px]" /> Running</span>
+              ) : op.status === "Degraded" ? (
+                <span className="flex items-center gap-[4px] text-[11px] text-[#c9190b] font-semibold"><XCircle className="size-[12px]" /> Degraded</span>
+              ) : (
+                <span className="flex items-center gap-[4px] text-[11px] text-[#c58c00] font-semibold"><Clock className="size-[12px]" /> Pending</span>
+              )}
+            </span>
+            <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{op.autoUpdate ? "Yes" : "No"}</span>
+          </div>
+        ))
+      )}
     </div>
   );
 }
 
 /* ─── Version Group ─── */
-const COL_TEMPLATE = "32px 140px 180px 100px 140px auto";
+const COL_TEMPLATE = "32px 140px 180px 140px auto";
 
-function VersionGroupComponent({ label, versions, expanded, setExpanded, selectedVersion, setSelectedVersion, navigate, setActiveTab, setPrecheckVersion, updateAllOps, setUpdateAllOps }: any) {
+function VersionGroupComponent({ label, versions, expanded, setExpanded, selectedVersion, setSelectedVersion, navigate, setActiveTab, updateAllOps, setUpdateAllOps }: any) {
   const [showManualRiskModal, setShowManualRiskModal] = useState(false);
   const [manualAcceptedSlugs, setManualAcceptedSlugs] = useState<Set<string>>(new Set());
   const [riskModalVersion, setRiskModalVersion] = useState<string | null>(null);
+
+  const allGroupIssues = versions.flatMap((v: VersionEntry) =>
+    (v.operatorIssues || []).map((issue: any) => ({ ...issue, version: v.version }))
+  );
+  const uniqueGroupIssues = allGroupIssues.filter((issue: any, idx: number, arr: any[]) =>
+    arr.findIndex((i: any) => i.slug === issue.slug) === idx
+  );
 
   return (
     <div className="mb-[8px]">
@@ -1409,22 +1911,53 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
         className="flex items-center gap-[8px] bg-transparent border-0 cursor-pointer p-[8px] -ml-[8px] hover:bg-[rgba(0,0,0,0.03)] dark:hover:bg-[rgba(255,255,255,0.03)] rounded-[6px] transition-colors w-full text-left">
         {expanded ? <ChevronDown className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" /> : <ChevronRight className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" />}
         <span className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[15px]">{label}</span>
-        <span className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">{versions.length} releases</span>
+        <span className="text-[11px] px-[8px] py-[2px] rounded-full bg-[#e7f1fa] dark:bg-[rgba(43,154,243,0.12)] text-[#0066cc] dark:text-[#4dabf7] font-semibold font-['Red_Hat_Text:Regular',sans-serif]">{versions.length} release{versions.length !== 1 ? "s" : ""}</span>
+        {uniqueGroupIssues.length > 0 && (
+          <span className="text-[11px] px-[8px] py-[2px] rounded-full bg-[rgba(197,140,0,0.1)] text-[#c58c00] font-semibold font-['Red_Hat_Text:Regular',sans-serif] flex items-center gap-[3px]">
+            <AlertTriangle className="size-[10px]" /> {uniqueGroupIssues.length} known issue{uniqueGroupIssues.length !== 1 ? "s" : ""}
+          </span>
+        )}
       </button>
 
       {expanded && (
         <div className="mt-[4px]">
+          {uniqueGroupIssues.length > 0 && (
+            <div className="mx-[4px] mb-[8px] rounded-[8px] border-l-[3px] border-l-[#c58c00] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] bg-transparent p-[14px]">
+              <div className="flex items-start gap-[10px]">
+                <AlertTriangle className="size-[16px] text-[#c58c00] shrink-0 mt-[1px]" />
+                <div className="flex-1">
+                  <p className="font-['Red_Hat_Text:Regular',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px] mb-[6px]">
+                    This cluster should not be updated to {label} until the following issues are resolved.
+                  </p>
+                  <ul className="list-disc pl-[18px] space-y-[3px] text-[12px] font-['Red_Hat_Text:Regular',sans-serif] text-[#4d4d4d] dark:text-[#b0b0b0] mb-[8px]">
+                    {uniqueGroupIssues.map((issue: any, i: number) => (
+                      <li key={i}><span className="text-[#151515] dark:text-white font-medium">{issue.name}:</span> {issue.message}</li>
+                    ))}
+                  </ul>
+                  <div className="flex items-center gap-[16px] flex-wrap">
+                    <div className="flex items-center gap-[6px]">
+                      <Toggle enabled={updateAllOps} onChange={() => setUpdateAllOps(!updateAllOps)} />
+                      <span className="text-[12px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">Update all operators</span>
+                    </div>
+                    <button onClick={(e) => { e.stopPropagation(); setRiskModalVersion(versions[0]?.version); setShowManualRiskModal(true); }}
+                      className="bg-transparent border border-[#0066cc] dark:border-[#4dabf7] text-[#0066cc] dark:text-[#4dabf7] text-[12px] px-[10px] py-[4px] rounded-[6px] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                      Accept risks &amp; update
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="grid gap-[8px] px-[12px] py-[8px] text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)]"
             style={{ gridTemplateColumns: COL_TEMPLATE }}>
-            <span /><span>Version</span><span>Details</span><span>Assessment</span><span>Date</span><span />
+            <span /><span>Version</span><span>Details</span><span>Date</span><span />
           </div>
           {versions.map((v: VersionEntry) => {
             const isSelected = selectedVersion === v.version;
-            const hasIssues = isSelected && v.operatorIssues && v.operatorIssues.length > 0;
             return (
               <div key={v.version}>
                 <div onClick={() => setSelectedVersion(v.version)}
-                  className={`grid gap-[8px] items-center px-[12px] py-[10px] w-full text-left cursor-pointer transition-colors ${!hasIssues ? "border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]" : ""} ${isSelected ? "bg-[#e7f1fa] dark:bg-[rgba(43,154,243,0.08)]" : "hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)]"}`}
+                  className={`grid gap-[8px] items-center px-[12px] py-[10px] w-full text-left cursor-pointer transition-colors border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] ${isSelected ? "bg-[#e7f1fa] dark:bg-[rgba(43,154,243,0.08)]" : "hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)]"}`}
                   style={{ gridTemplateColumns: COL_TEMPLATE }}>
                   <div className="flex items-center justify-center">
                     <div className={`size-[18px] rounded-full border-2 flex items-center justify-center ${isSelected ? "border-[#0066cc] dark:border-[#4dabf7]" : "border-[#8a8d90]"}`}>
@@ -1439,12 +1972,6 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                     </div>
                   </div>
                   <span className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{v.features} features &middot; {v.bugFixes} bug fixes</span>
-                  <div>
-                    <span className="text-[12px] px-[8px] py-[2px] rounded-[4px] font-semibold" style={{
-                      backgroundColor: v.riskColor === "#3e8635" ? "rgba(62,134,53,0.1)" : v.riskColor === "#c9190b" ? "rgba(201,25,11,0.1)" : "rgba(197,140,0,0.1)", color: v.riskColor }}>
-                      {v.risk}
-                    </span>
-                  </div>
                   <div className="flex flex-col gap-[2px]">
                     <span className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{v.date}</span>
                     <a href="https://docs.openshift.com/container-platform/latest/release_notes/ocp-4-18-release-notes.html" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[12px] no-underline hover:underline font-['Red_Hat_Text:Regular',sans-serif]">
@@ -1453,52 +1980,13 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                   </div>
                   <div className="flex items-center gap-[8px]">
                     {isSelected && (
-                      <>
-                        <button onClick={(e) => { e.stopPropagation(); setPrecheckVersion(v.version); }}
-                          className="bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[12px] px-[10px] py-[5px] rounded-[6px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium whitespace-nowrap">
-                          Update pre-check
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); navigate(`/administration/cluster-update/preflight?version=${v.version}`, { state: { version: v.version } }); }}
-                          className="bg-[#0066cc] hover:bg-[#004080] text-white text-[12px] px-[10px] py-[5px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium whitespace-nowrap">
-                          Update to {v.version}
-                        </button>
-                      </>
+                      <button onClick={(e) => { e.stopPropagation(); navigate(`/administration/cluster-update/version/${v.version}`, { state: { version: v.version } }); }}
+                        className="bg-[#0066cc] hover:bg-[#004080] text-white text-[12px] px-[10px] py-[5px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium whitespace-nowrap">
+                        Update to {v.version}
+                      </button>
                     )}
                   </div>
                 </div>
-                {hasIssues && (
-                  <div className="border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] bg-[#e7f1fa]/50 dark:bg-[rgba(43,154,243,0.04)]">
-                    <div className="mx-[12px] my-[10px] rounded-[8px] border-l-[4px] border-l-[#c58c00] border border-[#c58c00]/30 bg-[#fdf7e7] dark:bg-[rgba(197,140,0,0.08)] p-[14px]">
-                      <div className="flex items-start gap-[10px]">
-                        <AlertTriangle className="size-[16px] text-[#c58c00] shrink-0 mt-[1px]" />
-                        <div className="flex-1">
-                          <p className="font-['Red_Hat_Text:Regular',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px] mb-[6px]">
-                            This cluster should not be updated to {v.version} until the following issues are resolved.
-                          </p>
-                          <ul className="list-disc pl-[18px] space-y-[3px] text-[12px] font-['Red_Hat_Text:Regular',sans-serif] text-[#4d4d4d] dark:text-[#b0b0b0] mb-[8px]">
-                            {v.operatorIssues!.map((issue, i) => (
-                              <li key={i}><span className="text-[#151515] dark:text-white font-medium">{issue.name}:</span> {issue.message}</li>
-                            ))}
-                          </ul>
-                          <div className="flex items-center gap-[16px] flex-wrap">
-                            <div className="flex items-center gap-[6px]">
-                              <Toggle enabled={updateAllOps} onChange={() => setUpdateAllOps(!updateAllOps)} />
-                              <span className="text-[12px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">Update all operators</span>
-                            </div>
-                            <button onClick={() => setActiveTab("cluster-operators")}
-                              className="bg-transparent border-0 p-0 text-[#0066cc] dark:text-[#4dabf7] text-[12px] cursor-pointer hover:underline font-['Red_Hat_Text:Regular',sans-serif]">
-                              View cluster operators
-                            </button>
-                            <button onClick={(e) => { e.stopPropagation(); setRiskModalVersion(v.version); setManualAcceptedSlugs(new Set()); setShowManualRiskModal(true); }}
-                              className="bg-transparent border border-[#0066cc] dark:border-[#4dabf7] text-[#0066cc] dark:text-[#4dabf7] text-[12px] px-[10px] py-[4px] rounded-[6px] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-                              Accept risks &amp; update
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             );
           })}
@@ -1515,9 +2003,10 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
           severity: issue.severity,
           detail: issue.message,
         }));
-        const allAccepted = allRisks.every((r: any) => manualAcceptedSlugs.has(r.slug));
-        return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowManualRiskModal(false)}>
+        const selectedCount = allRisks.filter((r: any) => manualAcceptedSlugs.has(r.slug)).length;
+        const anySelected = selectedCount > 0;
+        return createPortal(
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40" onClick={() => setShowManualRiskModal(false)}>
             <div className="bg-white dark:bg-[#1a1a1a] rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.2)] max-w-[520px] w-full mx-[16px] max-h-[80vh] flex flex-col" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
               <div className="flex items-center justify-between px-[24px] py-[16px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
                 <h3 className="text-[16px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white">Accept known risks</h3>
@@ -1529,10 +2018,10 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                 <div className="flex items-start gap-[10px] bg-[#fdf7e7] dark:bg-[rgba(197,140,0,0.06)] rounded-[8px] px-[14px] py-[10px] mb-[16px] border border-[#c58c00]/30">
                   <AlertTriangle className="size-[16px] text-[#c58c00] shrink-0 mt-[1px]" />
                   <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">
-                    Acknowledging these risks will set <span className="font-['Red_Hat_Mono:Regular',sans-serif] text-[#5e40be]">desiredUpdate.acceptedRisks</span> on the ClusterVersion resource. The update to <span className="font-semibold">{riskModalVersion}</span> will proceed despite known incompatibilities.
+                    Acknowledging these risks will set <span className="font-['Red_Hat_Mono:Regular',sans-serif] text-[#5e40be]">desiredUpdate.acceptedRisks</span> on the ClusterVersion resource. The update to <span className="font-semibold">{riskModalVersion}</span> will proceed despite known incompatibilities. You may accept some or all risks.
                   </p>
                 </div>
-                <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] uppercase tracking-[0.5px] font-semibold mb-[10px]">{allRisks.length} risk{allRisks.length !== 1 ? "s" : ""} identified</p>
+                <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] uppercase tracking-[0.5px] font-semibold mb-[10px]">{allRisks.length} risk{allRisks.length !== 1 ? "s" : ""} identified{anySelected ? ` · ${selectedCount} selected` : ""}</p>
                 <div className="space-y-[10px]">
                   {allRisks.map((risk: any) => (
                     <label key={risk.slug} className={`flex items-start gap-[12px] p-[14px] rounded-[8px] border cursor-pointer transition-colors ${manualAcceptedSlugs.has(risk.slug) ? "border-[#0066cc] bg-[#e7f1fa]/30 dark:bg-[rgba(43,154,243,0.06)]" : "border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90]"}`}>
@@ -1559,14 +2048,22 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                   className="text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-transparent text-[#151515] dark:text-white cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
                   Cancel
                 </button>
-                <button disabled={!allAccepted}
-                  onClick={() => { setShowManualRiskModal(false); navigate(`/administration/cluster-update/preflight?version=${riskModalVersion}`, { state: { version: riskModalVersion, acceptedRisks: allRisks.map((r: any) => r.slug) } }); }}
-                  className={`text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${allAccepted ? "bg-[#0066cc] hover:bg-[#004080] text-white cursor-pointer" : "bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed"}`}>
-                  Accept {allRisks.length} risk{allRisks.length !== 1 ? "s" : ""} &amp; update to {riskModalVersion}
-                </button>
+                <div className="flex items-center gap-[8px]">
+                  <button disabled={!anySelected}
+                    onClick={() => setShowManualRiskModal(false)}
+                    className={`text-[14px] px-[16px] py-[8px] rounded-[6px] border transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${anySelected ? "border-[#0066cc] dark:border-[#4dabf7] text-[#0066cc] dark:text-[#4dabf7] bg-transparent cursor-pointer hover:bg-[#0066cc]/5" : "border-[#d2d2d2] text-[#6a6e73] bg-transparent cursor-not-allowed"}`}>
+                    Save
+                  </button>
+                  <button disabled={!anySelected}
+                    onClick={() => { setShowManualRiskModal(false); navigate(`/administration/cluster-update/version/${riskModalVersion}`, { state: { version: riskModalVersion, acceptedRisks: [...manualAcceptedSlugs] } }); }}
+                    className={`text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${anySelected ? "bg-[#0066cc] hover:bg-[#004080] text-white cursor-pointer" : "bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed"}`}>
+                    Accept {selectedCount} risk{selectedCount !== 1 ? "s" : ""} &amp; update to {riskModalVersion}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         );
       })()}
     </div>
@@ -1574,93 +2071,6 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
 }
 
 /* ─── Cluster Operators Tab ─── */
-function ClusterOperatorsTab() {
-  const [selectedOps, setSelectedOps] = useState<Set<number>>(() => {
-    const initial = new Set<number>();
-    operatorUpdates.forEach((op, i) => { if (op.required) initial.add(i); });
-    return initial;
-  });
-  const updatable = operatorUpdates.filter((op) => op.availableVersion !== null);
-  const allSelected = updatable.every((_, i) => { const idx = operatorUpdates.indexOf(updatable[i]!); return selectedOps.has(idx); });
-  const toggleOp = (idx: number) => { if (operatorUpdates[idx].required) return; setSelectedOps((prev) => { const next = new Set(prev); if (next.has(idx)) next.delete(idx); else next.add(idx); return next; }); };
-  const toggleAll = () => { if (allSelected) { setSelectedOps((prev) => { const next = new Set<number>(); prev.forEach((i) => { if (operatorUpdates[i].required) next.add(i); }); return next; }); } else { const next = new Set<number>(); operatorUpdates.forEach((op, i) => { if (op.availableVersion) next.add(i); }); setSelectedOps(next); } };
-  const selectedCount = [...selectedOps].filter((i) => operatorUpdates[i].availableVersion).length;
-  const incompatibleCount = operatorUpdates.filter((op) => !op.compatible51).length;
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-[16px]">
-        <div>
-          <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Cluster Operators</h2>
-          <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mt-[4px]">{updatable.length} of {operatorUpdates.length} operators have updates available</p>
-        </div>
-        <div className="flex items-center gap-[12px]">
-          {selectedCount > 0 && <span className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{selectedCount} selected</span>}
-          <button disabled={selectedCount === 0}
-            className={`flex items-center gap-[6px] text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${selectedCount > 0 ? "bg-[#0066cc] hover:bg-[#004080] text-white" : "bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed"}`}>
-            Update selected operators
-          </button>
-        </div>
-      </div>
-
-      {/* Compatibility warning */}
-      {incompatibleCount > 0 && (
-        <div className="flex items-start gap-[10px] bg-[#fdf7e7] dark:bg-[rgba(197,140,0,0.08)] rounded-[8px] px-[14px] py-[10px] mb-[12px] border border-[#c58c00]/30">
-          <AlertTriangle className="size-[16px] text-[#c58c00] shrink-0 mt-[1px]" />
-          <div>
-            <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">
-              <span className="font-semibold">{incompatibleCount} operator{incompatibleCount > 1 ? "s" : ""}</span> currently installed {incompatibleCount > 1 ? "are" : "is"} not compatible with OCP 5.1.
-              These operators must be updated to compatible versions before the cluster can be upgraded to 5.1.
-            </p>
-          </div>
-        </div>
-      )}
-
-      <div className="flex items-start gap-[10px] bg-[#e7f1fa] dark:bg-[rgba(43,154,243,0.08)] rounded-[8px] px-[14px] py-[10px] mb-[16px] border border-[#bee1f4] dark:border-[rgba(43,154,243,0.15)]">
-        <Info className="size-[16px] text-[#0066cc] dark:text-[#4dabf7] shrink-0 mt-[1px]" />
-        <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">
-          Operators marked as <span className="font-semibold">Required</span> must be updated before the cluster can be upgraded to the next minor version. These cannot be deselected.
-        </p>
-      </div>
-      <div className="border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)] rounded-[8px] overflow-hidden">
-        <div className="grid grid-cols-[40px_1fr_80px_100px_120px_120px_130px_90px] gap-[8px] px-[16px] py-[10px] text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)]">
-          <span className="flex items-center justify-center"><input type="checkbox" checked={allSelected} onChange={toggleAll} className="size-[15px] cursor-pointer accent-[#0066cc]" /></span>
-          <span>Operator</span><span>Type</span><span>Current</span><span>Available</span><span>OCP compat.</span><span>Status</span><span>Auto-update</span>
-        </div>
-        {operatorUpdates.map((op, i) => (
-          <div key={i} className={`grid grid-cols-[40px_1fr_80px_100px_120px_120px_130px_90px] gap-[8px] items-center px-[16px] py-[12px] border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] last:border-0 hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)] ${selectedOps.has(i) ? "bg-[#e7f1fa]/40 dark:bg-[rgba(43,154,243,0.04)]" : ""}`}>
-            <span className="flex items-center justify-center">
-              {op.availableVersion ? <input type="checkbox" checked={selectedOps.has(i)} onChange={() => toggleOp(i)} disabled={op.required} className="size-[15px] cursor-pointer accent-[#0066cc] disabled:cursor-not-allowed" /> : <span />}
-            </span>
-            <span className="flex items-center gap-[8px] flex-wrap">
-              <span className="text-[#0066cc] dark:text-[#4dabf7] text-[14px] font-['Red_Hat_Text:Regular',sans-serif]">{op.name}</span>
-              {op.required && <span className="bg-[#fdf7e7] dark:bg-[rgba(197,140,0,0.15)] text-[#c58c00] text-[11px] px-[6px] py-[1px] rounded-[4px] font-semibold border border-[#c58c00]/30">Required</span>}
-            </span>
-            <span className={`text-[11px] px-[6px] py-[2px] rounded-[4px] font-semibold w-fit font-['Red_Hat_Text:Regular',sans-serif] ${op.category === "Platform" ? "bg-[rgba(94,64,190,0.1)] text-[#5e40be]" : "bg-[rgba(0,102,204,0.1)] text-[#0066cc] dark:text-[#4dabf7]"}`}>
-              {op.category}
-            </span>
-            <span className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">{op.currentVersion}</span>
-            <span className="text-[13px] font-['Red_Hat_Mono:Regular',sans-serif]">{op.availableVersion ? <span className="text-[#0066cc] dark:text-[#4dabf7]">{op.availableVersion}</span> : <span className="text-[#4d4d4d] dark:text-[#b0b0b0]">&mdash;</span>}</span>
-            <span>
-              {op.compatible51 ? (
-                <span className="flex items-center gap-[4px] text-[11px] px-[6px] py-[2px] rounded-[4px] font-semibold bg-[rgba(62,134,53,0.1)] text-[#3e8635] w-fit">
-                  <CheckCircle className="size-[10px]" /> ≤ {op.maxOCP}
-                </span>
-              ) : (
-                <span className="flex items-center gap-[4px] text-[11px] px-[6px] py-[2px] rounded-[4px] font-semibold bg-[rgba(201,25,11,0.08)] text-[#c9190b] w-fit">
-                  <XCircle className="size-[10px]" /> ≤ {op.maxOCP}
-                </span>
-              )}
-            </span>
-            <span>{op.status === "Update available" ? <span className="text-[12px] px-[8px] py-[2px] rounded-[4px] font-semibold bg-[rgba(0,102,204,0.1)] text-[#0066cc] dark:text-[#4dabf7]">{op.status}</span> : <span className="text-[12px] px-[8px] py-[2px] rounded-[4px] font-semibold bg-[rgba(62,134,53,0.1)] text-[#3e8635]">{op.status}</span>}</span>
-            <span className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{op.autoUpdate ? "Yes" : "No"}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 /* ─── Update History Tab ─── */
 function UpdateHistoryTab() {
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
