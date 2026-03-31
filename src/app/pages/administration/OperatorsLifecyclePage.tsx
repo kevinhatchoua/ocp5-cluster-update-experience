@@ -271,7 +271,7 @@ export default function OperatorsLifecyclePage() {
                       {op.platformCompatibility}
                     </td>
                     <td className="py-[16px] px-[12px]">
-                      <span className="px-[10px] py-[4px] bg-[rgba(0,0,0,0.06)] dark:bg-[rgba(255,255,255,0.1)] text-[#151515] dark:text-white rounded-[6px] text-[12px] font-medium">
+                      <span className="px-[10px] py-[4px] bg-[rgba(0,0,0,0.06)] dark:bg-[rgba(255,255,255,0.1)] text-[#151515] dark:text-white rounded-[999px] text-[12px] font-medium">
                         {op.updatePolicy}
                       </span>
                     </td>

@@ -62,7 +62,7 @@ export default function OperatorKebabMenu({
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-[8px] rounded-[6px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.1)] transition-colors"
+        className="p-[8px] rounded-[999px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.1)] transition-colors"
         aria-label="More actions"
       >
         <MoreVertical className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" />

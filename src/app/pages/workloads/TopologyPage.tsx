@@ -288,7 +288,7 @@ function SidePanel({ node, onClose }: { node: TopoNode; onClose: () => void }) {
           <h3 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[15px] text-[#151515] dark:text-white truncate">{node.name}</h3>
           <p className="text-[12px] text-[#6a6e73] dark:text-[#a0a0a0]">{node.kind}</p>
         </div>
-        <button onClick={onClose} className="p-[6px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] rounded-[6px]">
+        <button onClick={onClose} className="p-[6px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] rounded-[999px]">
           <X className="size-[16px] text-[#6a6e73]" />
         </button>
       </div>
@@ -384,7 +384,7 @@ function SidePanel({ node, onClose }: { node: TopoNode; onClose: () => void }) {
                 {node.podStatuses.flatMap((s) =>
                   Array.from({ length: s.count }, (_, i) => (
                     <div key={`${s.phase}-${i}`}
-                      className="flex items-center gap-[8px] px-[10px] py-[8px] rounded-[6px] bg-[rgba(0,0,0,0.02)] dark:bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(0,0,0,0.04)] dark:hover:bg-[rgba(255,255,255,0.06)] cursor-pointer">
+                      className="flex items-center gap-[8px] px-[10px] py-[8px] rounded-[999px] bg-[rgba(0,0,0,0.02)] dark:bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(0,0,0,0.04)] dark:hover:bg-[rgba(255,255,255,0.06)] cursor-pointer">
                       <div className={`size-[8px] rounded-full ${s.phase === "Running" ? "bg-[#3e8635]" : s.phase === "Pending" ? "bg-[#f0ab00]" : s.phase === "Failed" ? "bg-[#c9190b]" : "bg-[#0066cc]"}`} />
                       <span className="text-[12px] font-mono text-[#151515] dark:text-white flex-1">
                         {node.name}-{Math.random().toString(36).slice(2, 7)}-{Math.random().toString(36).slice(2, 7)}
@@ -401,7 +401,7 @@ function SidePanel({ node, onClose }: { node: TopoNode; onClose: () => void }) {
               <div>
                 <p className="text-[11px] text-[#6a6e73] dark:text-[#a0a0a0] uppercase tracking-wider mb-[8px]">Services</p>
                 {node.services.map((svc) => (
-                  <div key={svc} className="flex items-center gap-[8px] px-[10px] py-[8px] rounded-[6px] bg-[rgba(0,0,0,0.02)] dark:bg-[rgba(255,255,255,0.03)]">
+                  <div key={svc} className="flex items-center gap-[8px] px-[10px] py-[8px] rounded-[999px] bg-[rgba(0,0,0,0.02)] dark:bg-[rgba(255,255,255,0.03)]">
                     <Globe className="size-[14px] text-[#0066cc] dark:text-[#4dabf7]" />
                     <span className="text-[12px] font-mono text-[#151515] dark:text-white">{svc}</span>
                   </div>
@@ -414,7 +414,7 @@ function SidePanel({ node, onClose }: { node: TopoNode; onClose: () => void }) {
               <div>
                 <p className="text-[11px] text-[#6a6e73] dark:text-[#a0a0a0] uppercase tracking-wider mb-[8px]">Routes</p>
                 {node.routes.map((rt) => (
-                  <div key={rt} className="flex items-center gap-[8px] px-[10px] py-[8px] rounded-[6px] bg-[rgba(0,0,0,0.02)] dark:bg-[rgba(255,255,255,0.03)]">
+                  <div key={rt} className="flex items-center gap-[8px] px-[10px] py-[8px] rounded-[999px] bg-[rgba(0,0,0,0.02)] dark:bg-[rgba(255,255,255,0.03)]">
                     <ExternalLink className="size-[14px] text-[#3e8635] dark:text-[#81c784]" />
                     <span className="text-[12px] font-mono text-[#151515] dark:text-white">{rt}</span>
                   </div>
@@ -479,13 +479,13 @@ function SidePanel({ node, onClose }: { node: TopoNode; onClose: () => void }) {
 
       {/* Actions footer */}
       <div className="px-[16px] py-[12px] border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)] flex gap-[8px]">
-        <button className="flex-1 flex items-center justify-center gap-[6px] px-[12px] py-[8px] bg-[#0066cc] hover:bg-[#004080] dark:bg-[#4dabf7] dark:hover:bg-[#339af0] text-white rounded-[6px] text-[12px] font-semibold transition-colors">
+        <button className="flex-1 flex items-center justify-center gap-[6px] px-[12px] py-[8px] bg-[#0066cc] hover:bg-[#004080] dark:bg-[#4dabf7] dark:hover:bg-[#339af0] text-white rounded-[999px] text-[12px] font-semibold transition-colors">
           <Edit className="size-[12px]" /> Edit {node.kind}
         </button>
-        <button className="p-[8px] border border-[rgba(0,0,0,0.15)] dark:border-[rgba(255,255,255,0.15)] rounded-[6px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors" title="Open Terminal">
+        <button className="p-[8px] border border-[rgba(0,0,0,0.15)] dark:border-[rgba(255,255,255,0.15)] rounded-[999px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors" title="Open Terminal">
           <Terminal className="size-[14px] text-[#151515] dark:text-white" />
         </button>
-        <button className="p-[8px] border border-[rgba(0,0,0,0.15)] dark:border-[rgba(255,255,255,0.15)] rounded-[6px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors" title="Delete">
+        <button className="p-[8px] border border-[rgba(0,0,0,0.15)] dark:border-[rgba(255,255,255,0.15)] rounded-[999px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors" title="Delete">
           <Trash2 className="size-[14px] text-[#c9190b]" />
         </button>
       </div>
@@ -538,7 +538,7 @@ function ListViewRow({ node, onSelect }: { node: TopoNode; onSelect: () => void 
     <tr onClick={onSelect} className="border-b border-[rgba(0,0,0,0.05)] dark:border-[rgba(255,255,255,0.05)] hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)] cursor-pointer transition-colors">
       <td className="px-[16px] py-[12px]">
         <div className="flex items-center gap-[10px]">
-          <div className="size-[28px] rounded-[6px] flex items-center justify-center" style={{ backgroundColor: `${borderColor}18`, color: borderColor }}>
+          <div className="size-[28px] rounded-[999px] flex items-center justify-center" style={{ backgroundColor: `${borderColor}18`, color: borderColor }}>
             <KindIcon kind={node.kind} size={14} />
           </div>
           <div>
@@ -719,14 +719,14 @@ export default function TopologyPage() {
         <div className="bg-[rgba(255,255,255,0.5)] dark:bg-[rgba(255,255,255,0.05)] rounded-[10px] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)] px-[12px] py-[8px] flex items-center gap-[8px]">
           {/* Namespace selector */}
           <select value={selectedNamespace} onChange={(e) => setSelectedNamespace(e.target.value)}
-            className="px-[12px] py-[7px] bg-white dark:bg-[#1a1a1a] border border-[rgba(0,0,0,0.15)] dark:border-[rgba(255,255,255,0.15)] rounded-[6px] text-[13px] text-[#151515] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0066cc] dark:focus:ring-[#4dabf7] cursor-pointer">
+            className="px-[12px] py-[7px] bg-white dark:bg-[#1a1a1a] border border-[rgba(0,0,0,0.15)] dark:border-[rgba(255,255,255,0.15)] rounded-[999px] text-[13px] text-[#151515] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0066cc] dark:focus:ring-[#4dabf7] cursor-pointer">
             {NAMESPACES.map((ns) => <option key={ns} value={ns}>{ns}</option>)}
           </select>
 
           <div className="w-px h-[24px] bg-[rgba(0,0,0,0.1)] dark:bg-[rgba(255,255,255,0.1)]" />
 
           {/* View toggle */}
-          <div className="flex bg-[rgba(0,0,0,0.05)] dark:bg-[rgba(255,255,255,0.05)] rounded-[6px] p-[2px]">
+          <div className="flex bg-[rgba(0,0,0,0.05)] dark:bg-[rgba(255,255,255,0.05)] rounded-[999px] p-[2px]">
             <button onClick={() => setViewMode("graph")}
               className={`p-[6px] rounded-[4px] transition-colors ${viewMode === "graph" ? "bg-white dark:bg-[#2a2a2a] shadow-sm" : ""}`}
               title="Graph View">
@@ -746,13 +746,13 @@ export default function TopologyPage() {
             <Search className="absolute left-[8px] top-1/2 -translate-y-1/2 size-[14px] text-[#6a6e73]" />
             <input type="text" placeholder="Find by name..." value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-[28px] pr-[8px] py-[7px] bg-white dark:bg-[#1a1a1a] border border-[rgba(0,0,0,0.15)] dark:border-[rgba(255,255,255,0.15)] rounded-[6px] text-[13px] text-[#151515] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0066cc]" />
+              className="w-full pl-[28px] pr-[8px] py-[7px] bg-white dark:bg-[#1a1a1a] border border-[rgba(0,0,0,0.15)] dark:border-[rgba(255,255,255,0.15)] rounded-[999px] text-[13px] text-[#151515] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0066cc]" />
           </div>
 
           {/* Filter */}
           <div className="relative">
             <button onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-              className={`flex items-center gap-[4px] px-[10px] py-[7px] border rounded-[6px] text-[13px] transition-colors ${filterKind !== "all"
+              className={`flex items-center gap-[4px] px-[10px] py-[7px] border rounded-[999px] text-[13px] transition-colors ${filterKind !== "all"
                 ? "bg-[#e7f1fa] dark:bg-[rgba(79,171,247,0.15)] border-[#0066cc] dark:border-[#4dabf7] text-[#0066cc] dark:text-[#4dabf7]"
                 : "bg-white dark:bg-[#1a1a1a] border-[rgba(0,0,0,0.15)] dark:border-[rgba(255,255,255,0.15)] text-[#151515] dark:text-white"
                 }`}>

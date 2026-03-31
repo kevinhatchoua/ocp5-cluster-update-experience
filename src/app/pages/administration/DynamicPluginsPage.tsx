@@ -60,7 +60,7 @@ export default function DynamicPluginsPage() {
                     </h3>
                     <span className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[14px]">v{plugin.version}</span>
                     <span
-                      className={`px-[12px] py-[4px] rounded-[6px] text-[13px] font-semibold ${
+                      className={`px-[12px] py-[4px] rounded-[999px] text-[13px] font-semibold ${
                         plugin.status === "Enabled"
                           ? "bg-[#3e8635] text-white"
                           : "bg-[rgba(0,0,0,0.06)] dark:bg-[rgba(255,255,255,0.1)] text-[#4d4d4d] dark:text-[#b0b0b0]"

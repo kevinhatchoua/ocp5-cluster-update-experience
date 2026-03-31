@@ -1362,8 +1362,8 @@ function Frame10() {
   return (
     <div className="content-stretch flex gap-[4px] items-center relative shrink-0">
       <Apps />
-      <div className="bg-white content-stretch flex gap-[4px] h-[37px] items-center justify-center min-w-[40px] p-[8px] relative rounded-[6px] shrink-0 w-[60px]" data-name="Overflow menu">
-        <div aria-hidden="true" className="absolute border border-[#8c8c8c] border-solid inset-0 pointer-events-none rounded-[6px]" />
+      <div className="bg-white content-stretch flex gap-[4px] h-[37px] items-center justify-center min-w-[40px] p-[8px] relative rounded-[999px] shrink-0 w-[60px]" data-name="Overflow menu">
+        <div aria-hidden="true" className="absolute border border-[#8c8c8c] border-solid inset-0 pointer-events-none rounded-[999px]" />
         <div className="h-[21px] relative shrink-0 w-[16px]" data-name="IconWrapper">
           <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 size-[14px] top-[calc(50%+0.5px)]" data-name="🖼️ Icon">
             <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 11.1562 13.125">
@@ -1374,7 +1374,7 @@ function Frame10() {
         <p className="flex-[1_0_0] font-['Red_Hat_Text_VF:Regular',sans-serif] font-normal leading-[21px] min-h-px min-w-px relative text-[#151515] text-[14px] text-center">10</p>
       </div>
       <Add />
-      <div className="content-stretch flex items-center justify-center p-[8px] relative rounded-[6px] shrink-0 size-[40px]" data-name="Lightspeed">
+      <div className="content-stretch flex items-center justify-center p-[8px] relative rounded-[999px] shrink-0 size-[40px]" data-name="Lightspeed">
         <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-ai-experience">
           <div className="absolute inset-[4.67%_4.68%_3.13%_3.11%]" data-name="icon">
             <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 14.7534 14.7519">

@@ -334,7 +334,7 @@ export default function InstalledOperatorsPage() {
                       </div>
                     </td>
                     <td className="py-[16px] px-[12px]">
-                      <span className={`px-[10px] py-[4px] rounded-[6px] text-[12px] font-semibold inline-flex items-center gap-[6px] ${
+                      <span className={`px-[10px] py-[4px] rounded-[999px] text-[12px] font-semibold inline-flex items-center gap-[6px] ${
                         op.statusType === "warning" 
                           ? "bg-[#e7f6fd] dark:bg-[rgba(43,154,243,0.15)] text-[#2b9af3] dark:text-[#73bcf7]"
                           : "bg-[#f3faf2] dark:bg-[rgba(62,134,53,0.15)] text-[#3e8635] dark:text-[#5ba352]"

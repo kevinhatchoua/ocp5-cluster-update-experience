@@ -38,7 +38,7 @@ export default function UpdateLogsModal({ isOpen, onClose }: UpdateLogsModalProp
           </h2>
           <button
             onClick={onClose}
-            className="p-[8px] rounded-[6px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.1)] transition-colors"
+            className="p-[8px] rounded-[999px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.1)] transition-colors"
           >
             <X className="size-[20px] text-[#4d4d4d] dark:text-[#b0b0b0]" />
           </button>

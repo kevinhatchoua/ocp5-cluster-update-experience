@@ -180,7 +180,7 @@ export default function UserManagementPage() {
                   </div>
                 </td>
                 <td className="px-[20px] py-[16px]">
-                  <span className={`px-[10px] py-[4px] rounded-[6px] text-[12px] font-semibold ${
+                  <span className={`px-[10px] py-[4px] rounded-[999px] text-[12px] font-semibold ${
                     user.role === "Cluster Admin"
                       ? "text-[#d32f2f] dark:text-[#ef5350] bg-[#ffebee] dark:bg-[rgba(211,47,47,0.15)]"
                       : user.role === "Developer"
@@ -193,14 +193,14 @@ export default function UserManagementPage() {
                 <td className="px-[20px] py-[16px] text-[14px] text-[#4d4d4d] dark:text-[#b0b0b0]">{user.department}</td>
                 <td className="px-[20px] py-[16px] text-[14px] text-[#4d4d4d] dark:text-[#b0b0b0]">{user.lastLogin}</td>
                 <td className="px-[20px] py-[16px]">
-                  <span className="px-[10px] py-[4px] rounded-[6px] text-[12px] font-semibold text-[#3e8635] dark:text-[#81c784] bg-[#e8f5e9] dark:bg-[rgba(62,134,53,0.15)]">
+                  <span className="px-[10px] py-[4px] rounded-[999px] text-[12px] font-semibold text-[#3e8635] dark:text-[#81c784] bg-[#e8f5e9] dark:bg-[rgba(62,134,53,0.15)]">
                     {user.status}
                   </span>
                 </td>
                 <td className="px-[20px] py-[16px]">
                   <button
                     onClick={() => handleImpersonate(user)}
-                    className="px-[12px] py-[6px] bg-[#0066cc] hover:bg-[#004080] dark:bg-[#4dabf7] dark:hover:bg-[#339af0] text-white rounded-[6px] text-[12px] font-semibold transition-colors"
+                    className="px-[12px] py-[6px] bg-[#0066cc] hover:bg-[#004080] dark:bg-[#4dabf7] dark:hover:bg-[#339af0] text-white rounded-[999px] text-[12px] font-semibold transition-colors"
                   >
                     Impersonate
                   </button>

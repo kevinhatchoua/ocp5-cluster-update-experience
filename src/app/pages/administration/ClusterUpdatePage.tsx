@@ -50,7 +50,7 @@ export default function ClusterUpdatePage() {
                   <p className="font-semibold text-[#151515] dark:text-white">4.14.8</p>
                   <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px]">Updated on March 8, 2026</p>
                 </div>
-                <div className="bg-[#3e8635] px-[12px] py-[4px] rounded-[6px]">
+                <div className="bg-[#3e8635] px-[12px] py-[4px] rounded-[999px]">
                   <p className="text-white text-[12px]">Completed</p>
                 </div>
               </div>
@@ -61,7 +61,7 @@ export default function ClusterUpdatePage() {
                   <p className="font-semibold text-[#151515] dark:text-white">4.14.5</p>
                   <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px]">Updated on February 15, 2026</p>
                 </div>
-                <div className="bg-[#3e8635] px-[12px] py-[4px] rounded-[6px]">
+                <div className="bg-[#3e8635] px-[12px] py-[4px] rounded-[999px]">
                   <p className="text-white text-[12px]">Completed</p>
                 </div>
               </div>

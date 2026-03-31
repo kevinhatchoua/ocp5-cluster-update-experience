@@ -111,7 +111,7 @@ function Frame5() {
       <div className="flex flex-[1_0_0] flex-col font-['Red_Hat_Text_VF:Regular',sans-serif] font-normal h-full justify-center leading-[0] min-h-px min-w-px relative text-[#151515] text-[14px]">
         <p className="leading-[21px]">4.21.3</p>
       </div>
-      <div className="content-stretch flex gap-[10px] h-[30px] items-center justify-center py-[2px] relative rounded-[6px] shrink-0" data-name="Icon Button (Plain Button)">
+      <div className="content-stretch flex gap-[10px] h-[30px] items-center justify-center py-[2px] relative rounded-[999px] shrink-0" data-name="Icon Button (Plain Button)">
         <div className="h-[14px] relative shrink-0 w-[16px]" data-name="IconWrapper">
           <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 size-[12px] top-1/2" data-name="🖼️ Icon">
             <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 11.9998 8.94813">
@@ -149,8 +149,8 @@ function Frame7() {
 
 export default function Menu() {
   return (
-    <div className="bg-white content-stretch flex flex-col items-start py-[8px] relative rounded-[6px] size-full" data-name="Menu">
-      <div aria-hidden="true" className="absolute border-0 border-[rgba(255,255,255,0)] border-solid inset-0 pointer-events-none rounded-[6px] shadow-[0px_4px_9px_0px_rgba(41,41,41,0.15)]" />
+    <div className="bg-white content-stretch flex flex-col items-start py-[8px] relative rounded-[999px] size-full" data-name="Menu">
+      <div aria-hidden="true" className="absolute border-0 border-[rgba(255,255,255,0)] border-solid inset-0 pointer-events-none rounded-[999px] shadow-[0px_4px_9px_0px_rgba(41,41,41,0.15)]" />
       <MenuItem />
       <div className="content-stretch flex items-center px-[8px] py-[4px] relative shrink-0 w-[99px]" data-name="HelperText">
         <Frame />

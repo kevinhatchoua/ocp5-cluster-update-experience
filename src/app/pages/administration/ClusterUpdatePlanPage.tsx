@@ -508,7 +508,7 @@ function OlsChatbot({ context, selectedVersion, selectedChannel, onClose, onActi
                 <div className="flex flex-wrap gap-[6px] mt-[10px] pt-[10px] border-t border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.1)]">
                   {msg.actions.map((action, k) => (
                     <button key={k} onClick={(e) => { e.stopPropagation(); onAction(action.actionId); }}
-                      className={`text-[12px] px-[10px] py-[5px] rounded-[6px] cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${
+                      className={`text-[12px] px-[10px] py-[5px] rounded-[999px] cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${
                         action.variant === "primary" ? "bg-[#0066cc] hover:bg-[#004080] text-white border-0" :
                         action.variant === "secondary" ? "bg-white dark:bg-[rgba(255,255,255,0.1)] hover:bg-[#f0f0f0] dark:hover:bg-[rgba(255,255,255,0.15)] text-[#0066cc] dark:text-[#4dabf7] border border-[#0066cc] dark:border-[#4dabf7]" :
                         "bg-transparent text-[#0066cc] dark:text-[#4dabf7] hover:underline border-0 px-0"
@@ -729,30 +729,30 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
             {agentStatus === "idle" && (
               <>
                 <button onClick={() => openChatbot("agent-precheck")}
-                  className="flex items-center gap-[6px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[13px] px-[12px] py-[6px] rounded-[6px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                  className="flex items-center gap-[6px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[13px] px-[12px] py-[6px] rounded-[999px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
                   Update pre-check with AI <Sparkles className="size-[13px]" />
                 </button>
-                <button onClick={() => { setAgentStatus("active"); openChatbot("agent-start"); }} className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                <button onClick={() => { setAgentStatus("active"); openChatbot("agent-start"); }} className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] text-white text-[13px] px-[14px] py-[6px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
                   Start update with AI <Sparkles className="size-[13px]" />
                 </button>
               </>
             )}
             {agentStatus === "active" && (
               <>
-                <button onClick={() => setShowPauseModal(true)} className="flex items-center gap-[6px] bg-transparent text-[#151515] dark:text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+                <button onClick={() => setShowPauseModal(true)} className="flex items-center gap-[6px] bg-transparent text-[#151515] dark:text-white text-[13px] px-[14px] py-[6px] rounded-[999px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
                   <Pause className="size-[13px]" /> Pause agent
                 </button>
-                <button onClick={() => setShowCancelModal(true)} className="flex items-center gap-[6px] bg-transparent text-[#151515] dark:text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+                <button onClick={() => setShowCancelModal(true)} className="flex items-center gap-[6px] bg-transparent text-[#151515] dark:text-white text-[13px] px-[14px] py-[6px] rounded-[999px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
                   Cancel update
                 </button>
               </>
             )}
             {agentStatus === "paused" && (
               <>
-                <button onClick={() => { setAgentStatus("active"); openChatbot("agent-resumed"); }} className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                <button onClick={() => { setAgentStatus("active"); openChatbot("agent-resumed"); }} className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] text-white text-[13px] px-[14px] py-[6px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
                   <Play className="size-[13px]" /> Resume agent
                 </button>
-                <button onClick={() => setShowCancelModal(true)} className="flex items-center gap-[6px] bg-transparent text-[#151515] dark:text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+                <button onClick={() => setShowCancelModal(true)} className="flex items-center gap-[6px] bg-transparent text-[#151515] dark:text-white text-[13px] px-[14px] py-[6px] rounded-[999px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
                   Cancel update
                 </button>
               </>
@@ -763,16 +763,16 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
               </span>
             )}
             {agentStatus === "completed" && (
-              <button onClick={() => { setAgentStatus("idle"); setPlanDecision("pending"); }} className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+              <button onClick={() => { setAgentStatus("idle"); setPlanDecision("pending"); }} className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] text-white text-[13px] px-[14px] py-[6px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
                 Done
               </button>
             )}
             {agentStatus === "failed" && (
               <>
-                <button onClick={() => setShowRollbackModal(true)} className="flex items-center gap-[6px] bg-transparent text-[#151515] dark:text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+                <button onClick={() => setShowRollbackModal(true)} className="flex items-center gap-[6px] bg-transparent text-[#151515] dark:text-white text-[13px] px-[14px] py-[6px] rounded-[999px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
                   <RotateCcw className="size-[13px]" /> Rollback
                 </button>
-                <button onClick={() => { setAgentStatus("updating"); setUpdateProgress(0); openChatbot("update-retry"); }} className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                <button onClick={() => { setAgentStatus("updating"); setUpdateProgress(0); openChatbot("update-retry"); }} className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] text-white text-[13px] px-[14px] py-[6px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
                   <RefreshCw className="size-[13px]" /> Retry update
                 </button>
               </>
@@ -791,7 +791,7 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
         <div className="flex items-center justify-between mb-[4px]">
           <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Agent Configuration</h2>
           <button onClick={() => openChatbot("agent-config")}
-            className="flex items-center gap-[6px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[12px] px-[10px] py-[5px] rounded-[6px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+            className="flex items-center gap-[6px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[12px] px-[10px] py-[5px] rounded-[999px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
             AI setup assistant <Sparkles className="size-[12px]" />
           </button>
         </div>
@@ -850,7 +850,7 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
                 <div className="grid grid-cols-4 gap-[12px]">
                   <div>
                     <label className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] block">Days</label>
-                    <select value={windowDay} onChange={(e) => setWindowDay(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[7px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] cursor-pointer">
+                    <select value={windowDay} onChange={(e) => setWindowDay(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[999px] px-[10px] py-[7px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] cursor-pointer">
                       <option value="weekdays">Weekdays</option>
                       <option value="weekends">Weekends</option>
                       <option value="any">Any day</option>
@@ -859,15 +859,15 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
                   </div>
                   <div>
                     <label className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] block">Start time</label>
-                    <input type="time" value={windowStart} onChange={(e) => setWindowStart(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[7px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]" />
+                    <input type="time" value={windowStart} onChange={(e) => setWindowStart(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[999px] px-[10px] py-[7px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]" />
                   </div>
                   <div>
                     <label className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] block">End time</label>
-                    <input type="time" value={windowEnd} onChange={(e) => setWindowEnd(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[7px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]" />
+                    <input type="time" value={windowEnd} onChange={(e) => setWindowEnd(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[999px] px-[10px] py-[7px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]" />
                   </div>
                   <div>
                     <label className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] block">Timezone</label>
-                    <select value={windowTz} onChange={(e) => setWindowTz(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[7px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] cursor-pointer">
+                    <select value={windowTz} onChange={(e) => setWindowTz(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[999px] px-[10px] py-[7px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] cursor-pointer">
                       <option value="UTC">UTC</option>
                       <option value="US/Eastern">US/Eastern</option>
                       <option value="US/Pacific">US/Pacific</option>
@@ -881,7 +881,7 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
                 <div className="grid grid-cols-2 gap-[12px]">
                   <div className="bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[14px] py-[10px]">
                     <label className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] block">Minimum nodes available during z-stream updates</label>
-                    <select value={minNodesUp} onChange={(e) => setMinNodesUp(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[6px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] cursor-pointer">
+                    <select value={minNodesUp} onChange={(e) => setMinNodesUp(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[999px] px-[10px] py-[6px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] cursor-pointer">
                       <option value="1">At least 1 node</option>
                       <option value="2">At least 2 nodes</option>
                       <option value="3">At least 3 nodes</option>
@@ -890,7 +890,7 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
                   </div>
                   <div className="bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[14px] py-[10px]">
                     <label className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] block">Max unavailable nodes (percentage)</label>
-                    <select value={maxUnavailablePercent} onChange={(e) => setMaxUnavailablePercent(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[6px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] cursor-pointer">
+                    <select value={maxUnavailablePercent} onChange={(e) => setMaxUnavailablePercent(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[999px] px-[10px] py-[6px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] cursor-pointer">
                       <option value="10">10%</option>
                       <option value="20">20%</option>
                       <option value="25">25%</option>
@@ -934,11 +934,11 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
                 <div className="grid grid-cols-2 gap-[12px] mt-[8px]">
                   <div>
                     <label className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] block">Date</label>
-                    <input type="date" value={fixedDate} onChange={(e) => setFixedDate(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[7px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]" />
+                    <input type="date" value={fixedDate} onChange={(e) => setFixedDate(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[999px] px-[10px] py-[7px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]" />
                   </div>
                   <div>
                     <label className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] block">Time ({windowTz})</label>
-                    <input type="time" value={fixedTime} onChange={(e) => setFixedTime(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[7px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]" />
+                    <input type="time" value={fixedTime} onChange={(e) => setFixedTime(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[999px] px-[10px] py-[7px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]" />
                   </div>
                 </div>
               )}
@@ -1032,7 +1032,7 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
                   )}
                 </div>
                 <button onClick={() => openChatbot("compatibility-analysis")}
-                  className="flex items-center gap-[6px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[12px] px-[10px] py-[5px] rounded-[6px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                  className="flex items-center gap-[6px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[12px] px-[10px] py-[5px] rounded-[999px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
                   AI compatibility check <Sparkles className="size-[12px]" />
                 </button>
               </div>
@@ -1083,7 +1083,7 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
                   {compatAnalysis.apiDeprecations.length > 0 ? (
                     <div className="space-y-[6px]">
                       {compatAnalysis.apiDeprecations.map((dep, i) => (
-                        <div key={i} className="bg-[#fdf7e7] dark:bg-[rgba(197,140,0,0.06)] rounded-[6px] px-[12px] py-[8px] border border-[#c58c00]/20">
+                        <div key={i} className="bg-[#fdf7e7] dark:bg-[rgba(197,140,0,0.06)] rounded-[999px] px-[12px] py-[8px] border border-[#c58c00]/20">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-[6px]">
                               <AlertTriangle className="size-[12px] text-[#c58c00] shrink-0" />
@@ -1112,7 +1112,7 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
                   {compatAnalysis.crIncompatibilities.length > 0 ? (
                     <div className="space-y-[6px]">
                       {compatAnalysis.crIncompatibilities.map((cr, i) => (
-                        <div key={i} className="bg-[rgba(201,25,11,0.04)] rounded-[6px] px-[12px] py-[8px] border border-[#c9190b]/20">
+                        <div key={i} className="bg-[rgba(201,25,11,0.04)] rounded-[999px] px-[12px] py-[8px] border border-[#c9190b]/20">
                           <span className="text-[12px] font-['Red_Hat_Mono:Regular',sans-serif] text-[#c9190b]">{cr.resource}</span>
                           <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mt-[2px]">{cr.detail}</p>
                         </div>
@@ -1176,16 +1176,16 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
                   {incompatibleOps.length > 0 ? (
                     <>
                       <button onClick={() => setShowRiskAcceptModal(true)}
-                        className="text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-transparent text-[#151515] dark:text-white cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+                        className="text-[14px] px-[16px] py-[8px] rounded-[999px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-transparent text-[#151515] dark:text-white cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
                         Accept risks &amp; approve
                       </button>
                       <div className="relative group">
                         <button disabled
-                          className="text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed">
+                          className="text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed">
                           Approve plan
                         </button>
                         <div className="absolute bottom-full right-0 mb-[6px] hidden group-hover:block z-10">
-                          <div className="bg-[#151515] text-white text-[11px] px-[10px] py-[6px] rounded-[6px] shadow-lg whitespace-nowrap font-['Red_Hat_Text:Regular',sans-serif]">
+                          <div className="bg-[#151515] text-white text-[11px] px-[10px] py-[6px] rounded-[999px] shadow-lg whitespace-nowrap font-['Red_Hat_Text:Regular',sans-serif]">
                             Resolve {incompatibleOps.length} blocking issue{incompatibleOps.length !== 1 ? "s" : ""} to approve
                           </div>
                         </div>
@@ -1194,12 +1194,12 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
                   ) : (
                     planDecision === "approved" ? (
                       <button onClick={startUpdate}
-                        className="text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium bg-[#0066cc] hover:bg-[#004080] text-white flex items-center gap-[6px]">
+                        className="text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium bg-[#0066cc] hover:bg-[#004080] text-white flex items-center gap-[6px]">
                         <Play className="size-[14px]" /> Start update
                       </button>
                     ) : (
                       <button onClick={() => setPlanDecision("approved")}
-                        className="text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium bg-[#0066cc] hover:bg-[#004080] text-white">
+                        className="text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium bg-[#0066cc] hover:bg-[#004080] text-white">
                         Approve plan
                       </button>
                     )
@@ -1352,7 +1352,7 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
               </div>
               <div className="grid grid-cols-3 gap-[6px]">
                 {postUpdateChecks.map((c) => (
-                  <div key={c.label} className="flex items-center gap-[6px] bg-white dark:bg-[rgba(255,255,255,0.03)] rounded-[6px] px-[10px] py-[6px] border border-[rgba(62,134,53,0.2)]">
+                  <div key={c.label} className="flex items-center gap-[6px] bg-white dark:bg-[rgba(255,255,255,0.03)] rounded-[999px] px-[10px] py-[6px] border border-[rgba(62,134,53,0.2)]">
                     <CheckCircle className="size-[12px] text-[#3e8635] shrink-0" />
                     <span className="text-[12px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">{c.label}</span>
                   </div>
@@ -1399,7 +1399,7 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
 
             <div className="rounded-[8px] border border-[#c9190b]/30 bg-white dark:bg-[rgba(255,255,255,0.02)] p-[14px] mb-[16px]">
               <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-semibold mb-[6px]">Error details</p>
-              <div className="bg-[#151515] rounded-[6px] p-[12px] font-['Red_Hat_Mono:Regular',sans-serif] text-[12px] text-[#e0e0e0] overflow-x-auto">
+              <div className="bg-[#151515] rounded-[999px] p-[12px] font-['Red_Hat_Mono:Regular',sans-serif] text-[12px] text-[#e0e0e0] overflow-x-auto">
                 <p className="text-[#c9190b]">error: node/master-2 drain failed</p>
                 <p className="text-[#8a8d90] mt-[4px]">  pods with local storage: prometheus-k8s-0</p>
                 <p className="text-[#8a8d90]">  eviction timeout: 300s exceeded</p>
@@ -1427,15 +1427,15 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
 
             <div className="flex items-center gap-[10px]">
               <button onClick={() => setShowRollbackModal(true)}
-                className="flex items-center gap-[6px] bg-transparent text-[#151515] dark:text-white text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+                className="flex items-center gap-[6px] bg-transparent text-[#151515] dark:text-white text-[14px] px-[16px] py-[8px] rounded-[999px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
                 <RotateCcw className="size-[14px]" /> Rollback to 5.0.0
               </button>
               <button onClick={() => { setAgentStatus("updating"); setUpdateProgress(0); openChatbot("update-retry"); }}
-                className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] text-white text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] text-white text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
                 <RefreshCw className="size-[14px]" /> Retry update
               </button>
               <button onClick={() => openChatbot("update-failed")}
-                className="flex items-center gap-[6px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                className="flex items-center gap-[6px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[14px] px-[16px] py-[8px] rounded-[999px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
                 Get AI diagnosis <Sparkles className="size-[14px]" />
               </button>
             </div>
@@ -1461,11 +1461,11 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
               </ul>
             </div>
             <div className="flex items-center justify-end gap-[10px] px-[24px] py-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
-              <button onClick={() => setShowRollbackModal(false)} className="text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-transparent text-[#151515] dark:text-white cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+              <button onClick={() => setShowRollbackModal(false)} className="text-[14px] px-[16px] py-[8px] rounded-[999px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-transparent text-[#151515] dark:text-white cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
                 Cancel
               </button>
               <button onClick={startRollback}
-                className="flex items-center gap-[6px] text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 bg-[#c9190b] hover:bg-[#a2150a] text-white cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                className="flex items-center gap-[6px] text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 bg-[#c9190b] hover:bg-[#a2150a] text-white cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
                 <RotateCcw className="size-[14px]" /> Start rollback
               </button>
             </div>
@@ -1491,11 +1491,11 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
               </ul>
             </div>
             <div className="flex items-center justify-end gap-[10px] px-[24px] py-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
-              <button onClick={() => setShowPauseModal(false)} className="text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-transparent text-[#151515] dark:text-white cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+              <button onClick={() => setShowPauseModal(false)} className="text-[14px] px-[16px] py-[8px] rounded-[999px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-transparent text-[#151515] dark:text-white cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
                 Keep running
               </button>
               <button onClick={() => { setAgentStatus("paused"); setShowPauseModal(false); openChatbot("agent-paused"); }}
-                className="text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 bg-[#0066cc] hover:bg-[#004080] text-white cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                className="text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 bg-[#0066cc] hover:bg-[#004080] text-white cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
                 Pause agent
               </button>
             </div>
@@ -1521,11 +1521,11 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
               </ul>
             </div>
             <div className="flex items-center justify-end gap-[10px] px-[24px] py-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
-              <button onClick={() => setShowCancelModal(false)} className="text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-transparent text-[#151515] dark:text-white cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+              <button onClick={() => setShowCancelModal(false)} className="text-[14px] px-[16px] py-[8px] rounded-[999px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-transparent text-[#151515] dark:text-white cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
                 Go back
               </button>
               <button onClick={() => { setAgentStatus("idle"); setPlanDecision("pending"); setAcceptedSlugs(new Set()); setShowCancelModal(false); openChatbot("agent-cancelled"); }}
-                className="text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 bg-[#c9190b] hover:bg-[#a2150a] text-white cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                className="text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 bg-[#c9190b] hover:bg-[#a2150a] text-white cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
                 Cancel update
               </button>
             </div>
@@ -1591,12 +1591,12 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
 
               <div className="flex items-center justify-between px-[24px] py-[16px] border-t border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)]">
                 <button onClick={() => setShowRiskAcceptModal(false)}
-                  className="bg-transparent text-[#4d4d4d] dark:text-[#b0b0b0] text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+                  className="bg-transparent text-[#4d4d4d] dark:text-[#b0b0b0] text-[14px] px-[16px] py-[8px] rounded-[999px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
                   Cancel
                 </button>
                 <button disabled={!anySelected}
                   onClick={() => { setPlanDecision("approved"); setShowRiskAcceptModal(false); }}
-                  className={`text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${anySelected ? "bg-[#0066cc] hover:bg-[#004080] text-white cursor-pointer" : "bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed"}`}>
+                  className={`text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${anySelected ? "bg-[#0066cc] hover:bg-[#004080] text-white cursor-pointer" : "bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed"}`}>
                   Accept {selectedCount} risk{selectedCount !== 1 ? "s" : ""} &amp; approve plan
                 </button>
               </div>
@@ -1625,15 +1625,15 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
               {incompatibleOps.length > 0 ? (
                 <>
                   <button onClick={() => setShowRiskAcceptModal(true)}
-                    className="text-[13px] px-[14px] py-[7px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-transparent text-[#151515] dark:text-white cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+                    className="text-[13px] px-[14px] py-[7px] rounded-[999px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-transparent text-[#151515] dark:text-white cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
                     Accept risks &amp; approve
                   </button>
                   <div className="relative group">
-                    <button disabled className="text-[13px] px-[14px] py-[7px] rounded-[6px] border-0 bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                    <button disabled className="text-[13px] px-[14px] py-[7px] rounded-[999px] border-0 bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed font-['Red_Hat_Text:Regular',sans-serif] font-medium">
                       Approve plan
                     </button>
                     <div className="absolute bottom-full right-0 mb-[6px] hidden group-hover:block z-10">
-                      <div className="bg-[#151515] text-white text-[11px] px-[10px] py-[6px] rounded-[6px] shadow-lg whitespace-nowrap font-['Red_Hat_Text:Regular',sans-serif]">
+                      <div className="bg-[#151515] text-white text-[11px] px-[10px] py-[6px] rounded-[999px] shadow-lg whitespace-nowrap font-['Red_Hat_Text:Regular',sans-serif]">
                         Resolve {incompatibleOps.length} blocking issue{incompatibleOps.length !== 1 ? "s" : ""} to approve
                       </div>
                     </div>
@@ -1641,7 +1641,7 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
                 </>
               ) : (
                 <button onClick={() => setPlanDecision("approved")}
-                  className="text-[13px] px-[14px] py-[7px] rounded-[6px] border-0 cursor-pointer bg-[#0066cc] hover:bg-[#004080] text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium transition-colors">
+                  className="text-[13px] px-[14px] py-[7px] rounded-[999px] border-0 cursor-pointer bg-[#0066cc] hover:bg-[#004080] text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium transition-colors">
                   Approve plan
                 </button>
               )}
@@ -1660,7 +1660,7 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
               </span>
             </div>
             <button onClick={startUpdate}
-              className="text-[13px] px-[14px] py-[7px] rounded-[6px] border-0 cursor-pointer bg-[#0066cc] hover:bg-[#004080] text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium transition-colors flex items-center gap-[6px]">
+              className="text-[13px] px-[14px] py-[7px] rounded-[999px] border-0 cursor-pointer bg-[#0066cc] hover:bg-[#004080] text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium transition-colors flex items-center gap-[6px]">
               <Play className="size-[13px]" /> Start update
             </button>
           </div>
@@ -1728,7 +1728,7 @@ function AiAssessmentSection({ openChatbot }: { openChatbot: (ctx: string) => vo
           </div>
 
           <button onClick={() => openChatbot("ai-precheck")}
-            className="flex items-center gap-[8px] bg-[#0066cc] hover:bg-[#004080] text-white text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+            className="flex items-center gap-[8px] bg-[#0066cc] hover:bg-[#004080] text-white text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
             Pre-check with AI
             <Sparkles className="size-[14px]" />
           </button>
@@ -1758,7 +1758,7 @@ function AvailableUpdatesSection({
           <InfoTooltip />
         </div>
         <button onClick={() => openChatbot("recommendations")}
-          className="flex items-center gap-[8px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[13px] px-[12px] py-[6px] rounded-[6px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 dark:hover:bg-[#4dabf7]/10 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+          className="flex items-center gap-[8px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[13px] px-[12px] py-[6px] rounded-[999px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 dark:hover:bg-[#4dabf7]/10 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
           AI recommendations
           <Sparkles className="size-[13px]" />
         </button>
@@ -1768,7 +1768,7 @@ function AvailableUpdatesSection({
       <div className="flex items-center gap-[12px] mb-[16px] pb-[16px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
         <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] font-medium">Channel</p>
         <select value={selectedChannel} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleChannelChange(e.target.value)}
-          className="bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[5px] text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif] cursor-pointer">
+          className="bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[999px] px-[10px] py-[5px] text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif] cursor-pointer">
           <option value="fast-5.1">fast-5.1</option>
           <option value="stable-5.1">stable-5.1</option>
           <option value="candidate-5.1">candidate-5.1</option>
@@ -1825,7 +1825,7 @@ function InstalledOperatorsSection() {
             placeholder="Filter operators..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="text-[13px] px-[12px] py-[7px] pr-[32px] rounded-[6px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.2)] bg-white dark:bg-[#1a1a1a] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] w-[220px] outline-none focus:border-[#0066cc] transition-colors"
+            className="text-[13px] px-[12px] py-[7px] pr-[32px] rounded-[999px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.2)] bg-white dark:bg-[#1a1a1a] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] w-[220px] outline-none focus:border-[#0066cc] transition-colors"
           />
           {search && (
             <button onClick={() => setSearch("")} className="absolute right-[8px] top-1/2 -translate-y-1/2 bg-transparent border-0 cursor-pointer text-[#6a6e73] hover:text-[#151515] dark:hover:text-white p-0">
@@ -1890,7 +1890,7 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
   return (
     <div className="mb-[8px]">
       <button onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-[8px] bg-transparent border-0 cursor-pointer p-[8px] -ml-[8px] hover:bg-[rgba(0,0,0,0.03)] dark:hover:bg-[rgba(255,255,255,0.03)] rounded-[6px] transition-colors w-full text-left">
+        className="flex items-center gap-[8px] bg-transparent border-0 cursor-pointer p-[8px] -ml-[8px] hover:bg-[rgba(0,0,0,0.03)] dark:hover:bg-[rgba(255,255,255,0.03)] rounded-[999px] transition-colors w-full text-left">
         {expanded ? <ChevronDown className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" /> : <ChevronRight className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" />}
         <span className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[15px]">{label}</span>
         <span className="text-[11px] px-[8px] py-[2px] rounded-full bg-[#e7f1fa] dark:bg-[rgba(43,154,243,0.12)] text-[#0066cc] dark:text-[#4dabf7] font-semibold font-['Red_Hat_Text:Regular',sans-serif]">{versions.length} release{versions.length !== 1 ? "s" : ""}</span>
@@ -1922,7 +1922,7 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                       <span className="text-[12px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">Update all operators</span>
                     </div>
                     <button onClick={(e) => { e.stopPropagation(); setRiskModalVersion(versions[0]?.version); setShowManualRiskModal(true); }}
-                      className="bg-transparent border border-[#0066cc] dark:border-[#4dabf7] text-[#0066cc] dark:text-[#4dabf7] text-[12px] px-[10px] py-[4px] rounded-[6px] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                      className="bg-transparent border border-[#0066cc] dark:border-[#4dabf7] text-[#0066cc] dark:text-[#4dabf7] text-[12px] px-[10px] py-[4px] rounded-[999px] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
                       Accept risks &amp; update
                     </button>
                   </div>
@@ -1963,7 +1963,7 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                   <div className="flex items-center gap-[8px]">
                     {isSelected && (
                       <button onClick={(e) => { e.stopPropagation(); navigate(`/administration/cluster-update/version/${v.version}`, { state: { version: v.version } }); }}
-                        className="bg-[#0066cc] hover:bg-[#004080] text-white text-[12px] px-[10px] py-[5px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium whitespace-nowrap">
+                        className="bg-[#0066cc] hover:bg-[#004080] text-white text-[12px] px-[10px] py-[5px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium whitespace-nowrap">
                         Update to {v.version}
                       </button>
                     )}
@@ -2027,18 +2027,18 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
               </div>
               <div className="flex items-center justify-between px-[24px] py-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
                 <button onClick={() => setShowManualRiskModal(false)}
-                  className="text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-transparent text-[#151515] dark:text-white cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+                  className="text-[14px] px-[16px] py-[8px] rounded-[999px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-transparent text-[#151515] dark:text-white cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
                   Cancel
                 </button>
                 <div className="flex items-center gap-[8px]">
                   <button disabled={!anySelected}
                     onClick={() => setShowManualRiskModal(false)}
-                    className={`text-[14px] px-[16px] py-[8px] rounded-[6px] border transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${anySelected ? "border-[#0066cc] dark:border-[#4dabf7] text-[#0066cc] dark:text-[#4dabf7] bg-transparent cursor-pointer hover:bg-[#0066cc]/5" : "border-[#d2d2d2] text-[#6a6e73] bg-transparent cursor-not-allowed"}`}>
+                    className={`text-[14px] px-[16px] py-[8px] rounded-[999px] border transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${anySelected ? "border-[#0066cc] dark:border-[#4dabf7] text-[#0066cc] dark:text-[#4dabf7] bg-transparent cursor-pointer hover:bg-[#0066cc]/5" : "border-[#d2d2d2] text-[#6a6e73] bg-transparent cursor-not-allowed"}`}>
                     Save
                   </button>
                   <button disabled={!anySelected}
                     onClick={() => { setShowManualRiskModal(false); navigate(`/administration/cluster-update/version/${riskModalVersion}`, { state: { version: riskModalVersion, acceptedRisks: [...manualAcceptedSlugs] } }); }}
-                    className={`text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${anySelected ? "bg-[#0066cc] hover:bg-[#004080] text-white cursor-pointer" : "bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed"}`}>
+                    className={`text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${anySelected ? "bg-[#0066cc] hover:bg-[#004080] text-white cursor-pointer" : "bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed"}`}>
                     Accept {selectedCount} risk{selectedCount !== 1 ? "s" : ""} &amp; update to {riskModalVersion}
                   </button>
                 </div>
@@ -2067,7 +2067,7 @@ function UpdateHistoryTab() {
         <div className="flex items-center gap-[8px]">
           {(["all", "Manual", "Agent"] as const).map((f) => (
             <button key={f} onClick={() => setFilterMethod(f)}
-              className={`text-[13px] px-[12px] py-[5px] rounded-[6px] border cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] ${filterMethod === f ? "bg-[#0066cc] text-white border-[#0066cc]" : "bg-transparent text-[#4d4d4d] dark:text-[#b0b0b0] border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90]"}`}>
+              className={`text-[13px] px-[12px] py-[5px] rounded-[999px] border cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] ${filterMethod === f ? "bg-[#0066cc] text-white border-[#0066cc]" : "bg-transparent text-[#4d4d4d] dark:text-[#b0b0b0] border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90]"}`}>
               {f === "all" ? "All" : f}
             </button>
           ))}

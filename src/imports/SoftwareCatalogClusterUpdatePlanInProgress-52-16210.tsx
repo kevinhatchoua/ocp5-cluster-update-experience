@@ -3,7 +3,7 @@ import svgPaths from "./svg-box9tj7n7r";
 function MenuLogo() {
   return (
     <div className="content-stretch flex gap-[16px] items-center pl-[24px] relative shrink-0 w-[160px]" data-name="Menu + Logo">
-      <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-center p-[8px] relative rounded-[6px] shrink-0 size-[37px]" data-name="Icon Button (Plain Button)">
+      <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-center p-[8px] relative rounded-[999px] shrink-0 size-[37px]" data-name="Icon Button (Plain Button)">
         <div className="h-[14px] relative shrink-0 w-[16px]" data-name="IconWrapper">
           <div className="-translate-x-1/2 -translate-y-1/2 absolute left-[calc(50%+1px)] size-[24px] top-[calc(50%+1.5px)]" data-name="🖼️ Icon">
             <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 24 21">
@@ -143,8 +143,8 @@ function DropdownCaretValidation() {
 function Frame() {
   return (
     <div className="content-stretch flex items-center justify-end relative shrink-0">
-      <div className="bg-white content-stretch flex h-[37px] items-center px-[16px] py-[8px] relative rounded-[6px] shrink-0" data-name="Menu Toggle">
-        <div aria-hidden="true" className="absolute border border-[#c7c7c7] border-solid inset-0 pointer-events-none rounded-[6px]" />
+      <div className="bg-white content-stretch flex h-[37px] items-center px-[16px] py-[8px] relative rounded-[999px] shrink-0" data-name="Menu Toggle">
+        <div aria-hidden="true" className="absolute border border-[#c7c7c7] border-solid inset-0 pointer-events-none rounded-[999px]" />
         <ToggleContent />
         <DropdownCaretValidation />
       </div>
@@ -172,9 +172,9 @@ function Utilities() {
           <p className="font-['Font_Awesome_5_Free:Regular',sans-serif] leading-[21px] not-italic relative shrink-0 text-[#151515] text-[14px] whitespace-nowrap">moon</p>
         </div>
       </div>
-      <div className="bg-[#06c] content-stretch flex flex-col items-start relative rounded-[6px] shrink-0" data-name="Notification badge">
-        <div className="bg-white content-stretch flex gap-[4px] h-[37px] items-center justify-center min-w-[40px] p-[8px] relative rounded-[6px] shrink-0" data-name="Stateful button">
-          <div aria-hidden="true" className="absolute border border-[#c7c7c7] border-solid inset-0 pointer-events-none rounded-[6px]" />
+      <div className="bg-[#06c] content-stretch flex flex-col items-start relative rounded-[999px] shrink-0" data-name="Notification badge">
+        <div className="bg-white content-stretch flex gap-[4px] h-[37px] items-center justify-center min-w-[40px] p-[8px] relative rounded-[999px] shrink-0" data-name="Stateful button">
+          <div aria-hidden="true" className="absolute border border-[#c7c7c7] border-solid inset-0 pointer-events-none rounded-[999px]" />
           <div className="h-[21px] relative shrink-0 w-[16px]" data-name="IconWrapper">
             <div className="-translate-x-1/2 -translate-y-1/2 absolute left-[calc(50%+0.29px)] size-[14px] top-[calc(50%+0.5px)]" data-name="🖼️ Icon">
               <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 12.25 14">
@@ -185,8 +185,8 @@ function Utilities() {
           <p className="flex-[1_0_0] font-['Red_Hat_Text_VF:Regular',sans-serif] font-normal leading-[21px] min-h-px min-w-px relative text-[#151515] text-[14px] text-center">10</p>
         </div>
       </div>
-      <div className="bg-white content-stretch flex h-[37px] items-center justify-center p-[8px] relative rounded-[6px] shrink-0" data-name="Masthead menu item toggles">
-        <div aria-hidden="true" className="absolute border border-[#c7c7c7] border-solid inset-0 pointer-events-none rounded-[6px]" />
+      <div className="bg-white content-stretch flex h-[37px] items-center justify-center p-[8px] relative rounded-[999px] shrink-0" data-name="Masthead menu item toggles">
+        <div aria-hidden="true" className="absolute border border-[#c7c7c7] border-solid inset-0 pointer-events-none rounded-[999px]" />
         <div className="relative shrink-0 size-[21px]" data-name="IconWrapper">
           <div className="-translate-x-1/2 -translate-y-1/2 absolute left-[calc(50%+0.79px)] size-[14px] top-[calc(50%+0.5px)]" data-name="🖼️ Icon">
             <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 13.4172 13.9999">
@@ -302,7 +302,7 @@ function PageHeader() {
 
 function TabName() {
   return (
-    <div className="bg-[rgba(255,255,255,0)] content-stretch flex gap-[4px] items-center justify-center px-[8px] py-[4px] relative rounded-[6px] shrink-0" data-name="Tab name">
+    <div className="bg-[rgba(255,255,255,0)] content-stretch flex gap-[4px] items-center justify-center px-[8px] py-[4px] relative rounded-[999px] shrink-0" data-name="Tab name">
       <p className="font-['Red_Hat_Text_VF:Regular',sans-serif] font-normal leading-[21px] relative shrink-0 text-[#151515] text-[14px] text-center whitespace-nowrap">Update plan</p>
     </div>
   );
@@ -310,7 +310,7 @@ function TabName() {
 
 function TabName1() {
   return (
-    <div className="bg-[rgba(255,255,255,0)] content-stretch flex gap-[4px] items-center justify-center px-[8px] py-[4px] relative rounded-[6px] shrink-0" data-name="Tab name">
+    <div className="bg-[rgba(255,255,255,0)] content-stretch flex gap-[4px] items-center justify-center px-[8px] py-[4px] relative rounded-[999px] shrink-0" data-name="Tab name">
       <p className="font-['Red_Hat_Text_VF:Regular',sans-serif] font-normal leading-[21px] relative shrink-0 text-[#4d4d4d] text-[14px] text-center whitespace-nowrap">ClusterOperators</p>
     </div>
   );
@@ -318,7 +318,7 @@ function TabName1() {
 
 function TabName2() {
   return (
-    <div className="bg-[rgba(255,255,255,0)] content-stretch flex gap-[4px] items-center justify-center px-[8px] py-[4px] relative rounded-[6px] shrink-0" data-name="Tab name">
+    <div className="bg-[rgba(255,255,255,0)] content-stretch flex gap-[4px] items-center justify-center px-[8px] py-[4px] relative rounded-[999px] shrink-0" data-name="Tab name">
       <p className="font-['Red_Hat_Text_VF:Regular',sans-serif] font-normal leading-[21px] relative shrink-0 text-[#4d4d4d] text-[14px] text-center whitespace-nowrap">Update history</p>
     </div>
   );
@@ -487,8 +487,8 @@ function FileProgressItems() {
     <div className="content-stretch flex gap-[8px] items-start py-[16px] relative shrink-0 w-[419px]" data-name="File progress items">
       <div aria-hidden="true" className="absolute border-[#c7c7c7] border-b border-solid inset-0 pointer-events-none" />
       <ProgressBar />
-      <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-center p-[8px] relative rounded-[6px] shrink-0 size-[37px]" data-name="Icon Button (Plain Button)">
-        <div aria-hidden="true" className="absolute border-0 border-[rgba(255,255,255,0)] border-solid inset-0 pointer-events-none rounded-[6px]" />
+      <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-center p-[8px] relative rounded-[999px] shrink-0 size-[37px]" data-name="Icon Button (Plain Button)">
+        <div aria-hidden="true" className="absolute border-0 border-[rgba(255,255,255,0)] border-solid inset-0 pointer-events-none rounded-[999px]" />
         <div className="h-[14px] relative shrink-0 w-[16px]" data-name="IconWrapper">
           <div className="-translate-x-1/2 -translate-y-1/2 absolute left-[calc(50%+0.15px)] size-[14px] top-[calc(50%+0.15px)]" data-name="🖼️ Icon">
             <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 9.62477 9.62477">
@@ -591,8 +591,8 @@ function FileProgressItems1() {
     <div className="content-stretch flex gap-[8px] items-start py-[16px] relative shrink-0 w-[419px]" data-name="File progress items">
       <div aria-hidden="true" className="absolute border-[#c7c7c7] border-b border-solid inset-0 pointer-events-none" />
       <ProgressBar1 />
-      <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-center p-[8px] relative rounded-[6px] shrink-0 size-[37px]" data-name="Icon Button (Plain Button)">
-        <div aria-hidden="true" className="absolute border-0 border-[rgba(255,255,255,0)] border-solid inset-0 pointer-events-none rounded-[6px]" />
+      <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-center p-[8px] relative rounded-[999px] shrink-0 size-[37px]" data-name="Icon Button (Plain Button)">
+        <div aria-hidden="true" className="absolute border-0 border-[rgba(255,255,255,0)] border-solid inset-0 pointer-events-none rounded-[999px]" />
         <div className="h-[14px] relative shrink-0 w-[16px]" data-name="IconWrapper">
           <div className="-translate-x-1/2 -translate-y-1/2 absolute left-[calc(50%+0.15px)] size-[14px] top-[calc(50%+0.15px)]" data-name="🖼️ Icon">
             <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 9.62477 9.62477">
@@ -615,8 +615,8 @@ function FileProgressItemGroup() {
           <TitleArea1 />
           <ProgressBarHelperText1 />
         </div>
-        <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-center p-[8px] relative rounded-[6px] shrink-0 size-[37px]" data-name="Icon Button (Plain Button)">
-          <div aria-hidden="true" className="absolute border-0 border-[rgba(255,255,255,0)] border-solid inset-0 pointer-events-none rounded-[6px]" />
+        <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-center p-[8px] relative rounded-[999px] shrink-0 size-[37px]" data-name="Icon Button (Plain Button)">
+          <div aria-hidden="true" className="absolute border-0 border-[rgba(255,255,255,0)] border-solid inset-0 pointer-events-none rounded-[999px]" />
           <div className="h-[14px] relative shrink-0 w-[16px]" data-name="IconWrapper">
             <div className="-translate-x-1/2 -translate-y-1/2 absolute left-[calc(50%+0.15px)] size-[14px] top-[calc(50%+0.15px)]" data-name="🖼️ Icon">
               <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 9.62463 9.62477">
@@ -826,7 +826,7 @@ function BasicRow() {
         <div className="relative self-stretch shrink-0" data-name="Table Cell/Right Action">
           <div className="flex flex-row items-center size-full">
             <div className="content-stretch flex h-full items-center p-[16px] relative">
-              <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-center p-[8px] relative rounded-[6px] shrink-0 size-[32px]" data-name="Icon Button (Plain Button)">
+              <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-center p-[8px] relative rounded-[999px] shrink-0 size-[32px]" data-name="Icon Button (Plain Button)">
                 <div className="h-[14px] relative shrink-0 w-[16px]" data-name="IconWrapper">
                   <div className="-translate-x-1/2 -translate-y-1/2 absolute left-[calc(50%+0.29px)] size-[14px] top-1/2" data-name="🖼️ Icon">
                     <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 4.08301 14">
@@ -941,7 +941,7 @@ function BasicRow1() {
         <div className="relative self-stretch shrink-0" data-name="Table Cell/Right Action">
           <div className="flex flex-row items-center size-full">
             <div className="content-stretch flex h-full items-center p-[16px] relative">
-              <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-center p-[8px] relative rounded-[6px] shrink-0 size-[32px]" data-name="Icon Button (Plain Button)">
+              <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-center p-[8px] relative rounded-[999px] shrink-0 size-[32px]" data-name="Icon Button (Plain Button)">
                 <div className="h-[14px] relative shrink-0 w-[16px]" data-name="IconWrapper">
                   <div className="-translate-x-1/2 -translate-y-1/2 absolute left-[calc(50%+0.29px)] size-[14px] top-1/2" data-name="🖼️ Icon">
                     <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 4.08301 14">
@@ -1056,7 +1056,7 @@ function BasicRow2() {
         <div className="relative self-stretch shrink-0" data-name="Table Cell/Right Action">
           <div className="flex flex-row items-center size-full">
             <div className="content-stretch flex h-full items-center p-[16px] relative">
-              <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-center p-[8px] relative rounded-[6px] shrink-0 size-[32px]" data-name="Icon Button (Plain Button)">
+              <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-center p-[8px] relative rounded-[999px] shrink-0 size-[32px]" data-name="Icon Button (Plain Button)">
                 <div className="h-[14px] relative shrink-0 w-[16px]" data-name="IconWrapper">
                   <div className="-translate-x-1/2 -translate-y-1/2 absolute left-[calc(50%+0.29px)] size-[14px] top-1/2" data-name="🖼️ Icon">
                     <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 4.08301 14">
@@ -1291,7 +1291,7 @@ function BasicRow3() {
         <div className="relative self-stretch shrink-0" data-name="Table Cell/Right Action">
           <div className="flex flex-row items-center size-full">
             <div className="content-stretch flex h-full items-center p-[16px] relative">
-              <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-center p-[8px] relative rounded-[6px] shrink-0 size-[32px]" data-name="Icon Button (Plain Button)">
+              <div className="bg-[rgba(255,255,255,0)] content-stretch flex items-center justify-center p-[8px] relative rounded-[999px] shrink-0 size-[32px]" data-name="Icon Button (Plain Button)">
                 <div className="h-[14px] relative shrink-0 w-[16px]" data-name="IconWrapper">
                   <div className="-translate-x-1/2 -translate-y-1/2 absolute left-[calc(50%+0.29px)] size-[14px] top-1/2" data-name="🖼️ Icon">
                     <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 4.08301 14">
@@ -1733,8 +1733,8 @@ function IconText11() {
 
 function NavItem12() {
   return (
-    <div className="bg-white relative rounded-[6px] shrink-0 w-full" data-name="Nav item">
-      <div aria-hidden="true" className="absolute border-0 border-[rgba(255,255,255,0)] border-solid inset-0 pointer-events-none rounded-[6px]" />
+    <div className="bg-white relative rounded-[999px] shrink-0 w-full" data-name="Nav item">
+      <div aria-hidden="true" className="absolute border-0 border-[rgba(255,255,255,0)] border-solid inset-0 pointer-events-none rounded-[999px]" />
       <div className="flex flex-row items-center size-full">
         <div className="content-stretch flex items-center justify-between px-[16px] py-[8px] relative w-full">
           <IconText11 />
@@ -1755,8 +1755,8 @@ function SubnavItems() {
   return (
     <div className="relative shrink-0 w-full" data-name="Subnav items">
       <div className="content-stretch flex flex-col gap-[8px] items-start pl-[16px] relative w-full">
-        <div className="bg-white relative rounded-[6px] shrink-0 w-full" data-name="Subnav item">
-          <div aria-hidden="true" className="absolute border-0 border-[rgba(255,255,255,0)] border-solid inset-0 pointer-events-none rounded-[6px]" />
+        <div className="bg-white relative rounded-[999px] shrink-0 w-full" data-name="Subnav item">
+          <div aria-hidden="true" className="absolute border-0 border-[rgba(255,255,255,0)] border-solid inset-0 pointer-events-none rounded-[999px]" />
           <div className="flex flex-row items-center size-full">
             <div className="content-stretch flex items-center justify-between px-[16px] py-[8px] relative w-full">
               <p className="flex-[1_0_0] font-['Red_Hat_Text_VF:Regular',sans-serif] font-normal leading-[21px] min-h-px min-w-px relative text-[#151515] text-[14px]">Cluster Update</p>

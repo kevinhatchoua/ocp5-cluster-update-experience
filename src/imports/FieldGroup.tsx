@@ -95,8 +95,8 @@ function DropdownCaretValidation() {
 
 function MenuToggle() {
   return (
-    <div className="bg-white flex-[1_0_0] h-[37px] min-h-px min-w-px relative rounded-[6px]" data-name="Menu Toggle">
-      <div aria-hidden="true" className="absolute border border-[#c7c7c7] border-solid inset-0 pointer-events-none rounded-[6px]" />
+    <div className="bg-white flex-[1_0_0] h-[37px] min-h-px min-w-px relative rounded-[999px]" data-name="Menu Toggle">
+      <div aria-hidden="true" className="absolute border border-[#c7c7c7] border-solid inset-0 pointer-events-none rounded-[999px]" />
       <div className="flex flex-row items-center size-full">
         <div className="content-stretch flex gap-[8px] items-center px-[16px] py-[8px] relative size-full">
           <ToggleContent />
@@ -169,8 +169,8 @@ function DropdownCaretValidation1() {
 
 function MenuToggle1() {
   return (
-    <div className="bg-white flex-[1_0_0] h-[37px] min-h-px min-w-px relative rounded-[6px]" data-name="Menu Toggle">
-      <div aria-hidden="true" className="absolute border border-[#c7c7c7] border-solid inset-0 pointer-events-none rounded-[6px]" />
+    <div className="bg-white flex-[1_0_0] h-[37px] min-h-px min-w-px relative rounded-[999px]" data-name="Menu Toggle">
+      <div aria-hidden="true" className="absolute border border-[#c7c7c7] border-solid inset-0 pointer-events-none rounded-[999px]" />
       <div className="flex flex-row items-center size-full">
         <div className="content-stretch flex gap-[8px] items-center px-[16px] py-[8px] relative size-full">
           <ToggleContent1 />

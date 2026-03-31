@@ -398,7 +398,7 @@ function ClusterUtilizationCard() {
             <p className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold leading-[normal] relative shrink-0 text-[#151515] dark:text-white text-[16px] whitespace-nowrap">Cluster utilization</p>
           </div>
           <div className="content-stretch flex gap-[4px] items-center relative shrink-0">
-            <div className="content-stretch flex gap-[8px] h-[37px] items-center px-[16px] py-[8px] relative rounded-[6px] shrink-0 cursor-pointer hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors">
+            <div className="content-stretch flex gap-[8px] h-[37px] items-center px-[16px] py-[8px] relative rounded-[999px] shrink-0 cursor-pointer hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors">
               <p className="font-['Red_Hat_Text_VF:Regular',sans-serif] font-normal leading-[21px] relative shrink-0 text-[#151515] dark:text-white text-[14px] whitespace-nowrap">Filter by Node type</p>
               <div className="content-stretch flex items-center justify-center overflow-clip relative shrink-0">
                 <div className="relative shrink-0 size-[21px]">
@@ -410,7 +410,7 @@ function ClusterUtilizationCard() {
                 </div>
               </div>
             </div>
-            <div className="content-stretch flex gap-[8px] h-[37px] items-center px-[16px] py-[8px] relative rounded-[6px] shrink-0 cursor-pointer hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors">
+            <div className="content-stretch flex gap-[8px] h-[37px] items-center px-[16px] py-[8px] relative rounded-[999px] shrink-0 cursor-pointer hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors">
               <p className="font-['Red_Hat_Text_VF:Regular',sans-serif] font-normal leading-[21px] relative shrink-0 text-[#151515] dark:text-white text-[14px] whitespace-nowrap">1 hour</p>
               <div className="content-stretch flex items-center justify-center overflow-clip relative shrink-0">
                 <div className="relative shrink-0 size-[21px]">
