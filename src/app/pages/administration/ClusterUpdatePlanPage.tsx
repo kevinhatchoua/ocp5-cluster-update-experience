@@ -1711,15 +1711,15 @@ function AiAssessmentSection({ openChatbot }: { openChatbot: (ctx: string) => vo
   const [expanded, setExpanded] = useState(true);
 
   return (
-    <div className="mb-[16px]">
+    <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
       <button onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-[8px] bg-transparent border-0 cursor-pointer p-0 mb-[12px] hover:opacity-80 transition-opacity">
+        className="flex items-center gap-[8px] bg-transparent border-0 cursor-pointer p-0 hover:opacity-80 transition-opacity w-full text-left">
         {expanded ? <ChevronDown className="size-[16px] text-[#151515] dark:text-white" /> : <ChevronRight className="size-[16px] text-[#151515] dark:text-white" />}
         <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">AI Assessment</h2>
       </button>
 
       {expanded && (
-        <div>
+        <div className="mt-[16px]">
           <div className="rounded-[8px] border-2 border-[#5e40be] dark:border-[#b2a3e0] px-[16px] py-[12px] mb-[16px]">
             <div className="flex items-center gap-[10px]">
               <Info className="size-[16px] text-[#0066cc] dark:text-[#4dabf7] shrink-0" />
