@@ -289,61 +289,11 @@ export default function ClusterUpdatePlanPage() {
             </div>
           )}
 
-          {/* Update Method */}
-          <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
-            <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px] mb-[4px]">Update Method</h2>
-            <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[14px] mb-[16px] font-['Red_Hat_Text:Regular',sans-serif]">Choose how cluster updates are managed</p>
-            <div className="grid grid-cols-2 gap-[16px]">
-              <button
-                onClick={() => setUpdateMode("manual")}
-                className={`text-left rounded-[8px] p-[20px] border transition-colors cursor-pointer bg-transparent ${
-                  updateMode === "manual"
-                    ? "border-[#0066cc] dark:border-[#4dabf7] shadow-[0_0_0_1px_#0066cc] dark:shadow-[0_0_0_1px_#4dabf7]"
-                    : "border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90] dark:hover:border-[rgba(255,255,255,0.3)]"
-                }`}
-              >
-                <div className="flex items-center gap-[10px] mb-[8px]">
-                  <div className={`size-[18px] rounded-full border-2 flex items-center justify-center ${updateMode === "manual" ? "border-[#0066cc] dark:border-[#4dabf7]" : "border-[#8a8d90]"}`}>
-                    {updateMode === "manual" && <div className="size-[10px] rounded-full bg-[#0066cc] dark:bg-[#4dabf7]" />}
-                  </div>
-                  <span className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[15px]">Manual updates</span>
-                </div>
-                <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] ml-[28px]">
-                  Manually manage version updates for the cluster. You will need to approve each update individually.
-                </p>
-              </button>
-              <button
-                onClick={() => setUpdateMode("agent")}
-                className={`text-left rounded-[8px] p-[20px] border transition-colors cursor-pointer bg-transparent ${
-                  updateMode === "agent"
-                    ? "border-[#0066cc] dark:border-[#4dabf7] shadow-[0_0_0_1px_#0066cc] dark:shadow-[0_0_0_1px_#4dabf7]"
-                    : "border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90] dark:hover:border-[rgba(255,255,255,0.3)]"
-                }`}
-              >
-                <div className="flex items-center gap-[10px] mb-[8px]">
-                  <div className={`size-[18px] rounded-full border-2 flex items-center justify-center ${updateMode === "agent" ? "border-[#0066cc] dark:border-[#4dabf7]" : "border-[#8a8d90]"}`}>
-                    {updateMode === "agent" && <div className="size-[10px] rounded-full bg-[#0066cc] dark:bg-[#4dabf7]" />}
-                  </div>
-                  <span className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[15px]">Agent-based updates</span>
-                  <span className="text-[10px] px-[6px] py-[2px] rounded-[4px] font-semibold bg-[rgba(94,64,190,0.1)] text-[#5e40be] uppercase tracking-[0.5px] font-['Red_Hat_Text:Regular',sans-serif]">Experimental</span>
-                </div>
-                <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] ml-[28px]">
-                  Let the AI agent manage updates automatically. It analyzes optimal windows and performs safety checks before updating.
-                </p>
-                <p className="text-[#6a6e73] dark:text-[#8a8d90] text-[11px] font-['Red_Hat_Text:Regular',sans-serif] ml-[28px] mt-[4px] italic">
-                  Experimental, not for implementation
-                </p>
-              </button>
-            </div>
-          </div>
+          {/* AI Assessment */}
+          <AiAssessmentSection openChatbot={openChatbot} />
 
-          {/* Agent-based mode panel */}
-          {updateMode === "agent" && (
-            <AgentModePanel openChatbot={openChatbot} setActiveTab={setActiveTab} navigate={navigate} />
-          )}
-
-          {/* Cluster Details — AI button removed from here */}
-          {updateMode === "manual" && (
+          {/* Cluster Details */}
+          {(
             <>
               <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
                 <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px] mb-[16px]">Cluster Details</h2>
@@ -1750,6 +1700,38 @@ function InfoTooltip() {
             className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[13px] no-underline hover:underline font-['Red_Hat_Text:Regular',sans-serif]">
             View documentation <ExternalLink className="size-[11px]" />
           </a>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── AI Assessment Section ─── */
+function AiAssessmentSection({ openChatbot }: { openChatbot: (ctx: string) => void }) {
+  const [expanded, setExpanded] = useState(true);
+
+  return (
+    <div className="mb-[16px]">
+      <button onClick={() => setExpanded(!expanded)}
+        className="flex items-center gap-[8px] bg-transparent border-0 cursor-pointer p-0 mb-[12px] hover:opacity-80 transition-opacity">
+        {expanded ? <ChevronDown className="size-[16px] text-[#151515] dark:text-white" /> : <ChevronRight className="size-[16px] text-[#151515] dark:text-white" />}
+        <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">AI Assessment</h2>
+      </button>
+
+      {expanded && (
+        <div>
+          <div className="rounded-[8px] border-2 border-[#5e40be] dark:border-[#b2a3e0] px-[16px] py-[12px] mb-[16px]">
+            <div className="flex items-center gap-[10px]">
+              <Info className="size-[16px] text-[#0066cc] dark:text-[#4dabf7] shrink-0" />
+              <p className="text-[#151515] dark:text-white text-[14px] font-['Red_Hat_Text:Regular',sans-serif]">Version 4.22.0 Available</p>
+            </div>
+          </div>
+
+          <button onClick={() => openChatbot("ai-precheck")}
+            className="flex items-center gap-[8px] bg-[#0066cc] hover:bg-[#004080] text-white text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+            Pre-check with AI
+            <Sparkles className="size-[14px]" />
+          </button>
         </div>
       )}
     </div>
