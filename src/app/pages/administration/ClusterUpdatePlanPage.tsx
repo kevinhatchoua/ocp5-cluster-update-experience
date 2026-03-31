@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router";
-import { ChevronDown, ChevronRight, ExternalLink, Sparkles, ArrowRight, CheckCircle, AlertTriangle, HelpCircle, Info, X, Send, Loader2, XCircle, Shield, Bot, Settings, RotateCcw, Play, Pause } from "lucide-react";
+import { ChevronDown, ChevronRight, ExternalLink, Sparkles, ArrowRight, CheckCircle, AlertTriangle, HelpCircle, Info, X, Send, Loader2, XCircle, Shield, Bot, Settings, RotateCcw, Play, Pause, Calendar, Bell, Clock, FileText, User, Zap, Eye, RefreshCw } from "lucide-react";
 import Breadcrumbs from "../../components/Breadcrumbs";
 
 type TabKey = "update-plan" | "cluster-operators" | "update-history";
@@ -109,12 +109,26 @@ const operatorUpdates = [
   { name: "Operator Lifecycle Manager", currentVersion: "4.21.0", availableVersion: "4.22.0", status: "Update available", autoUpdate: false, required: true, maxOCP: "5.0", compatible51: false },
 ];
 
-const updateHistory = [
-  { version: "5.0.0", status: "Completed", startedAt: "Mar 1, 2026 02:00 UTC", completedAt: "Mar 1, 2026 03:48 UTC", duration: "1h 48m" },
-  { version: "4.18.6", status: "Completed", startedAt: "Feb 12, 2026 03:00 UTC", completedAt: "Feb 12, 2026 04:32 UTC", duration: "1h 32m" },
-  { version: "4.18.4", status: "Completed", startedAt: "Jan 22, 2026 02:00 UTC", completedAt: "Jan 22, 2026 03:15 UTC", duration: "1h 15m" },
-  { version: "4.18.2", status: "Completed", startedAt: "Dec 15, 2025 03:00 UTC", completedAt: "Dec 15, 2025 04:22 UTC", duration: "1h 22m" },
-  { version: "4.17.9", status: "Failed", startedAt: "Nov 28, 2025 02:00 UTC", completedAt: "Nov 28, 2025 02:45 UTC", duration: "45m" },
+type UpdateHistoryEntry = {
+  version: string;
+  status: "Completed" | "Failed" | "Rejected";
+  method: "Manual" | "Agent";
+  decision: "Approved" | "Auto-approved" | "Rejected" | "N/A";
+  initiatedBy: string;
+  startedAt: string;
+  completedAt: string;
+  duration: string;
+  preflight: { passed: number; failed: number; total: number };
+  compatSummary?: string;
+};
+
+const updateHistory: UpdateHistoryEntry[] = [
+  { version: "5.0.0", status: "Completed", method: "Agent", decision: "Approved", initiatedBy: "admin@example.com", startedAt: "Mar 1, 2026 02:00 UTC", completedAt: "Mar 1, 2026 03:48 UTC", duration: "1h 48m", preflight: { passed: 6, failed: 0, total: 6 }, compatSummary: "All operators compatible. No API deprecations detected." },
+  { version: "4.18.6", status: "Completed", method: "Agent", decision: "Auto-approved", initiatedBy: "cluster-update-agent", startedAt: "Feb 12, 2026 03:00 UTC", completedAt: "Feb 12, 2026 04:32 UTC", duration: "1h 32m", preflight: { passed: 6, failed: 0, total: 6 }, compatSummary: "Z-stream update — all checks passed automatically." },
+  { version: "4.18.4", status: "Completed", method: "Manual", decision: "N/A", initiatedBy: "admin@example.com", startedAt: "Jan 22, 2026 02:00 UTC", completedAt: "Jan 22, 2026 03:15 UTC", duration: "1h 15m", preflight: { passed: 5, failed: 1, total: 6 }, compatSummary: "cluster-logging operator warning (non-blocking)." },
+  { version: "4.18.2", status: "Completed", method: "Manual", decision: "N/A", initiatedBy: "devops-team@example.com", startedAt: "Dec 15, 2025 03:00 UTC", completedAt: "Dec 15, 2025 04:22 UTC", duration: "1h 22m", preflight: { passed: 6, failed: 0, total: 6 } },
+  { version: "4.17.9", status: "Failed", method: "Agent", decision: "Auto-approved", initiatedBy: "cluster-update-agent", startedAt: "Nov 28, 2025 02:00 UTC", completedAt: "Nov 28, 2025 02:45 UTC", duration: "45m", preflight: { passed: 4, failed: 2, total: 6 }, compatSummary: "Operator compatibility check failed. Automatic rollback triggered." },
+  { version: "4.17.8", status: "Rejected", method: "Agent", decision: "Rejected", initiatedBy: "admin@example.com", startedAt: "Nov 20, 2025 02:00 UTC", completedAt: "Nov 20, 2025 02:02 UTC", duration: "2m", preflight: { passed: 3, failed: 3, total: 6 }, compatSummary: "Multiple operator incompatibilities. 2 deprecated APIs in use. Admin rejected update plan." },
 ];
 
 const PRECHECK_ITEMS = [
@@ -161,9 +175,9 @@ export default function ClusterUpdatePlanPage() {
   }, []);
 
   const tabs: { key: TabKey; label: string }[] = [
-    { key: "update-plan", label: "Update Plan" },
-    { key: "cluster-operators", label: "Cluster Operators" },
-    { key: "update-history", label: "Update History" },
+    { key: "update-plan", label: "Update plan" },
+    { key: "cluster-operators", label: "Cluster operators" },
+    { key: "update-history", label: "Update history" },
   ];
 
   return (
@@ -244,7 +258,7 @@ export default function ClusterUpdatePlanPage() {
 
           {/* Agent-based mode panel */}
           {updateMode === "agent" && (
-            <AgentModePanel openChatbot={openChatbot} />
+            <AgentModePanel openChatbot={openChatbot} setActiveTab={setActiveTab} navigate={navigate} />
           )}
 
           {/* Cluster Details — AI button removed from here */}
@@ -370,7 +384,7 @@ function PrecheckModal({ version, hasOperatorIssues, onClose, onProceed }: { ver
           <div className="flex items-center gap-[10px]">
             <Shield className="size-[20px] text-[#0066cc] dark:text-[#4dabf7]" />
             <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">
-              Update Pre-check
+              Update pre-check
             </h2>
           </div>
           <button onClick={onClose} className="bg-transparent border-0 cursor-pointer text-[#4d4d4d] dark:text-[#b0b0b0] hover:text-[#151515] dark:hover:text-white p-[4px]">
@@ -474,6 +488,10 @@ function OlsChatbot({ context, selectedVersion, selectedChannel, onClose }: { co
       initial.push({ role: "assistant", text: "I can help you configure the agent-based update strategy. The agent will:\n\n• **Analyze workload patterns** to find optimal update windows\n• **Run pre-flight checks** automatically before each update\n• **Coordinate operator updates** in the correct dependency order\n• **Monitor rollout health** and trigger automatic rollback if issues are detected\n\nWould you like to configure the update schedule, set rollback thresholds, or review the current agent policy?" });
     } else if (context === "agent-monitor") {
       initial.push({ role: "assistant", text: "The update agent is currently monitoring your cluster. Here's what I can help with:\n\n• View the current agent status and decision log\n• Explain why the agent chose a specific update window\n• Review rollback criteria and thresholds\n• Adjust agent behavior for upcoming maintenance windows\n\nWhat would you like to know?" });
+    } else if (context === "agent-precheck") {
+      initial.push({ role: "assistant", text: `Starting AI-powered pre-check for update to **${selectedVersion}**...\n\n✅ **Cluster Health** — All components healthy\n✅ **Node Status** — 6/6 nodes Ready\n✅ **Storage Health** — 85% available, all PVs bound\n✅ **Network Health** — OVN verified, no packet loss\n✅ **Certificates** — Valid for >90 days\n✅ **etcd** — Quorum established\n\n⚠️ **Operator Compatibility** — 2 operators need attention:\n• cluster-logging v6.4.3 (max OCP 5.0) → Update to v6.5.1+\n• elasticsearch-operator v5.7.2 (max OCP 5.0) → Update to v5.8.0+\n\n**Next steps:**\n1. Update the incompatible operators from the Cluster Operators tab\n2. Re-run the pre-check to confirm all clear\n3. Approve the update plan to proceed\n\nWould you like me to start the operator updates automatically?` });
+    } else if (context === "compatibility-analysis") {
+      initial.push({ role: "assistant", text: `I've analyzed the compatibility profile for updating to **${selectedVersion}** on the **${selectedChannel}** channel. Here's what I found:\n\n**Operator Issues:**\n• **Cluster Logging v6.4.3** — max supported OCP is 5.0. You need v6.5.1+ before upgrading.\n• **Elasticsearch Operator v5.7.2** — max supported OCP is 5.0. Upgrade to v5.8.0+.\n• **OLM v4.21.0** — recommended to update to v4.22.0 for full 5.1 support.\n\n**API Deprecations:**\n• \`flowcontrol.apiserver.k8s.io/v1beta2\` — migrate to \`v1\` before 5.2.\n\n**Recommendation:** Update the 2 incompatible operators first, then approve the update plan. I can generate a step-by-step remediation runbook if needed.` });
     }
     return initial;
   });
@@ -552,123 +570,641 @@ function OlsChatbot({ context, selectedVersion, selectedChannel, onClose }: { co
   );
 }
 
+/* ─── Toggle Switch ─── */
+function Toggle({ enabled, onChange, disabled }: { enabled: boolean; onChange: () => void; disabled?: boolean }) {
+  return (
+    <button onClick={onChange} disabled={disabled}
+      className={`relative w-[36px] h-[20px] rounded-full border-0 cursor-pointer transition-colors shrink-0 ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${enabled ? "bg-[#0066cc]" : "bg-[#8a8d90]"}`}>
+      <div className={`absolute top-[2px] size-[16px] rounded-full bg-white transition-transform ${enabled ? "left-[18px]" : "left-[2px]"}`} />
+    </button>
+  );
+}
+
 /* ─── Agent Mode Panel ─── */
-function AgentModePanel({ openChatbot }: { openChatbot: (ctx: string) => void }) {
-  const [agentStatus, setAgentStatus] = useState<"idle" | "active" | "paused">("idle");
-  const [schedule, setSchedule] = useState("weekdays-2am");
+function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: (ctx: string) => void; setActiveTab: (tab: TabKey) => void; navigate: ReturnType<typeof useNavigate> }) {
+  const [agentStatus, setAgentStatus] = useState<"idle" | "active" | "paused">("active");
+  const [configTab, setConfigTab] = useState<"actions" | "compliance" | "scheduling" | "notifications">("actions");
+
+  const [autoPreflight, setAutoPreflight] = useState(true);
   const [autoRollback, setAutoRollback] = useState(true);
-  const [maxUnavailable, setMaxUnavailable] = useState("1");
+  const [autoOperatorUpdate, setAutoOperatorUpdate] = useState(false);
+  const [autoRiskMitigation, setAutoRiskMitigation] = useState(true);
+
+  const [windowDay, setWindowDay] = useState("weekdays");
+  const [windowStart, setWindowStart] = useState("02:00");
+  const [windowEnd, setWindowEnd] = useState("05:00");
+  const [windowTz, setWindowTz] = useState("UTC");
+  const [minNodesUp, setMinNodesUp] = useState("2");
+  const [maxUnavailablePercent, setMaxUnavailablePercent] = useState("10");
+  const [requireApproval, setRequireApproval] = useState(true);
+
+  const [scheduleMode, setScheduleMode] = useState<"optimal" | "fixed" | "custom">("optimal");
+  const [fixedDate, setFixedDate] = useState("2026-04-02");
+  const [fixedTime, setFixedTime] = useState("02:00");
+
+  const [notifyEmail, setNotifyEmail] = useState(true);
+  const [notifySlack, setNotifySlack] = useState(false);
+  const [notifyOnPlan, setNotifyOnPlan] = useState(true);
+  const [notifyOnStart, setNotifyOnStart] = useState(true);
+  const [notifyOnComplete, setNotifyOnComplete] = useState(true);
+  const [notifyOnFailure, setNotifyOnFailure] = useState(true);
+
+  const [planDecision, setPlanDecision] = useState<"pending" | "approved" | "rejected" | null>("pending");
+
+  const agentPreflightChecks = [
+    { label: "Cluster Health", status: "pass" as const, detail: "All cluster components reporting healthy" },
+    { label: "Node Status", status: "pass" as const, detail: "6/6 nodes Ready, schedulable" },
+    { label: "Storage Health", status: "pass" as const, detail: "85% capacity available, all PVs bound" },
+    { label: "Network Health", status: "pass" as const, detail: "SDN/OVN connectivity verified, no packet loss" },
+    { label: "Certificate Validity", status: "pass" as const, detail: "All certificates valid for >90 days" },
+    { label: "etcd Health", status: "pass" as const, detail: "Quorum established, all members healthy" },
+  ];
+
+  const compatAnalysis = {
+    operators: [
+      { name: "Cluster Logging", currentVersion: "6.4.3", status: "incompatible" as const, maxOCP: "5.0", action: "Update to v6.5.1+", docUrl: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html" },
+      { name: "Elasticsearch Operator", currentVersion: "5.7.2", status: "incompatible" as const, maxOCP: "5.0", action: "Update to v5.8.0+", docUrl: "https://docs.openshift.com/container-platform/latest/logging/log_storage/installing-log-storage.html" },
+      { name: "Cert Manager", currentVersion: "1.12.0", status: "compatible" as const, maxOCP: "5.1", action: null, docUrl: null },
+      { name: "Ansible Automation Platform", currentVersion: "3.1.0", status: "compatible" as const, maxOCP: "5.1", action: null, docUrl: null },
+      { name: "Operator Lifecycle Manager", currentVersion: "4.21.0", status: "warning" as const, maxOCP: "5.0", action: "Update to v4.22.0", docUrl: "https://docs.openshift.com/container-platform/latest/operators/admin/olm-upgrading-operators.html" },
+    ],
+    apiDeprecations: [
+      { api: "flowcontrol.apiserver.k8s.io/v1beta2", replacement: "flowcontrol.apiserver.k8s.io/v1", severity: "warning" as const, docUrl: "https://docs.openshift.com/container-platform/latest/updating/preparing_for_updates/updating-cluster-prepare.html#updating-cluster-prepare-apis" },
+    ],
+    crIncompatibilities: [] as { resource: string; detail: string }[],
+  };
+
+  const scheduledExecution = {
+    optimalWindow: "Wed Apr 2, 2026 02:00–05:00 UTC",
+    estimatedDuration: "1h 45m",
+    riskLevel: "Low" as const,
+    rollbackStrategy: autoRollback ? "Automatic — revert within 30 minutes if health checks fail" : "Manual — operator must initiate rollback",
+  };
+
+  const configTabs = [
+    { key: "actions" as const, label: "Automatic actions", icon: Zap },
+    { key: "compliance" as const, label: "Compliance & policy", icon: Shield },
+    { key: "scheduling" as const, label: "Scheduling", icon: Calendar },
+    { key: "notifications" as const, label: "Notifications", icon: Bell },
+  ];
+
+  const incompatibleOps = compatAnalysis.operators.filter(o => o.status === "incompatible");
+  const warningOps = compatAnalysis.operators.filter(o => o.status === "warning");
 
   return (
     <div className="space-y-[16px] mb-[16px]">
-      {/* Agent Configuration */}
-      <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px]">
-        <div className="flex items-center justify-between mb-[16px]">
-          <div className="flex items-center gap-[10px]">
-            <Settings className="size-[20px] text-[#6753ac]" />
-            <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Agent Configuration</h2>
-          </div>
-          <button onClick={() => openChatbot("agent-config")}
-            className="flex items-center gap-[8px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[13px] px-[12px] py-[6px] rounded-[6px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-            <Sparkles className="size-[13px]" /> Ask Lightspeed
-          </button>
-        </div>
-
-        <div className="grid grid-cols-2 gap-[16px]">
-          <div>
-            <label className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[6px] block">Update schedule</label>
-            <select value={schedule} onChange={(e) => setSchedule(e.target.value)}
-              className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[8px] text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] cursor-pointer">
-              <option value="weekdays-2am">Weekdays, 2:00 AM UTC</option>
-              <option value="weekends-3am">Weekends, 3:00 AM UTC</option>
-              <option value="custom">Custom schedule</option>
-              <option value="ai-recommended">AI-recommended (dynamic)</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[6px] block">Max unavailable nodes</label>
-            <select value={maxUnavailable} onChange={(e) => setMaxUnavailable(e.target.value)}
-              className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[8px] text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] cursor-pointer">
-              <option value="1">1 node</option>
-              <option value="2">2 nodes</option>
-              <option value="10%">10% of nodes</option>
-              <option value="25%">25% of nodes</option>
-            </select>
-          </div>
-          <div className="flex items-center justify-between col-span-2 bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[14px] py-[10px]">
-            <div>
-              <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium">Automatic rollback</p>
-              <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Automatically revert if health checks fail within 30 minutes</p>
-            </div>
-            <button onClick={() => setAutoRollback(!autoRollback)}
-              className={`relative w-[36px] h-[20px] rounded-full border-0 cursor-pointer transition-colors ${autoRollback ? "bg-[#0066cc]" : "bg-[#8a8d90]"}`}>
-              <div className={`absolute top-[2px] size-[16px] rounded-full bg-white transition-transform ${autoRollback ? "left-[18px]" : "left-[2px]"}`} />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Agent Monitoring */}
-      <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px]">
-        <div className="flex items-center justify-between mb-[16px]">
-          <div className="flex items-center gap-[10px]">
+      {/* Agent Status Bar */}
+      <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[20px]">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-[12px]">
+            <div className={`size-[10px] rounded-full ${agentStatus === "active" ? "bg-[#3e8635] animate-pulse" : agentStatus === "paused" ? "bg-[#c58c00]" : "bg-[#8a8d90]"}`} />
             <Bot className="size-[20px] text-[#6753ac]" />
-            <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Agent Status</h2>
+            <span className="text-[15px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white">
+              {agentStatus === "active" ? "Update Agent Active" : agentStatus === "paused" ? "Update Agent Paused" : "Update Agent Disabled"}
+            </span>
+            {agentStatus === "active" && (
+              <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
+                Target: <span className="font-['Red_Hat_Mono:Regular',sans-serif] text-[#151515] dark:text-white">5.1.10</span> &middot; Next check: <span className="font-['Red_Hat_Mono:Regular',sans-serif] text-[#151515] dark:text-white">Tomorrow 02:00 UTC</span>
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-[8px]">
-            <button onClick={() => openChatbot("agent-monitor")}
+            <button onClick={() => openChatbot("agent-precheck")}
               className="flex items-center gap-[6px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[13px] px-[12px] py-[6px] rounded-[6px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-              <Sparkles className="size-[13px]" /> Ask Lightspeed
+              Update pre-check with AI <Sparkles className="size-[13px]" />
             </button>
             {agentStatus === "idle" && (
-              <button onClick={() => setAgentStatus("active")}
-                className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-                <Play className="size-[13px]" /> Enable agent
+              <button onClick={() => setAgentStatus("active")} className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                Start update with AI <Sparkles className="size-[13px]" />
               </button>
             )}
             {agentStatus === "active" && (
-              <button onClick={() => setAgentStatus("paused")}
-                className="flex items-center gap-[6px] bg-transparent text-[#151515] dark:text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
-                <Pause className="size-[13px]" /> Pause agent
-              </button>
+              <>
+                <button onClick={() => openChatbot("agent-monitor")} className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                  Start update with AI <Sparkles className="size-[13px]" />
+                </button>
+                <button onClick={() => setAgentStatus("paused")} className="flex items-center gap-[6px] bg-transparent text-[#151515] dark:text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+                  <Pause className="size-[13px]" /> Pause agent
+                </button>
+              </>
             )}
             {agentStatus === "paused" && (
-              <button onClick={() => setAgentStatus("active")}
-                className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+              <button onClick={() => setAgentStatus("active")} className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] text-white text-[13px] px-[14px] py-[6px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
                 <Play className="size-[13px]" /> Resume agent
               </button>
             )}
           </div>
         </div>
+      </div>
 
-        <div className="flex items-center gap-[8px] mb-[16px]">
-          <div className={`size-[10px] rounded-full ${agentStatus === "active" ? "bg-[#3e8635] animate-pulse" : agentStatus === "paused" ? "bg-[#c58c00]" : "bg-[#8a8d90]"}`} />
-          <span className="text-[14px] font-['Red_Hat_Text:Regular',sans-serif] text-[#151515] dark:text-white font-medium">
-            {agentStatus === "active" ? "Agent is active and monitoring" : agentStatus === "paused" ? "Agent is paused" : "Agent is not enabled"}
-          </span>
+      {/* Agent Configuration — Tabbed */}
+      <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] overflow-hidden">
+        <div className="flex items-center justify-between px-[24px] py-[16px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] bg-[#fafafa] dark:bg-[rgba(255,255,255,0.02)]">
+          <div className="flex items-center gap-[10px]">
+            <Settings className="size-[18px] text-[#6753ac]" />
+            <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px]">Agent Configuration</h2>
+          </div>
+          <button onClick={() => openChatbot("agent-config")}
+            className="flex items-center gap-[6px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[12px] px-[10px] py-[5px] rounded-[6px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+            AI setup assistant <Sparkles className="size-[12px]" />
+          </button>
         </div>
 
-        {agentStatus !== "idle" && (
-          <div className="space-y-[8px] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] text-[#4d4d4d] dark:text-[#b0b0b0]">
-            <div className="flex justify-between py-[6px] border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]">
-              <span>Next scheduled check</span>
-              <span className="text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">Tomorrow, 2:00 AM UTC</span>
+        <div className="flex border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
+          {configTabs.map((t) => (
+            <button key={t.key} onClick={() => setConfigTab(t.key)}
+              className={`flex items-center gap-[6px] px-[16px] py-[10px] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] border-0 bg-transparent cursor-pointer transition-colors relative ${configTab === t.key ? "text-[#151515] dark:text-white font-medium" : "text-[#4d4d4d] dark:text-[#b0b0b0] hover:text-[#151515] dark:hover:text-white"}`}>
+              <t.icon className="size-[14px]" />
+              {t.label}
+              {configTab === t.key && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#0066cc] dark:bg-[#4dabf7]" />}
+            </button>
+          ))}
+        </div>
+
+        <div className="p-[24px]">
+          {/* Automatic Actions */}
+          {configTab === "actions" && (
+            <div className="space-y-[12px]">
+              <div className="flex items-center justify-between bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[16px] py-[12px]">
+                <div>
+                  <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium">Automatic pre-flight checks</p>
+                  <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Run all health and compatibility checks before each update attempt</p>
+                </div>
+                <Toggle enabled={autoPreflight} onChange={() => setAutoPreflight(!autoPreflight)} />
+              </div>
+              <div className="flex items-center justify-between bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[16px] py-[12px]">
+                <div>
+                  <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium">Automatic rollback on failure</p>
+                  <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Revert to previous version if health checks fail within 30 minutes of update completion</p>
+                </div>
+                <Toggle enabled={autoRollback} onChange={() => setAutoRollback(!autoRollback)} />
+              </div>
+              <div className="flex items-center justify-between bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[16px] py-[12px]">
+                <div>
+                  <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium">Automatic risk mitigation</p>
+                  <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Agent attempts to resolve known risks (e.g., drain failing nodes) before proceeding</p>
+                </div>
+                <Toggle enabled={autoRiskMitigation} onChange={() => setAutoRiskMitigation(!autoRiskMitigation)} />
+              </div>
+              <div className="flex items-center justify-between bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[16px] py-[12px]">
+                <div>
+                  <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium">Automatic operator updates</p>
+                  <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Update dependent operators to compatible versions before cluster update</p>
+                </div>
+                <Toggle enabled={autoOperatorUpdate} onChange={() => setAutoOperatorUpdate(!autoOperatorUpdate)} />
+              </div>
             </div>
-            <div className="flex justify-between py-[6px] border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]">
-              <span>Target version</span>
-              <span className="text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">5.1.10 (recommended)</span>
+          )}
+
+          {/* Compliance & Policy */}
+          {configTab === "compliance" && (
+            <div className="space-y-[16px]">
+              <div>
+                <h3 className="text-[14px] font-semibold text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] mb-[12px]">Optimal Update Window</h3>
+                <div className="grid grid-cols-4 gap-[12px]">
+                  <div>
+                    <label className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] block">Days</label>
+                    <select value={windowDay} onChange={(e) => setWindowDay(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[7px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] cursor-pointer">
+                      <option value="weekdays">Weekdays</option>
+                      <option value="weekends">Weekends</option>
+                      <option value="any">Any day</option>
+                      <option value="tue-thu">Tue–Thu</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] block">Start time</label>
+                    <input type="time" value={windowStart} onChange={(e) => setWindowStart(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[7px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]" />
+                  </div>
+                  <div>
+                    <label className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] block">End time</label>
+                    <input type="time" value={windowEnd} onChange={(e) => setWindowEnd(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[7px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]" />
+                  </div>
+                  <div>
+                    <label className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] block">Timezone</label>
+                    <select value={windowTz} onChange={(e) => setWindowTz(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[7px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] cursor-pointer">
+                      <option value="UTC">UTC</option>
+                      <option value="US/Eastern">US/Eastern</option>
+                      <option value="US/Pacific">US/Pacific</option>
+                      <option value="Europe/London">Europe/London</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div className="border-t border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] pt-[16px]">
+                <h3 className="text-[14px] font-semibold text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] mb-[12px]">Compliance Rules</h3>
+                <div className="grid grid-cols-2 gap-[12px]">
+                  <div className="bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[14px] py-[10px]">
+                    <label className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] block">Minimum nodes available during z-stream updates</label>
+                    <select value={minNodesUp} onChange={(e) => setMinNodesUp(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[6px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] cursor-pointer">
+                      <option value="1">At least 1 node</option>
+                      <option value="2">At least 2 nodes</option>
+                      <option value="3">At least 3 nodes</option>
+                      <option value="50%">At least 50% of nodes</option>
+                    </select>
+                  </div>
+                  <div className="bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[14px] py-[10px]">
+                    <label className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] block">Max unavailable nodes (percentage)</label>
+                    <select value={maxUnavailablePercent} onChange={(e) => setMaxUnavailablePercent(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[6px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] cursor-pointer">
+                      <option value="10">10%</option>
+                      <option value="20">20%</option>
+                      <option value="25">25%</option>
+                      <option value="33">33%</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[14px] py-[10px] mt-[12px]">
+                  <div>
+                    <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium">Require explicit approval for minor version updates</p>
+                    <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Z-stream updates may auto-approve if all checks pass; minor updates always require admin approval</p>
+                  </div>
+                  <Toggle enabled={requireApproval} onChange={() => setRequireApproval(!requireApproval)} />
+                </div>
+              </div>
             </div>
-            <div className="flex justify-between py-[6px] border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]">
-              <span>Rollback policy</span>
-              <span className="text-[#151515] dark:text-white">Automatic (30min threshold)</span>
+          )}
+
+          {/* Scheduling */}
+          {configTab === "scheduling" && (
+            <div className="space-y-[16px]">
+              <div className="space-y-[8px]">
+                {(["optimal", "fixed", "custom"] as const).map((mode) => (
+                  <button key={mode} onClick={() => setScheduleMode(mode)}
+                    className={`flex items-start gap-[12px] w-full text-left rounded-[8px] p-[14px] border transition-colors cursor-pointer bg-transparent ${scheduleMode === mode ? "border-[#0066cc] dark:border-[#4dabf7] bg-[#e7f1fa]/30 dark:bg-[rgba(43,154,243,0.04)]" : "border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)] hover:border-[#8a8d90]"}`}>
+                    <div className={`mt-[2px] size-[18px] rounded-full border-2 flex items-center justify-center shrink-0 ${scheduleMode === mode ? "border-[#0066cc] dark:border-[#4dabf7]" : "border-[#8a8d90]"}`}>
+                      {scheduleMode === mode && <div className="size-[10px] rounded-full bg-[#0066cc] dark:bg-[#4dabf7]" />}
+                    </div>
+                    <div>
+                      <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                        {mode === "optimal" ? "AI-recommended optimal window" : mode === "fixed" ? "Fixed schedule" : "Custom time slot"}
+                      </p>
+                      <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mt-[2px]">
+                        {mode === "optimal" ? "Agent analyzes workload patterns, traffic, and resource utilization to select the lowest-impact window" : mode === "fixed" ? "Specify an exact date and time for the next update" : "Define recurring time slots and let the agent pick within them"}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              {scheduleMode === "fixed" && (
+                <div className="grid grid-cols-2 gap-[12px] mt-[8px]">
+                  <div>
+                    <label className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] block">Date</label>
+                    <input type="date" value={fixedDate} onChange={(e) => setFixedDate(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[7px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]" />
+                  </div>
+                  <div>
+                    <label className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] block">Time ({windowTz})</label>
+                    <input type="time" value={fixedTime} onChange={(e) => setFixedTime(e.target.value)} className="w-full bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[6px] px-[10px] py-[7px] text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]" />
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="flex justify-between py-[6px]">
-              <span>Last decision</span>
-              <span className="text-[#151515] dark:text-white">Deferred — operator compatibility issues</span>
+          )}
+
+          {/* Notifications */}
+          {configTab === "notifications" && (
+            <div className="space-y-[16px]">
+              <div>
+                <h3 className="text-[14px] font-semibold text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] mb-[10px]">Notification Channels</h3>
+                <div className="grid grid-cols-2 gap-[12px]">
+                  <div className="flex items-center justify-between bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[14px] py-[10px]">
+                    <span className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">Email notifications</span>
+                    <Toggle enabled={notifyEmail} onChange={() => setNotifyEmail(!notifyEmail)} />
+                  </div>
+                  <div className="flex items-center justify-between bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[14px] py-[10px]">
+                    <span className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">Slack / Webhook</span>
+                    <Toggle enabled={notifySlack} onChange={() => setNotifySlack(!notifySlack)} />
+                  </div>
+                </div>
+              </div>
+              <div className="border-t border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] pt-[16px]">
+                <h3 className="text-[14px] font-semibold text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] mb-[10px]">Alert Events</h3>
+                <div className="grid grid-cols-2 gap-[8px]">
+                  {[
+                    { label: "Update plan generated", state: notifyOnPlan, toggle: () => setNotifyOnPlan(!notifyOnPlan) },
+                    { label: "Update started", state: notifyOnStart, toggle: () => setNotifyOnStart(!notifyOnStart) },
+                    { label: "Update completed", state: notifyOnComplete, toggle: () => setNotifyOnComplete(!notifyOnComplete) },
+                    { label: "Update failed / rollback triggered", state: notifyOnFailure, toggle: () => setNotifyOnFailure(!notifyOnFailure) },
+                  ].map((item) => (
+                    <div key={item.label} className="flex items-center justify-between bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[14px] py-[10px]">
+                      <span className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">{item.label}</span>
+                      <Toggle enabled={item.state} onChange={item.toggle} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Agent Proposed Update Plan */}
+      {agentStatus === "active" && (
+        <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] overflow-hidden">
+          <div className="px-[24px] py-[16px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] bg-[#fafafa] dark:bg-[rgba(255,255,255,0.02)]">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-[10px]">
+                <FileText className="size-[18px] text-[#6753ac]" />
+                <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px]">Agent&apos;s Proposed Update Plan</h2>
+                {planDecision === "pending" && <span className="text-[11px] px-[8px] py-[2px] rounded-full bg-[#e7f1fa] text-[#0066cc] font-semibold font-['Red_Hat_Text:Regular',sans-serif]">Pending approval</span>}
+                {planDecision === "approved" && <span className="text-[11px] px-[8px] py-[2px] rounded-full bg-[rgba(62,134,53,0.1)] text-[#3e8635] font-semibold font-['Red_Hat_Text:Regular',sans-serif]">Approved</span>}
+                {planDecision === "rejected" && <span className="text-[11px] px-[8px] py-[2px] rounded-full bg-[rgba(201,25,11,0.1)] text-[#c9190b] font-semibold font-['Red_Hat_Text:Regular',sans-serif]">Rejected</span>}
+              </div>
+              <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Generated Mar 30, 2026 02:15 UTC</span>
             </div>
           </div>
-        )}
-      </div>
+
+          <div className="p-[24px] space-y-[20px]">
+            {/* Pre-Flight Checks Module */}
+            <div>
+              <div className="flex items-center gap-[8px] mb-[12px]">
+                <Shield className="size-[16px] text-[#3e8635]" />
+                <h3 className="text-[15px] font-semibold text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">Pre-Flight Checks</h3>
+                <span className="text-[12px] text-[#3e8635] font-semibold px-[8px] py-[1px] rounded-full bg-[rgba(62,134,53,0.1)] font-['Red_Hat_Text:Regular',sans-serif]">
+                  {agentPreflightChecks.filter(c => c.status === "pass").length}/{agentPreflightChecks.length} passed
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-[8px]">
+                {agentPreflightChecks.map((check) => (
+                  <div key={check.label} className="flex items-start gap-[8px] bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[12px] py-[10px]">
+                    <CheckCircle className="size-[14px] text-[#3e8635] shrink-0 mt-[1px]" />
+                    <div>
+                      <p className="text-[13px] text-[#151515] dark:text-white font-medium font-['Red_Hat_Text:Regular',sans-serif]">{check.label}</p>
+                      <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mt-[2px]">{check.detail}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Compatibility Analysis Module */}
+            <div className="border-t border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] pt-[20px]">
+              <div className="flex items-center justify-between mb-[12px]">
+                <div className="flex items-center gap-[8px]">
+                  <Eye className="size-[16px] text-[#c58c00]" />
+                  <h3 className="text-[15px] font-semibold text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">Compatibility Analysis</h3>
+                  {incompatibleOps.length > 0 && (
+                    <span className="text-[12px] text-[#c9190b] font-semibold px-[8px] py-[1px] rounded-full bg-[rgba(201,25,11,0.1)] font-['Red_Hat_Text:Regular',sans-serif]">
+                      {incompatibleOps.length} issue{incompatibleOps.length > 1 ? "s" : ""}
+                    </span>
+                  )}
+                </div>
+                <button onClick={() => openChatbot("compatibility-analysis")}
+                  className="flex items-center gap-[6px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[12px] px-[10px] py-[5px] rounded-[6px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                  AI compatibility check <Sparkles className="size-[12px]" />
+                </button>
+              </div>
+
+              {/* Operator Compatibility */}
+              <div className="mb-[12px]">
+                <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[8px] font-semibold uppercase tracking-wide">Operator Compatibility Status</p>
+                <div className="border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)] rounded-[8px] overflow-hidden">
+                  <div className="grid grid-cols-[1fr_80px_60px_80px_1fr_100px] gap-[8px] px-[12px] py-[6px] text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)]">
+                    <span>Operator</span><span>Version</span><span>Max OCP</span><span>Status</span><span>Required Action</span><span>Resolution</span>
+                  </div>
+                  {compatAnalysis.operators.map((op) => (
+                    <div key={op.name} className={`grid grid-cols-[1fr_80px_60px_80px_1fr_100px] gap-[8px] items-center px-[12px] py-[8px] border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] last:border-0 ${op.status === "incompatible" ? "bg-[rgba(201,25,11,0.02)]" : ""}`}>
+                      <span className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">{op.name}</span>
+                      <span className="text-[12px] font-['Red_Hat_Mono:Regular',sans-serif] text-[#151515] dark:text-white">{op.currentVersion}</span>
+                      <span className="text-[12px] font-['Red_Hat_Mono:Regular',sans-serif] text-[#4d4d4d] dark:text-[#b0b0b0]">{op.maxOCP}</span>
+                      <span>
+                        {op.status === "compatible" && <span className="flex items-center gap-[3px] text-[11px] text-[#3e8635] font-semibold"><CheckCircle className="size-[10px]" /> OK</span>}
+                        {op.status === "incompatible" && <span className="flex items-center gap-[3px] text-[11px] text-[#c9190b] font-semibold"><XCircle className="size-[10px]" /> Blocked</span>}
+                        {op.status === "warning" && <span className="flex items-center gap-[3px] text-[11px] text-[#c58c00] font-semibold"><AlertTriangle className="size-[10px]" /> Warn</span>}
+                      </span>
+                      <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{op.action ?? "—"}</span>
+                      <span>
+                        {op.action ? (
+                          <div className="flex items-center gap-[6px]">
+                            <button onClick={() => setActiveTab("cluster-operators")} className="bg-transparent border-0 p-0 text-[#0066cc] dark:text-[#4dabf7] text-[11px] cursor-pointer hover:underline font-['Red_Hat_Text:Regular',sans-serif] font-medium whitespace-nowrap">
+                              Update now
+                            </button>
+                            {op.docUrl && (
+                              <a href={op.docUrl} target="_blank" rel="noopener noreferrer" className="text-[#4d4d4d] dark:text-[#b0b0b0] hover:text-[#0066cc] dark:hover:text-[#4dabf7]" title="View documentation">
+                                <ExternalLink className="size-[11px]" />
+                              </a>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-[11px] text-[#3e8635]">No action needed</span>
+                        )}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Resolution summary when issues exist */}
+              {(incompatibleOps.length > 0 || warningOps.length > 0) && (
+                <div className="rounded-[8px] border border-[#c58c00]/30 bg-[#fdf7e7] dark:bg-[rgba(197,140,0,0.06)] p-[14px] mb-[12px]">
+                  <div className="flex items-start gap-[10px]">
+                    <AlertTriangle className="size-[16px] text-[#c58c00] shrink-0 mt-[1px]" />
+                    <div className="flex-1">
+                      <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-semibold mb-[8px]">
+                        {incompatibleOps.length} blocking issue{incompatibleOps.length !== 1 ? "s" : ""} must be resolved before this update can proceed
+                      </p>
+                      <div className="space-y-[6px] mb-[12px]">
+                        {compatAnalysis.operators.filter(o => o.status !== "compatible").map((op) => (
+                          <div key={op.name} className="flex items-center gap-[8px] text-[12px] font-['Red_Hat_Text:Regular',sans-serif]">
+                            {op.status === "incompatible" ? <XCircle className="size-[12px] text-[#c9190b] shrink-0" /> : <AlertTriangle className="size-[12px] text-[#c58c00] shrink-0" />}
+                            <span className="text-[#151515] dark:text-white font-medium">{op.name}</span>
+                            <span className="text-[#4d4d4d] dark:text-[#b0b0b0]">→</span>
+                            <span className="text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">{op.action}</span>
+                            {op.docUrl && (
+                              <a href={op.docUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-[3px] text-[#0066cc] dark:text-[#4dabf7] no-underline hover:underline">
+                                Docs <ExternalLink className="size-[10px]" />
+                              </a>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-[8px]">
+                        <button onClick={() => setActiveTab("cluster-operators")}
+                          className="bg-[#0066cc] hover:bg-[#004080] text-white text-[12px] px-[12px] py-[5px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                          Go to cluster operators
+                        </button>
+                        <button onClick={() => openChatbot("compatibility-analysis")}
+                          className="flex items-center gap-[5px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[12px] px-[12px] py-[5px] rounded-[6px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                          Get AI remediation plan <Sparkles className="size-[11px]" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* API Deprecations */}
+              <div className="grid grid-cols-2 gap-[12px]">
+                <div>
+                  <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[8px] font-semibold uppercase tracking-wide">API Deprecations</p>
+                  {compatAnalysis.apiDeprecations.length > 0 ? (
+                    <div className="space-y-[6px]">
+                      {compatAnalysis.apiDeprecations.map((dep, i) => (
+                        <div key={i} className="bg-[#fdf7e7] dark:bg-[rgba(197,140,0,0.06)] rounded-[6px] px-[12px] py-[8px] border border-[#c58c00]/20">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-[6px]">
+                              <AlertTriangle className="size-[12px] text-[#c58c00] shrink-0" />
+                              <span className="text-[12px] font-['Red_Hat_Mono:Regular',sans-serif] text-[#151515] dark:text-white">{dep.api}</span>
+                            </div>
+                            {dep.docUrl && (
+                              <a href={dep.docUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-[3px] text-[#0066cc] dark:text-[#4dabf7] text-[10px] no-underline hover:underline font-['Red_Hat_Text:Regular',sans-serif]">
+                                How to fix <ExternalLink className="size-[9px]" />
+                              </a>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mt-[4px] ml-[18px]">
+                            Replace with <span className="font-['Red_Hat_Mono:Regular',sans-serif] text-[#151515] dark:text-white">{dep.replacement}</span>
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-[6px] text-[12px] text-[#3e8635] font-['Red_Hat_Text:Regular',sans-serif]">
+                      <CheckCircle className="size-[12px]" /> No deprecated APIs detected
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[8px] font-semibold uppercase tracking-wide">Custom Resource Incompatibilities</p>
+                  {compatAnalysis.crIncompatibilities.length > 0 ? (
+                    <div className="space-y-[6px]">
+                      {compatAnalysis.crIncompatibilities.map((cr, i) => (
+                        <div key={i} className="bg-[rgba(201,25,11,0.04)] rounded-[6px] px-[12px] py-[8px] border border-[#c9190b]/20">
+                          <span className="text-[12px] font-['Red_Hat_Mono:Regular',sans-serif] text-[#c9190b]">{cr.resource}</span>
+                          <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mt-[2px]">{cr.detail}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-[6px] text-[12px] text-[#3e8635] font-['Red_Hat_Text:Regular',sans-serif]">
+                      <CheckCircle className="size-[12px]" /> No CR incompatibilities found
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Scheduled Execution Module */}
+            <div className="border-t border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] pt-[20px]">
+              <div className="flex items-center gap-[8px] mb-[12px]">
+                <Clock className="size-[16px] text-[#0066cc]" />
+                <h3 className="text-[15px] font-semibold text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">Scheduled Execution</h3>
+              </div>
+              <div className="grid grid-cols-4 gap-[12px]">
+                <div className="bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[14px] py-[10px]">
+                  <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px]">Optimal Window</p>
+                  <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif] font-medium">{scheduledExecution.optimalWindow}</p>
+                </div>
+                <div className="bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[14px] py-[10px]">
+                  <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px]">Estimated Duration</p>
+                  <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif] font-medium">{scheduledExecution.estimatedDuration}</p>
+                </div>
+                <div className="bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[14px] py-[10px]">
+                  <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px]">Risk Level</p>
+                  <span className={`text-[12px] px-[8px] py-[2px] rounded-[4px] font-semibold ${scheduledExecution.riskLevel === "Low" ? "bg-[rgba(62,134,53,0.1)] text-[#3e8635]" : scheduledExecution.riskLevel === "Medium" ? "bg-[rgba(197,140,0,0.1)] text-[#c58c00]" : "bg-[rgba(201,25,11,0.1)] text-[#c9190b]"}`}>
+                    {scheduledExecution.riskLevel} Risk
+                  </span>
+                </div>
+                <div className="bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[14px] py-[10px]">
+                  <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px]">Rollback Strategy</p>
+                  <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">{autoRollback ? "Automatic" : "Manual"}</p>
+                </div>
+              </div>
+              <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mt-[8px]">
+                {scheduledExecution.rollbackStrategy}
+              </p>
+            </div>
+
+            {/* Explicit Decision Workflow */}
+            {incompatibleOps.length > 0 && (
+              <div className="rounded-[8px] border-2 border-[#c9190b]/40 bg-[rgba(201,25,11,0.03)] dark:bg-[rgba(201,25,11,0.06)] p-[14px]">
+                <div className="flex items-start gap-[10px]">
+                  <XCircle className="size-[16px] text-[#c9190b] shrink-0 mt-[1px]" />
+                  <div className="flex-1">
+                    <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-semibold mb-[6px]">
+                      Resolve {incompatibleOps.length} blocking issue{incompatibleOps.length !== 1 ? "s" : ""} before approving
+                    </p>
+                    <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[10px]">
+                      The following operators are incompatible with the target version and must be updated first. You can also choose to accept risks and proceed.
+                    </p>
+                    <div className="space-y-[4px] mb-[12px]">
+                      {incompatibleOps.map((op) => (
+                        <div key={op.name} className="flex items-center gap-[6px] text-[12px] font-['Red_Hat_Text:Regular',sans-serif]">
+                          <span className="text-[#c9190b]">&#x2022;</span>
+                          <span className="text-[#151515] dark:text-white font-medium">{op.name} {op.currentVersion}</span>
+                          <span className="text-[#4d4d4d] dark:text-[#b0b0b0]">→ {op.action}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-[8px]">
+                      <button onClick={() => setActiveTab("cluster-operators")}
+                        className="bg-[#0066cc] hover:bg-[#004080] text-white text-[12px] px-[12px] py-[5px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                        Resolve in cluster operators
+                      </button>
+                      <button onClick={() => openChatbot("compatibility-analysis")}
+                        className="flex items-center gap-[5px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[12px] px-[12px] py-[5px] rounded-[6px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                        Get AI remediation plan <Sparkles className="size-[11px]" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {incompatibleOps.length === 0 && warningOps.length > 0 && (
+              <div className="rounded-[8px] border-2 border-[#5e40be] bg-white dark:bg-[rgba(94,64,190,0.06)] p-[14px]">
+                <div className="flex items-start gap-[10px]">
+                  <Info className="size-[16px] text-[#5e40be] shrink-0 mt-[1px]" />
+                  <div>
+                    <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">
+                      <span className="font-semibold">Acknowledged risks:</span> Approving this plan will set <span className="font-['Red_Hat_Mono:Regular',sans-serif] text-[#5e40be]">desiredUpdate.acceptedRisks</span>.
+                      {warningOps.length > 0 && ` ${warningOps.length} warning${warningOps.length > 1 ? "s" : ""} will be logged but won't block the update.`}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="border-t border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] pt-[20px] flex items-center justify-between">
+              <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
+                Target: <span className="font-['Red_Hat_Mono:Regular',sans-serif] text-[#151515] dark:text-white font-medium">5.0.0 → 5.1.10</span>
+              </p>
+              <div className="flex items-center gap-[10px]">
+                <button onClick={() => setPlanDecision("rejected")}
+                  className={`text-[14px] px-[16px] py-[8px] rounded-[6px] border cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${planDecision === "rejected" ? "bg-[rgba(201,25,11,0.1)] text-[#c9190b] border-[#c9190b]" : "bg-transparent text-[#c9190b] border-[#c9190b] hover:bg-[rgba(201,25,11,0.05)]"}`}>
+                  Reject plan
+                </button>
+                <button onClick={() => { setScheduleMode("fixed"); setConfigTab("scheduling"); }}
+                  className="bg-transparent text-[#151515] dark:text-white text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] cursor-pointer hover:bg-[rgba(0,0,0,0.03)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]">
+                  Modify schedule
+                </button>
+                {incompatibleOps.length > 0 ? (
+                  <div className="relative group">
+                    <button disabled
+                      className="text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed">
+                      Approve plan
+                    </button>
+                    <div className="absolute bottom-full right-0 mb-[6px] hidden group-hover:block z-10">
+                      <div className="bg-[#151515] text-white text-[11px] px-[10px] py-[6px] rounded-[6px] shadow-lg whitespace-nowrap font-['Red_Hat_Text:Regular',sans-serif]">
+                        Resolve {incompatibleOps.length} blocking issue{incompatibleOps.length !== 1 ? "s" : ""} to approve
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={() => setPlanDecision("approved")}
+                    className={`text-[14px] px-[16px] py-[8px] rounded-[6px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${planDecision === "approved" ? "bg-[#3e8635] text-white" : "bg-[#0066cc] hover:bg-[#004080] text-white"}`}>
+                    {planDecision === "approved" ? "✓ Plan approved" : "Approve plan"}
+                  </button>
+                )}
+                {incompatibleOps.length > 0 && (
+                  <button onClick={() => setPlanDecision("approved")}
+                    className="text-[14px] px-[16px] py-[8px] rounded-[6px] border border-[#c58c00] text-[#c58c00] bg-transparent cursor-pointer hover:bg-[rgba(197,140,0,0.05)] transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                    Accept risks &amp; approve
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -714,6 +1250,7 @@ function AvailableUpdatesSection({
   expandedGroups, setExpandedGroups,
   selectedVersion, setSelectedVersion, navigate, setActiveTab, setPrecheckVersion, openChatbot,
 }: any) {
+  const [updateAllOps, setUpdateAllOps] = useState(false);
   const filteredGroups: VersionGroup[] = showZStreamOnly
     ? channelData.groups.filter((g: VersionGroup) => g.label.startsWith("5.0"))
     : channelData.groups;
@@ -742,13 +1279,13 @@ function AvailableUpdatesSection({
       </div>
 
       {!showZStreamOnly && channelData.banner && (
-        <div className="flex items-center gap-[12px] bg-[#e7f1fa] dark:bg-[rgba(43,154,243,0.1)] px-[16px] py-[10px] mb-[20px] border-l-[3px] border-l-[#2b9af3] border-y-0 border-r-0" role="alert">
-          <Info className="size-[18px] text-[#2b9af3] dark:text-[#4dabf7] shrink-0" />
+        <div className="flex items-center gap-[12px] bg-white dark:bg-[rgba(94,64,190,0.06)] px-[16px] py-[12px] mb-[20px] rounded-[16px] border-2 border-[#5e40be]" role="status">
+          <Info className="size-[18px] text-[#5e40be] dark:text-[#b2a3e0] shrink-0" />
           <p className="text-[#151515] dark:text-white text-[14px] font-['Red_Hat_Text:Regular',sans-serif] flex-1">
-            <span className="font-semibold">{channelData.banner.title}</span> {channelData.banner.description}
+            <span className="font-medium">{channelData.banner.title}</span> {channelData.banner.description}
           </p>
           <a href="https://docs.openshift.com/container-platform/latest/release_notes/ocp-4-18-release-notes.html" target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[13px] no-underline hover:underline whitespace-nowrap font-['Red_Hat_Text:Regular',sans-serif]">
+            className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[13px] no-underline hover:underline whitespace-nowrap font-['Red_Hat_Text:Regular',sans-serif] font-medium">
             {channelData.banner.link} <ArrowRight className="size-[14px]" />
           </a>
         </div>
@@ -762,7 +1299,8 @@ function AvailableUpdatesSection({
         <VersionGroupComponent key={group.label} label={group.label} versions={group.versions}
           expanded={!!expandedGroups[group.label]}
           setExpanded={(val: boolean) => setExpandedGroups((prev: Record<string, boolean>) => ({ ...prev, [group.label]: val }))}
-          selectedVersion={selectedVersion} setSelectedVersion={setSelectedVersion} navigate={navigate} setActiveTab={setActiveTab} setPrecheckVersion={setPrecheckVersion} />
+          selectedVersion={selectedVersion} setSelectedVersion={setSelectedVersion} navigate={navigate} setActiveTab={setActiveTab} setPrecheckVersion={setPrecheckVersion}
+          updateAllOps={updateAllOps} setUpdateAllOps={setUpdateAllOps} />
       ))}
     </div>
   );
@@ -771,7 +1309,7 @@ function AvailableUpdatesSection({
 /* ─── Version Group ─── */
 const COL_TEMPLATE = "32px 140px 180px 100px 140px auto";
 
-function VersionGroupComponent({ label, versions, expanded, setExpanded, selectedVersion, setSelectedVersion, navigate, setActiveTab, setPrecheckVersion }: any) {
+function VersionGroupComponent({ label, versions, expanded, setExpanded, selectedVersion, setSelectedVersion, navigate, setActiveTab, setPrecheckVersion, updateAllOps, setUpdateAllOps }: any) {
   return (
     <div className="mb-[8px]">
       <button onClick={() => setExpanded(!expanded)}
@@ -849,10 +1387,16 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                               <li key={i}><span className="text-[#151515] dark:text-white font-medium">{issue.name}:</span> {issue.message}</li>
                             ))}
                           </ul>
-                          <button onClick={() => setActiveTab("cluster-operators")}
-                            className="bg-transparent border-0 p-0 text-[#0066cc] dark:text-[#4dabf7] text-[12px] cursor-pointer hover:underline font-['Red_Hat_Text:Regular',sans-serif]">
-                            View Cluster Operators
-                          </button>
+                          <div className="flex items-center gap-[16px]">
+                            <div className="flex items-center gap-[6px]">
+                              <Toggle enabled={updateAllOps} onChange={() => setUpdateAllOps(!updateAllOps)} />
+                              <span className="text-[12px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">Update all operators</span>
+                            </div>
+                            <button onClick={() => setActiveTab("cluster-operators")}
+                              className="bg-transparent border-0 p-0 text-[#0066cc] dark:text-[#4dabf7] text-[12px] cursor-pointer hover:underline font-['Red_Hat_Text:Regular',sans-serif]">
+                              View cluster operators
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -954,22 +1498,100 @@ function ClusterOperatorsTab() {
 
 /* ─── Update History Tab ─── */
 function UpdateHistoryTab() {
+  const [expandedRow, setExpandedRow] = useState<number | null>(null);
+  const [filterMethod, setFilterMethod] = useState<"all" | "Manual" | "Agent">("all");
+
+  const filtered = filterMethod === "all" ? updateHistory : updateHistory.filter((e) => e.method === filterMethod);
+
   return (
     <div>
-      <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px] mb-[16px]">Update History</h2>
-      <div className="border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)] rounded-[8px] overflow-hidden">
-        <div className="grid grid-cols-[120px_100px_1fr_1fr_100px] gap-[12px] px-[16px] py-[10px] text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)]">
-          <span>Version</span><span>Status</span><span>Started</span><span>Completed</span><span>Duration</span>
+      <div className="flex items-center justify-between mb-[16px]">
+        <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Update History</h2>
+        <div className="flex items-center gap-[8px]">
+          {(["all", "Manual", "Agent"] as const).map((f) => (
+            <button key={f} onClick={() => setFilterMethod(f)}
+              className={`text-[13px] px-[12px] py-[5px] rounded-[6px] border cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] ${filterMethod === f ? "bg-[#0066cc] text-white border-[#0066cc]" : "bg-transparent text-[#4d4d4d] dark:text-[#b0b0b0] border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90]"}`}>
+              {f === "all" ? "All" : f}
+            </button>
+          ))}
         </div>
-        {updateHistory.map((entry, i) => (
-          <div key={i} className="grid grid-cols-[120px_100px_1fr_1fr_100px] gap-[12px] items-center px-[16px] py-[12px] border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] last:border-0 hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)]">
-            <span className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">{entry.version}</span>
-            <span>{entry.status === "Completed" ? <span className="flex items-center gap-[4px] text-[12px] px-[8px] py-[2px] rounded-[4px] font-semibold bg-[rgba(62,134,53,0.1)] text-[#3e8635] w-fit"><CheckCircle className="size-[10px]" /> {entry.status}</span> : <span className="flex items-center gap-[4px] text-[12px] px-[8px] py-[2px] rounded-[4px] font-semibold bg-[rgba(201,25,11,0.1)] text-[#c9190b] w-fit"><AlertTriangle className="size-[10px]" /> {entry.status}</span>}</span>
-            <span className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{entry.startedAt}</span>
-            <span className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{entry.completedAt}</span>
-            <span className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">{entry.duration}</span>
-          </div>
-        ))}
+      </div>
+      <div className="border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)] rounded-[8px] overflow-hidden">
+        <div className="grid grid-cols-[90px_100px_72px_100px_1fr_140px_72px] gap-[8px] px-[16px] py-[10px] text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)]">
+          <span>Version</span><span>Status</span><span>Method</span><span>Decision</span><span>Initiated by</span><span>Date</span><span>Pre-flight</span>
+        </div>
+        {filtered.map((entry, i) => {
+          const isExpanded = expandedRow === i;
+          return (
+            <div key={i}>
+              <div onClick={() => setExpandedRow(isExpanded ? null : i)}
+                className={`grid grid-cols-[90px_100px_72px_100px_1fr_140px_72px] gap-[8px] items-center px-[16px] py-[12px] border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] cursor-pointer transition-colors ${isExpanded ? "bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)]" : "hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)]"}`}>
+                <span className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">{entry.version}</span>
+                <span>
+                  {entry.status === "Completed" && <span className="flex items-center gap-[3px] text-[11px] px-[6px] py-[2px] rounded-[4px] font-semibold bg-[rgba(62,134,53,0.1)] text-[#3e8635] w-fit"><CheckCircle className="size-[10px]" /> Done</span>}
+                  {entry.status === "Failed" && <span className="flex items-center gap-[3px] text-[11px] px-[6px] py-[2px] rounded-[4px] font-semibold bg-[rgba(201,25,11,0.1)] text-[#c9190b] w-fit"><XCircle className="size-[10px]" /> Failed</span>}
+                  {entry.status === "Rejected" && <span className="flex items-center gap-[3px] text-[11px] px-[6px] py-[2px] rounded-[4px] font-semibold bg-[rgba(201,25,11,0.1)] text-[#c9190b] w-fit"><X className="size-[10px]" /> Rejected</span>}
+                </span>
+                <span>
+                  {entry.method === "Agent" ? (
+                    <span className="flex items-center gap-[3px] text-[11px] text-[#6753ac] font-semibold"><Bot className="size-[11px]" /> Agent</span>
+                  ) : (
+                    <span className="flex items-center gap-[3px] text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0]"><User className="size-[11px]" /> Manual</span>
+                  )}
+                </span>
+                <span>
+                  {entry.decision === "Approved" && <span className="text-[11px] px-[6px] py-[2px] rounded-[4px] font-semibold bg-[rgba(62,134,53,0.1)] text-[#3e8635]">Approved</span>}
+                  {entry.decision === "Auto-approved" && <span className="text-[11px] px-[6px] py-[2px] rounded-[4px] font-semibold bg-[#e7f1fa] text-[#0066cc]">Auto</span>}
+                  {entry.decision === "Rejected" && <span className="text-[11px] px-[6px] py-[2px] rounded-[4px] font-semibold bg-[rgba(201,25,11,0.1)] text-[#c9190b]">Rejected</span>}
+                  {entry.decision === "N/A" && <span className="text-[11px] text-[#8a8d90]">—</span>}
+                </span>
+                <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] truncate" title={entry.initiatedBy}>{entry.initiatedBy}</span>
+                <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{entry.startedAt.split(" ").slice(0, 3).join(" ")}</span>
+                <span>
+                  <span className={`text-[11px] px-[6px] py-[2px] rounded-[4px] font-semibold ${entry.preflight.failed === 0 ? "bg-[rgba(62,134,53,0.1)] text-[#3e8635]" : "bg-[rgba(201,25,11,0.1)] text-[#c9190b]"}`}>
+                    {entry.preflight.passed}/{entry.preflight.total}
+                  </span>
+                </span>
+              </div>
+
+              {/* Expanded detail row */}
+              {isExpanded && (
+                <div className="px-[16px] py-[16px] border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] bg-[#fafafa] dark:bg-[rgba(255,255,255,0.02)]">
+                  <div className="grid grid-cols-3 gap-[16px] mb-[12px]">
+                    <div>
+                      <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Started</p>
+                      <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">{entry.startedAt}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Completed</p>
+                      <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">{entry.completedAt}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Duration</p>
+                      <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">{entry.duration}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-[16px]">
+                    <div>
+                      <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Pre-flight Summary</p>
+                      <div className="flex items-center gap-[8px]">
+                        <span className="text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">
+                          <span className="text-[#3e8635] font-semibold">{entry.preflight.passed} passed</span>
+                          {entry.preflight.failed > 0 && <span className="text-[#c9190b] font-semibold"> · {entry.preflight.failed} failed</span>}
+                          <span className="text-[#4d4d4d] dark:text-[#b0b0b0]"> of {entry.preflight.total} checks</span>
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Compatibility Summary</p>
+                      <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">{entry.compatSummary ?? "No compatibility data recorded"}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
