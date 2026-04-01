@@ -142,21 +142,25 @@ type InstalledOperator = {
   source: string;
   status: "Running" | "Degraded" | "Pending";
   autoUpdate: boolean;
+  clusterCompatibility: "Compatible" | "Incompatible" | "Unknown";
+  compatibilityMessage?: string;
+  support: "Full" | "Limited" | "Community" | "Self-support";
+  updateAvailable?: string;
 };
 
 const installedOperators: InstalledOperator[] = [
-  { name: "Cluster Logging", namespace: "openshift-logging", version: "6.4.3", channel: "stable-6.4", source: "redhat-operators", status: "Running", autoUpdate: false },
-  { name: "Elasticsearch Operator", namespace: "openshift-operators-redhat", version: "5.7.2", channel: "stable-5.7", source: "redhat-operators", status: "Running", autoUpdate: false },
-  { name: "Cloud Credential Operator", namespace: "openshift-cloud-credential-operator", version: "5.0.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: true },
-  { name: "Operator Lifecycle Manager", namespace: "openshift-operator-lifecycle-manager", version: "4.21.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: false },
-  { name: "Cert Manager", namespace: "cert-manager-operator", version: "1.12.0", channel: "stable-v1", source: "redhat-operators", status: "Running", autoUpdate: true },
-  { name: "OpenShift DNS", namespace: "openshift-dns-operator", version: "5.0.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: true },
-  { name: "Ingress Operator", namespace: "openshift-ingress-operator", version: "5.0.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: true },
-  { name: "Machine Config Operator", namespace: "openshift-machine-config-operator", version: "5.0.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: true },
-  { name: "Monitoring Stack", namespace: "openshift-monitoring", version: "5.0.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: true },
-  { name: "Service Mesh", namespace: "openshift-operators", version: "2.5.1", channel: "stable", source: "redhat-operators", status: "Degraded", autoUpdate: false },
-  { name: "Web Terminal", namespace: "openshift-operators", version: "1.9.0", channel: "fast", source: "redhat-operators", status: "Running", autoUpdate: true },
-  { name: "Kiali Operator", namespace: "openshift-operators", version: "1.73.0", channel: "stable", source: "redhat-operators", status: "Running", autoUpdate: false },
+  { name: "Cluster Logging", namespace: "openshift-logging", version: "6.4.3", channel: "stable-6.4", source: "redhat-operators", status: "Running", autoUpdate: false, clusterCompatibility: "Incompatible", compatibilityMessage: "Max supported OCP version is 5.0. Update to v6.5+ before upgrading cluster.", support: "Full", updateAvailable: "6.5.1" },
+  { name: "Elasticsearch Operator", namespace: "openshift-operators-redhat", version: "5.7.2", channel: "stable-5.7", source: "redhat-operators", status: "Running", autoUpdate: false, clusterCompatibility: "Compatible", support: "Full" },
+  { name: "Cloud Credential Operator", namespace: "openshift-cloud-credential-operator", version: "5.0.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: true, clusterCompatibility: "Compatible", compatibilityMessage: "IAM configuration may need updating before cluster upgrade.", support: "Full" },
+  { name: "Operator Lifecycle Manager", namespace: "openshift-operator-lifecycle-manager", version: "4.21.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: false, clusterCompatibility: "Incompatible", compatibilityMessage: "Incompatible with OCP 5.1. Update to 4.22.0 or higher.", support: "Full", updateAvailable: "4.22.0" },
+  { name: "Cert Manager", namespace: "cert-manager-operator", version: "1.12.0", channel: "stable-v1", source: "redhat-operators", status: "Running", autoUpdate: true, clusterCompatibility: "Compatible", support: "Full", updateAvailable: "1.14.0" },
+  { name: "OpenShift DNS", namespace: "openshift-dns-operator", version: "5.0.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: true, clusterCompatibility: "Compatible", support: "Full" },
+  { name: "Ingress Operator", namespace: "openshift-ingress-operator", version: "5.0.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: true, clusterCompatibility: "Compatible", support: "Full" },
+  { name: "Machine Config Operator", namespace: "openshift-machine-config-operator", version: "5.0.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: true, clusterCompatibility: "Compatible", support: "Full" },
+  { name: "Monitoring Stack", namespace: "openshift-monitoring", version: "5.0.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: true, clusterCompatibility: "Compatible", support: "Full" },
+  { name: "Service Mesh", namespace: "openshift-operators", version: "2.5.1", channel: "stable", source: "redhat-operators", status: "Degraded", autoUpdate: false, clusterCompatibility: "Unknown", compatibilityMessage: "Operator is degraded. Compatibility cannot be determined until the operator is healthy.", support: "Limited", updateAvailable: "2.6.0" },
+  { name: "Web Terminal", namespace: "openshift-operators", version: "1.9.0", channel: "fast", source: "redhat-operators", status: "Running", autoUpdate: true, clusterCompatibility: "Compatible", support: "Community" },
+  { name: "Kiali Operator", namespace: "openshift-operators", version: "1.73.0", channel: "stable", source: "redhat-operators", status: "Running", autoUpdate: false, clusterCompatibility: "Compatible", support: "Full", updateAvailable: "1.76.0" },
 ];
 
 type UpdateHistoryEntry = {
@@ -1822,16 +1826,26 @@ function AvailableUpdatesSection({
   );
 }
 
-/* ─── Installed Operators Section ─── */
+/* ─── Installed Operators Section (OLM-integrated widget) ─── */
 function InstalledOperatorsSection() {
   const [search, setSearch] = useState("");
-  const filtered = search
-    ? installedOperators.filter((op) => op.name.toLowerCase().includes(search.toLowerCase()) || op.namespace.toLowerCase().includes(search.toLowerCase()))
-    : installedOperators;
+  const [filterCompat, setFilterCompat] = useState<"all" | "incompatible" | "update-available">("all");
+  const filtered = installedOperators
+    .filter((op) => {
+      if (search && !op.name.toLowerCase().includes(search.toLowerCase()) && !op.namespace.toLowerCase().includes(search.toLowerCase())) return false;
+      if (filterCompat === "incompatible") return op.clusterCompatibility === "Incompatible";
+      if (filterCompat === "update-available") return !!op.updateAvailable;
+      return true;
+    });
   const degradedCount = installedOperators.filter((op) => op.status === "Degraded").length;
+  const incompatibleCount = installedOperators.filter((op) => op.clusterCompatibility === "Incompatible").length;
+  const updateAvailableCount = installedOperators.filter((op) => op.updateAvailable).length;
+  const upgradeableFalse = incompatibleCount > 0;
+
+  const OPERATOR_GRID = "1fr 90px 100px 130px 90px 80px 80px";
 
   return (
-    <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
+    <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]" id="operators-section">
       <div className="flex items-center justify-between mb-[12px]">
         <div className="flex items-center gap-[6px]">
           <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Operators on this cluster</h2>
@@ -1852,13 +1866,52 @@ function InstalledOperatorsSection() {
           )}
         </div>
       </div>
-      <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] mb-[16px]">
-        {installedOperators.length} operators installed
-        {degradedCount > 0 && <span className="text-[#c9190b] font-medium"> · {degradedCount} degraded</span>}
-      </p>
+      <div className="flex items-center gap-[8px] mb-[12px] flex-wrap">
+        <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">
+          {installedOperators.length} operators installed
+          {degradedCount > 0 && <span className="text-[#c9190b] font-medium"> · {degradedCount} degraded</span>}
+        </p>
+        <span className="text-[#d2d2d2] dark:text-[rgba(255,255,255,0.15)]">|</span>
+        <div className="flex items-center gap-[6px]">
+          {(["all", "incompatible", "update-available"] as const).map((f) => (
+            <button key={f} onClick={() => setFilterCompat(f)}
+              className={`text-[12px] px-[10px] py-[4px] rounded-[999px] border cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] ${filterCompat === f ? "bg-[#0066cc] text-white border-[#0066cc]" : "bg-transparent text-[#4d4d4d] dark:text-[#b0b0b0] border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90]"}`}>
+              {f === "all" ? "All" : f === "incompatible" ? `Incompatible (${incompatibleCount})` : `Updates available (${updateAvailableCount})`}
+            </button>
+          ))}
+        </div>
+      </div>
 
-      <div className="grid grid-cols-[1fr_100px_100px_90px_90px] gap-[8px] px-[4px] py-[8px] text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)]">
-        <span>Operator</span><span>Version</span><span>Channel</span><span>Status</span><span>Auto-update</span>
+      {/* Upgradeable false alert */}
+      {upgradeableFalse && filterCompat !== "update-available" && (
+        <div className="mb-[12px] rounded-[8px] border-l-[3px] border-l-[#c9190b] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] bg-transparent p-[14px]">
+          <div className="flex items-start gap-[10px]">
+            <Shield className="size-[16px] text-[#c9190b] shrink-0 mt-[1px]" />
+            <div className="flex-1">
+              <p className="font-['Red_Hat_Text:Regular',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px] mb-[4px] flex items-center gap-[6px]">
+                Cluster upgrade blocked
+                <span className="text-[10px] px-[6px] py-[1px] rounded-[3px] font-semibold bg-[rgba(201,25,11,0.1)] text-[#c9190b] font-['Red_Hat_Mono:Regular',sans-serif]">upgradeable=False</span>
+              </p>
+              <p className="text-[12px] font-['Red_Hat_Text:Regular',sans-serif] text-[#4d4d4d] dark:text-[#b0b0b0] mb-[6px]">
+                {incompatibleCount} operator{incompatibleCount !== 1 ? "s are" : " is"} incompatible with the target cluster version. Update these operators or accept the associated risks before proceeding with the cluster upgrade.
+              </p>
+              <ul className="list-disc pl-[18px] space-y-[2px] text-[12px] font-['Red_Hat_Text:Regular',sans-serif] text-[#4d4d4d] dark:text-[#b0b0b0] mb-[8px]">
+                {installedOperators.filter(op => op.clusterCompatibility === "Incompatible").map((op, i) => (
+                  <li key={i}><span className="text-[#151515] dark:text-white font-medium">{op.name} ({op.version})</span>: {op.compatibilityMessage} {op.updateAvailable && <span className="text-[#0066cc] dark:text-[#4dabf7]">→ Update to {op.updateAvailable}</span>}</li>
+                ))}
+              </ul>
+              <button onClick={() => setFilterCompat("incompatible")}
+                className="text-[12px] px-[10px] py-[4px] rounded-[999px] border border-[#c9190b] text-[#c9190b] bg-transparent cursor-pointer hover:bg-[#c9190b]/5 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                Show incompatible operators
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="grid gap-[8px] px-[4px] py-[8px] text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)]"
+        style={{ gridTemplateColumns: OPERATOR_GRID }}>
+        <span>Operator</span><span>Version</span><span>Channel</span><span>Cluster compatibility</span><span>Support</span><span>Status</span><span>Auto-update</span>
       </div>
       {filtered.length === 0 ? (
         <div className="px-[4px] py-[20px] text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
@@ -1866,13 +1919,46 @@ function InstalledOperatorsSection() {
         </div>
       ) : (
         filtered.map((op, i) => (
-          <div key={i} className="grid grid-cols-[1fr_100px_100px_90px_90px] gap-[8px] items-center px-[4px] py-[10px] border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] last:border-0 hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)] transition-colors">
+          <div key={i} className={`grid gap-[8px] items-center px-[4px] py-[10px] border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] last:border-0 hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)] transition-colors ${op.clusterCompatibility === "Incompatible" ? "bg-[rgba(201,25,11,0.02)]" : ""}`}
+            style={{ gridTemplateColumns: OPERATOR_GRID }}>
             <div className="min-w-0">
               <span className="text-[#0066cc] dark:text-[#4dabf7] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] font-medium">{op.name}</span>
               <p className="text-[11px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Mono:Regular',sans-serif] truncate mt-[1px]">{op.namespace}</p>
             </div>
-            <span className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">{op.version}</span>
+            <div className="flex flex-col gap-[2px]">
+              <span className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">{op.version}</span>
+              {op.updateAvailable && (
+                <span className="text-[10px] text-[#0066cc] dark:text-[#4dabf7] font-['Red_Hat_Text:Regular',sans-serif] font-medium">→ {op.updateAvailable}</span>
+              )}
+            </div>
             <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{op.channel}</span>
+            <div>
+              {op.clusterCompatibility === "Compatible" ? (
+                <span className="flex items-center gap-[4px] text-[11px] text-[#3e8635] font-semibold"><CheckCircle className="size-[12px]" /> Compatible</span>
+              ) : op.clusterCompatibility === "Incompatible" ? (
+                <div>
+                  <span className="flex items-center gap-[4px] text-[11px] text-[#c9190b] font-semibold"><XCircle className="size-[12px]" /> Incompatible</span>
+                  {op.updateAvailable && (
+                    <button className="mt-[4px] text-[10px] px-[8px] py-[2px] rounded-[999px] border-0 cursor-pointer bg-[#0066cc] hover:bg-[#004080] text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium transition-colors whitespace-nowrap">
+                      Update to {op.updateAvailable}
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <span className="flex items-center gap-[4px] text-[11px] text-[#c58c00] font-semibold"><AlertTriangle className="size-[12px]" /> Unknown</span>
+              )}
+            </div>
+            <span>
+              {op.support === "Full" ? (
+                <span className="text-[11px] px-[6px] py-[2px] rounded-[4px] font-semibold bg-[rgba(62,134,53,0.08)] text-[#3e8635]">Full</span>
+              ) : op.support === "Limited" ? (
+                <span className="text-[11px] px-[6px] py-[2px] rounded-[4px] font-semibold bg-[rgba(197,140,0,0.08)] text-[#c58c00]">Limited</span>
+              ) : op.support === "Community" ? (
+                <span className="text-[11px] px-[6px] py-[2px] rounded-[4px] font-semibold bg-[rgba(0,102,204,0.08)] text-[#0066cc]">Community</span>
+              ) : (
+                <span className="text-[11px] px-[6px] py-[2px] rounded-[4px] font-semibold bg-[rgba(0,0,0,0.05)] text-[#4d4d4d] dark:text-[#b0b0b0]">Self</span>
+              )}
+            </span>
             <span>
               {op.status === "Running" ? (
                 <span className="flex items-center gap-[4px] text-[11px] text-[#3e8635] font-semibold"><CheckCircle className="size-[12px]" /> Running</span>
@@ -1886,6 +1972,15 @@ function InstalledOperatorsSection() {
           </div>
         ))
       )}
+
+      {/* Data source note — progressive API improvement */}
+      <div className="mt-[16px] pt-[12px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] flex items-center gap-[6px]">
+        <Info className="size-[12px] text-[#8a8d90] shrink-0" />
+        <p className="text-[11px] text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif]">
+          Compatibility data sourced from OLM catalog. Support status determined by operator source and subscription.
+          {incompatibleCount > 0 && <span className="font-medium text-[#c9190b]"> {incompatibleCount} operator{incompatibleCount !== 1 ? "s" : ""} blocking cluster upgrade.</span>}
+        </p>
+      </div>
     </div>
   );
 }
@@ -1929,11 +2024,27 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                   <p className="font-['Red_Hat_Text:Regular',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px] mb-[6px]">
                     This cluster should not be updated to {label} until the following issues are resolved.
                   </p>
-                  <ul className="list-disc pl-[18px] space-y-[3px] text-[12px] font-['Red_Hat_Text:Regular',sans-serif] text-[#4d4d4d] dark:text-[#b0b0b0] mb-[8px]">
+                  <ul className="list-disc pl-[18px] space-y-[3px] text-[12px] font-['Red_Hat_Text:Regular',sans-serif] text-[#4d4d4d] dark:text-[#b0b0b0] mb-[4px]">
                     {uniqueGroupIssues.map((issue: any, i: number) => (
                       <li key={i}><span className="text-[#151515] dark:text-white font-medium">{issue.name}:</span> {issue.message}</li>
                     ))}
                   </ul>
+                  {/* Upgradeable false indicator tied to operator compatibility */}
+                  {(() => {
+                    const incompatOps = installedOperators.filter(op => op.clusterCompatibility === "Incompatible");
+                    return incompatOps.length > 0 ? (
+                      <div className="flex items-center gap-[6px] mb-[8px] mt-[6px] py-[6px] px-[10px] rounded-[6px] bg-[rgba(201,25,11,0.04)] border border-[rgba(201,25,11,0.15)]">
+                        <Shield className="size-[13px] text-[#c9190b] shrink-0" />
+                        <span className="text-[11px] font-['Red_Hat_Mono:Regular',sans-serif] text-[#c9190b] font-semibold">upgradeable=False</span>
+                        <span className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
+                          — {incompatOps.map(op => op.name).join(", ")} {incompatOps.length === 1 ? "is" : "are"} incompatible with {label}
+                        </span>
+                        <a href="#operators-section" onClick={(e) => { e.stopPropagation(); }} className="ml-auto text-[11px] text-[#0066cc] dark:text-[#4dabf7] no-underline hover:underline font-['Red_Hat_Text:Regular',sans-serif] font-medium whitespace-nowrap flex items-center gap-[3px]">
+                          View operators <ArrowRight className="size-[10px]" />
+                        </a>
+                      </div>
+                    ) : null;
+                  })()}
                   <div className="flex items-center gap-[16px] flex-wrap">
                     <div className="flex items-center gap-[6px]">
                       <Toggle enabled={updateAllOps} onChange={() => setUpdateAllOps(!updateAllOps)} />
@@ -1997,12 +2108,22 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
       {showManualRiskModal && riskModalVersion && (() => {
         const ver = versions.find((v: VersionEntry) => v.version === riskModalVersion);
         if (!ver?.operatorIssues?.length) return null;
-        const allRisks = ver.operatorIssues.map((issue: any) => ({
+        const issueRisks = ver.operatorIssues.map((issue: any) => ({
           slug: issue.slug,
           name: issue.name,
           severity: issue.severity,
           detail: issue.message,
         }));
+        const incompatOps = installedOperators.filter(op => op.clusterCompatibility === "Incompatible");
+        const upgradeableRisks = incompatOps
+          .filter(op => !issueRisks.some((r: any) => r.name === op.name))
+          .map(op => ({
+            slug: `upgradeable-false-${op.name.toLowerCase().replace(/\s+/g, "-")}`,
+            name: op.name,
+            severity: "critical" as const,
+            detail: `${op.compatibilityMessage || "Operator is incompatible with the target cluster version."}${op.updateAvailable ? ` Update available: ${op.updateAvailable}.` : ""}`,
+          }));
+        const allRisks = [...issueRisks, ...upgradeableRisks];
         const selectedCount = allRisks.filter((r: any) => manualAcceptedSlugs.has(r.slug)).length;
         const anySelected = selectedCount > 0;
         return createPortal(
