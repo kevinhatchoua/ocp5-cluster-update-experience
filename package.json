@@ -1,5 +1,5 @@
 {
-  "name": "ocp-cluster-updates-make",
+  "name": "ocp5-cluster-update-experience",
   "description": "OpenShift Container Platform 5.x Cluster Update UX prototype — interactive React/TypeScript prototype for exploring cluster update workflows including manual updates, agent-based updates, pre-flight checks, operator lifecycle management, and OpenShift Lightspeed AI integration.",
   "private": true,
   "version": "1.0.0",
