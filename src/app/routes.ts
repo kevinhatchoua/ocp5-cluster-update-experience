@@ -26,9 +26,6 @@ import ClusterSettingsPage from "./pages/administration/ClusterSettingsPage";
 import ClusterUpdatePlanPage from "./pages/administration/ClusterUpdatePlanPage";
 import ClusterUpdateInProgressPage from "./pages/administration/ClusterUpdateInProgressPage";
 import OperatorsLifecyclePage from "./pages/administration/OperatorsLifecyclePage";
-import PreflightChecksPage from "./pages/administration/PreflightChecksPage";
-import PreflightResultsPage from "./pages/administration/PreflightResultsPage";
-import PreflightFailedPage from "./pages/administration/PreflightFailedPage";
 import UpdateCompletePage from "./pages/administration/UpdateCompletePage";
 import UpdateFailedPage from "./pages/administration/UpdateFailedPage";
 import VersionDetailPage from "./pages/administration/VersionDetailPage";
@@ -98,9 +95,6 @@ export const router = createBrowserRouter([
           { path: "administration/cluster-update/in-progress", Component: ClusterUpdateInProgressPage },
           { path: "administration/cluster-update/operators", Component: OperatorsLifecyclePage },
           { path: "administration/cluster-update/history", Component: ClusterUpdateHistoryPage },
-          { path: "administration/cluster-update/preflight", Component: PreflightChecksPage },
-          { path: "administration/cluster-update/preflight-results", Component: PreflightResultsPage },
-          { path: "administration/cluster-update/preflight-failed", Component: PreflightFailedPage },
           { path: "administration/cluster-update/complete", Component: UpdateCompletePage },
           { path: "administration/cluster-update/failed", Component: UpdateFailedPage },
           { path: "administration/cluster-update/agent-mode", Component: AgentModePage },

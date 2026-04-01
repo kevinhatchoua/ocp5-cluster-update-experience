@@ -350,7 +350,7 @@ export default function LightSpeedPanel({
     
     // Run preflight checks
     if (lowerSuggestion.includes('run preflight') || lowerSuggestion.includes('launch preflight')) {
-      navigate('/administration/cluster-update/preflight', { state: { aiMode: true } });
+      navigate('/administration/cluster-update/in-progress', { state: { aiMode: true } });
       return;
     }
     

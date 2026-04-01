@@ -76,7 +76,7 @@ export default function VersionDetailPage() {
           OpenShift {version}
         </h1>
         <button
-          onClick={() => navigate("/administration/cluster-update/preflight", { state: { version } })}
+          onClick={() => navigate("/administration/cluster-update/in-progress", { state: { version } })}
           className="bg-[#0066cc] hover:bg-[#004080] text-white border-0 px-[20px] py-[10px] rounded-[8px] cursor-pointer text-[14px] font-['Red_Hat_Text:Regular',sans-serif] font-semibold transition-colors"
         >
           Update to this version
