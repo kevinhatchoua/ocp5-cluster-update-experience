@@ -13,7 +13,7 @@ interface UpdateRecord {
   duration?: string;
   updatedBy: string;
   notes?: string;
-  preflightData?: any;
+  preCheckData?: any;
 }
 
 export default function ClusterUpdateHistoryPage() {
@@ -30,7 +30,7 @@ export default function ClusterUpdateHistoryPage() {
       duration: "2h 12min",
       updatedBy: "admin@redhat.com",
       notes: "Successful update with AI guidance. No issues encountered.",
-      preflightData: {
+      preCheckData: {
         clusterHealth: "Passed",
         apiChanges: 3,
         operatorReadiness: "All compatible"
@@ -46,7 +46,7 @@ export default function ClusterUpdateHistoryPage() {
       duration: "1h 53min",
       updatedBy: "admin@redhat.com",
       notes: "Standard update. Operator updates included.",
-      preflightData: {
+      preCheckData: {
         clusterHealth: "Passed",
         apiChanges: 2,
         operatorReadiness: "All compatible"
@@ -62,7 +62,7 @@ export default function ClusterUpdateHistoryPage() {
       duration: "1h 25min",
       updatedBy: "admin@redhat.com",
       notes: "Security patch update. Completed during maintenance window.",
-      preflightData: {
+      preCheckData: {
         clusterHealth: "Passed",
         apiChanges: 0,
         operatorReadiness: "All compatible"
@@ -78,7 +78,7 @@ export default function ClusterUpdateHistoryPage() {
       duration: "1h 45min (failed)",
       updatedBy: "admin@redhat.com",
       notes: "Update failed due to etcd health check. Rolled back successfully.",
-      preflightData: {
+      preCheckData: {
         clusterHealth: "Failed - etcd issues",
         apiChanges: 5,
         operatorReadiness: "Incompatible operator detected"
@@ -94,7 +94,7 @@ export default function ClusterUpdateHistoryPage() {
       duration: "1h 18min",
       updatedBy: "system",
       notes: "Automated security update.",
-      preflightData: {
+      preCheckData: {
         clusterHealth: "Passed",
         apiChanges: 0,
         operatorReadiness: "All compatible"
@@ -126,10 +126,10 @@ spec:
     ${record.completedAt ? `completed: "${record.completedAt}"` : 'status: "In Progress"'}
     duration: "${record.duration || 'N/A'}"
   updatedBy: ${record.updatedBy}
-  preflightChecks:
-    clusterHealth: "${record.preflightData?.clusterHealth || 'N/A'}"
-    apiChanges: ${record.preflightData?.apiChanges || 0}
-    operatorReadiness: "${record.preflightData?.operatorReadiness || 'N/A'}"
+  preChecks:
+    clusterHealth: "${record.preCheckData?.clusterHealth || 'N/A'}"
+    apiChanges: ${record.preCheckData?.apiChanges || 0}
+    operatorReadiness: "${record.preCheckData?.operatorReadiness || 'N/A'}"
   notes: |
     ${record.notes || 'No notes available'}
   reportGenerated: "${new Date().toISOString()}"
@@ -205,7 +205,7 @@ spec:
         <Breadcrumbs
           items={[
             { label: "Home", path: "/" },
-            { label: "Cluster Update", path: "/administration/cluster-update" },
+            { label: "Cluster Settings", path: "/administration/cluster-settings" },
             { label: "Update History" },
           ]}
         />
@@ -217,7 +217,7 @@ spec:
           <div className="flex gap-[24px] text-[14px] border-b border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)]">
             <button 
               className="pb-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] hover:text-[#151515] dark:hover:text-white"
-              onClick={() => navigate('/administration/cluster-update')}
+              onClick={() => navigate('/administration/cluster-settings')}
             >
               Update plan
             </button>

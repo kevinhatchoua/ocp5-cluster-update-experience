@@ -309,11 +309,11 @@ export function getAIResponse(userInput: string, currentPath?: string): {
     
     if (lowerInput.includes('check') && lowerInput.includes('update')) {
       return {
-        content: `🔄 **Cluster Update Status**\n\n**Current version:** OpenShift 4.21.8\n**Available update:** OpenShift 4.22.0 (stable channel)\n\n**Before updating:**\n1. ✅ Cluster health is good\n2. ⚠️ 2 operators need updates first (Ansible Automation Platform, Elasticsearch)\n3. ⚠️ 1 alert to review (machine-config operator degraded)\n\n**Recommended approach:**\n1. Fix the machine-config operator issue\n2. Update Ansible Automation Platform (10 min)\n3. Update Elasticsearch (5 min)\n4. Run preflight checks\n5. Start cluster update (~2 hours)\n\nWant to start with the operator updates?`,
+        content: `🔄 **Cluster Update Status**\n\n**Current version:** OpenShift 4.21.8\n**Available update:** OpenShift 4.22.0 (stable channel)\n\n**Before updating:**\n1. ✅ Cluster health is good\n2. ⚠️ 2 operators need updates first (Ansible Automation Platform, Elasticsearch)\n3. ⚠️ 1 alert to review (machine-config operator degraded)\n\n**Recommended approach:**\n1. Fix the machine-config operator issue\n2. Update Ansible Automation Platform (10 min)\n3. Update Elasticsearch (5 min)\n4. Run pre-checks\n5. Start cluster update (~2 hours)\n\nWant to start with the operator updates?`,
         suggestions: [
           'Go to Cluster Update page',
           'Update operators first',
-          'Run preflight checks',
+          'Run pre-checks',
           'What are the risks?'
         ]
       };
@@ -375,9 +375,9 @@ export function getAIResponse(userInput: string, currentPath?: string): {
     
     if (lowerInput.includes('check') && lowerInput.includes('update')) {
       return {
-        content: `🔄 **Update Readiness Assessment**\n\n**Target:** OpenShift 4.22.0 (available on stable channel)\n\n**Checklist:**\n✅ Cluster health: Good\n✅ etcd: Healthy\n⚠️ Operators: 2 need updates first\n⚠️ Alerts: 1 active (machine-config degraded)\n✅ API compatibility: No deprecated APIs in use\n✅ Storage: Sufficient for update\n\n**Recommended sequence:**\n1. Resolve machine-config operator issue\n2. Update Ansible Automation Platform + Elasticsearch\n3. Run preflight checks\n4. Start cluster update\n\n**Estimated total time:** ~2.5 hours (including operator updates)`,
+        content: `🔄 **Update Readiness Assessment**\n\n**Target:** OpenShift 4.22.0 (available on stable channel)\n\n**Checklist:**\n✅ Cluster health: Good\n✅ etcd: Healthy\n⚠️ Operators: 2 need updates first\n⚠️ Alerts: 1 active (machine-config degraded)\n✅ API compatibility: No deprecated APIs in use\n✅ Storage: Sufficient for update\n\n**Recommended sequence:**\n1. Resolve machine-config operator issue\n2. Update Ansible Automation Platform + Elasticsearch\n3. Run pre-checks\n4. Start cluster update\n\n**Estimated total time:** ~2.5 hours (including operator updates)`,
         suggestions: [
-          'Run preflight checks',
+          'Run pre-checks',
           'Fix machine-config operator',
           'Update operators first',
           'Start the update'
@@ -803,7 +803,7 @@ export function getAIResponse(userInput: string, currentPath?: string): {
         'Fix it now — relax the PDB',
         'Check if everything is healthy after',
         'Proceed to cluster update',
-        'Run preflight checks again'
+        'Run pre-checks again'
       ]
     };
   }
@@ -983,7 +983,7 @@ export function getAIResponse(userInput: string, currentPath?: string): {
   // ========== CLUSTER UPDATE QUESTIONS ==========
   if (lowerInput.includes('how long') && (lowerInput.includes('update') || lowerInput.includes('upgrade'))) {
     return {
-      content: `⏱️ **Cluster Update Timeline**\n\nGreat question! Here's what to expect:\n\n**Typical update time: 2-4 hours** ⏰\n\nBut it varies based on:\n\n**1️⃣ Cluster size:**\n• 3 control plane + 3 workers: ~2 hours\n• 3 control plane + 10 workers: ~3-4 hours\n• 3 control plane + 50 workers: ~6-8 hours (big cluster!)\n\n**2️⃣ What's updating:**\n• Minor version (4.21 → 4.22): Standard timeline\n• Patch (4.22.0 → 4.22.1): Faster, 1-2 hours\n• Major version (4.x → 5.0): Plan for longer, 4-6 hours\n\n**3️⃣ Update strategy:**\n• **Rolling update (default):** One node at a time, slower but SAFE\n• **Parallel (worker nodes):** Multiple workers at once, faster but riskier\n\n**The update process:**\n📊 **Preflight checks:** 5-10 minutes\n🎛️ **Control plane update:** 30-60 minutes (this is the critical part!)\n💻 **Worker nodes:** 1-3 hours (depends on how many)\n✅ **Verification:** 10-15 minutes\n\n**What happens during the update:**\n• Control plane nodes update first (one at a time)\n• Your cluster stays available! The other control plane nodes keep running 💪\n• Worker nodes update next (workloads get rescheduled automatically)\n• Pods might restart, but most apps handle this gracefully\n\n**Pro tips:**\n• Schedule during low-traffic hours\n• Your workloads should be resilient (multiple replicas!)\n• The update can be paused if issues arise\n• You can watch real-time progress in the console!\n\n**For your current cluster:** Based on the preflight check, I estimate **2 hours 12 minutes** for the update to 4.22.0. Not bad! 😊`,
+      content: `⏱️ **Cluster Update Timeline**\n\nGreat question! Here's what to expect:\n\n**Typical update time: 2-4 hours** ⏰\n\nBut it varies based on:\n\n**1️⃣ Cluster size:**\n• 3 control plane + 3 workers: ~2 hours\n• 3 control plane + 10 workers: ~3-4 hours\n• 3 control plane + 50 workers: ~6-8 hours (big cluster!)\n\n**2️⃣ What's updating:**\n• Minor version (4.21 → 4.22): Standard timeline\n• Patch (4.22.0 → 4.22.1): Faster, 1-2 hours\n• Major version (4.x → 5.0): Plan for longer, 4-6 hours\n\n**3️⃣ Update strategy:**\n• **Rolling update (default):** One node at a time, slower but SAFE\n• **Parallel (worker nodes):** Multiple workers at once, faster but riskier\n\n**The update process:**\n📊 **Pre-checks:** 5-10 minutes\n🎛️ **Control plane update:** 30-60 minutes (this is the critical part!)\n💻 **Worker nodes:** 1-3 hours (depends on how many)\n✅ **Verification:** 10-15 minutes\n\n**What happens during the update:**\n• Control plane nodes update first (one at a time)\n• Your cluster stays available! The other control plane nodes keep running 💪\n• Worker nodes update next (workloads get rescheduled automatically)\n• Pods might restart, but most apps handle this gracefully\n\n**Pro tips:**\n• Schedule during low-traffic hours\n• Your workloads should be resilient (multiple replicas!)\n• The update can be paused if issues arise\n• You can watch real-time progress in the console!\n\n**For your current cluster:** Based on the pre-check, I estimate **2 hours 12 minutes** for the update to 4.22.0. Not bad! 😊`,
       suggestions: [
         'What happens if the update fails?',
         'Can I pause an in-progress update?',
@@ -995,9 +995,9 @@ export function getAIResponse(userInput: string, currentPath?: string): {
   
   if (lowerInput.includes('risk') || (lowerInput.includes('what') && lowerInput.includes('wrong')) || lowerInput.includes('fail')) {
     return {
-      content: `⚠️ **Cluster Update Risks - The Honest Truth**\n\nOkay, let's talk risks. I'll be real with you! 💯\n\n**😌 The good news:**\n• OpenShift updates are REALLY well-tested\n• The process is automated and battle-hardened\n• Thousands of clusters update successfully every day\n• We run preflight checks to catch issues before they happen\n• Updates can be paused or rolled back if needed\n\n**🤔 The potential risks:**\n\n**1️⃣ Application compatibility:**\n• Your apps might use deprecated APIs\n• **Mitigation:** Preflight checks warn you! We scan for this\n• **Impact:** Apps might break or need updates\n• **Likelihood:** LOW if preflight passes ✅\n\n**2️⃣ Operator incompatibility:**\n• Some operators might not support the new version\n• **Mitigation:** Update operators first!\n• **Impact:** Operator-managed workloads could have issues\n• **Likelihood:** MEDIUM if operators are outdated ⚠️\n\n**3️⃣ Custom configurations:**\n• If you've heavily customized the cluster, edge cases can occur\n• **Mitigation:** Test in a dev/staging cluster first\n• **Impact:** Varies widely\n• **Likelihood:** LOW for standard configs ✅\n\n**4️⃣ Network disruption:**\n• Brief network blips during node updates\n• **Mitigation:** Use multiple replicas and PodDisruptionBudgets\n• **Impact:** Temporary connection issues (seconds, not minutes)\n• **Likelihood:** MEDIUM but short-lived ⚠️\n\n**5️⃣ Storage issues:**\n• Persistent volume problems (rare but possible)\n• **Mitigation:** Ensure storage backend is healthy\n• **Impact:** Could affect stateful apps\n• **Likelihood:** LOW if storage is healthy ✅\n\n**6️⃣ The dreaded "stuck update":**\n• Update hangs on a node or component\n• **Mitigation:** Monitoring! We watch it closely\n• **Impact:** Delays completion, requires intervention\n• **Likelihood:** LOW (~2-3% of updates) ⚠️\n\n**🛡️ How we protect you:**\n• Preflight checks catch 80% of potential issues\n• Control plane nodes update one at a time (high availability maintained)\n• Worker nodes drain gracefully (workloads move first)\n• Updates can be paused mid-flight\n• Rollback is possible (though rarely needed)\n\n**📊 Real talk - success rate:**\n• ~97% of updates complete without any issues\n• ~2% have minor hiccups (easily resolved)\n• ~1% need intervention (but cluster stays up!)\n\n**My recommendation:** Run the preflight check (which we did!), update your operators first, schedule during low-traffic, and you'll be golden! 🌟\n\nWant to see the preflight results for YOUR cluster? I can walk you through them!`,
+      content: `⚠️ **Cluster Update Risks - The Honest Truth**\n\nOkay, let's talk risks. I'll be real with you! 💯\n\n**😌 The good news:**\n• OpenShift updates are REALLY well-tested\n• The process is automated and battle-hardened\n• Thousands of clusters update successfully every day\n• We run pre-checks to catch issues before they happen\n• Updates can be paused or rolled back if needed\n\n**🤔 The potential risks:**\n\n**1️⃣ Application compatibility:**\n• Your apps might use deprecated APIs\n• **Mitigation:** Pre-checks warn you! We scan for this\n• **Impact:** Apps might break or need updates\n• **Likelihood:** LOW if pre-check passes ✅\n\n**2️⃣ Operator incompatibility:**\n• Some operators might not support the new version\n• **Mitigation:** Update operators first!\n• **Impact:** Operator-managed workloads could have issues\n• **Likelihood:** MEDIUM if operators are outdated ⚠️\n\n**3️⃣ Custom configurations:**\n• If you've heavily customized the cluster, edge cases can occur\n• **Mitigation:** Test in a dev/staging cluster first\n• **Impact:** Varies widely\n• **Likelihood:** LOW for standard configs ✅\n\n**4️⃣ Network disruption:**\n• Brief network blips during node updates\n• **Mitigation:** Use multiple replicas and PodDisruptionBudgets\n• **Impact:** Temporary connection issues (seconds, not minutes)\n• **Likelihood:** MEDIUM but short-lived ⚠️\n\n**5️⃣ Storage issues:**\n• Persistent volume problems (rare but possible)\n• **Mitigation:** Ensure storage backend is healthy\n• **Impact:** Could affect stateful apps\n• **Likelihood:** LOW if storage is healthy ✅\n\n**6️⃣ The dreaded "stuck update":**\n• Update hangs on a node or component\n• **Mitigation:** Monitoring! We watch it closely\n• **Impact:** Delays completion, requires intervention\n• **Likelihood:** LOW (~2-3% of updates) ⚠️\n\n**🛡️ How we protect you:**\n• Pre-checks catch 80% of potential issues\n• Control plane nodes update one at a time (high availability maintained)\n• Worker nodes drain gracefully (workloads move first)\n• Updates can be paused mid-flight\n• Rollback is possible (though rarely needed)\n\n**📊 Real talk - success rate:**\n• ~97% of updates complete without any issues\n• ~2% have minor hiccups (easily resolved)\n• ~1% need intervention (but cluster stays up!)\n\n**My recommendation:** Run the pre-check (which we did!), update your operators first, schedule during low-traffic, and you'll be golden! 🌟\n\nWant to see the pre-check results for YOUR cluster? I can walk you through them!`,
       suggestions: [
-        'Show preflight check results',
+        'Show pre-check results',
         'How do I rollback if needed?',
         'What are PodDisruptionBudgets?',
         'Start the update'
@@ -1111,7 +1111,7 @@ export function getAIResponse(userInput: string, currentPath?: string): {
       suggestions: [
         'Show detailed node status',
         'Check operator health',
-        'Run preflight checks',
+        'Run pre-checks',
         'View alerts'
       ]
     };
@@ -1119,9 +1119,9 @@ export function getAIResponse(userInput: string, currentPath?: string): {
   
   if (lowerInput.includes('update') && lowerInput.includes('cluster')) {
     return {
-      content: `🔄 **Cluster Update Assistant**\n\nI'm here to help with your OpenShift update! I can:\n\n• Run preflight compatibility checks\n• Explain update process and timeline\n• Guide you through each step\n• Help with operator updates\n• Troubleshoot any issues\n\nWhat would you like to know?`,
+      content: `🔄 **Cluster Update Assistant**\n\nI'm here to help with your OpenShift update! I can:\n\n• Run pre-check compatibility checks\n• Explain update process and timeline\n• Guide you through each step\n• Help with operator updates\n• Troubleshoot any issues\n\nWhat would you like to know?`,
       suggestions: [
-        'Run preflight checks',
+        'Run pre-checks',
         'How long will it take?',
         'What are the risks?',
         'Start the update'
@@ -1130,7 +1130,7 @@ export function getAIResponse(userInput: string, currentPath?: string): {
   }
   
   return {
-    content: `I'm OpenShift LightSpeed, your AI assistant! I can help with:\n\n🔄 **Updates & Maintenance:**\n• Cluster updates\n• Operator management\n• Preflight checks\n\n💚 **Health & Monitoring:**\n• Cluster status\n• Resource usage\n• Troubleshooting\n\n🏗️ **Builds & CI/CD:**\n• BuildConfigs and strategies\n• Triggering builds\n• Webhooks and automation\n\n🌐 **Networking:**\n• Services and Routes\n• Exposing applications\n• Network policies\n\n💾 **Storage:**\n• PersistentVolumes and Claims\n• StorageClasses\n• Volume management\n\n⚙️ **Workloads:**\n• Pods, Deployments, StatefulSets\n• Scaling and auto-scaling\n• Troubleshooting\n\nWhat would you like to know?`,
+    content: `I'm OpenShift LightSpeed, your AI assistant! I can help with:\n\n🔄 **Updates & Maintenance:**\n• Cluster updates\n• Operator management\n• Pre-checks\n\n💚 **Health & Monitoring:**\n• Cluster status\n• Resource usage\n• Troubleshooting\n\n🏗️ **Builds & CI/CD:**\n• BuildConfigs and strategies\n• Triggering builds\n• Webhooks and automation\n\n🌐 **Networking:**\n• Services and Routes\n• Exposing applications\n• Network policies\n\n💾 **Storage:**\n• PersistentVolumes and Claims\n• StorageClasses\n• Volume management\n\n⚙️ **Workloads:**\n• Pods, Deployments, StatefulSets\n• Scaling and auto-scaling\n• Troubleshooting\n\nWhat would you like to know?`,
     suggestions: [
       'Show cluster health',
       'Check for updates',

@@ -16,8 +16,8 @@ export default function AgentModePage() {
 
   return (
     <div className="p-[24px] pb-[48px]">
-      <Link to="/administration/cluster-update" className="flex items-center gap-[6px] text-[#0066cc] dark:text-[#4dabf7] text-[14px] no-underline hover:underline mb-[16px] font-['Red_Hat_Text:Regular',sans-serif]">
-        <ArrowLeft className="size-[16px]" /> Back to Cluster Updates
+      <Link to="/administration/cluster-settings" className="flex items-center gap-[6px] text-[#0066cc] dark:text-[#4dabf7] text-[14px] no-underline hover:underline mb-[16px] font-['Red_Hat_Text:Regular',sans-serif]">
+        <ArrowLeft className="size-[16px]" /> Back to Cluster Settings
       </Link>
 
       <div className="flex items-center gap-[12px] mb-[24px]">

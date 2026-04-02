@@ -15,7 +15,7 @@ interface Message {
   loading?: boolean;
   action?: {
     label: string;
-    type: 'preflight' | 'update' | 'cancel';
+    type: 'pre-check' | 'update' | 'cancel';
     callback: () => void;
   };
   actions?: Array<{
@@ -28,7 +28,7 @@ interface LightSpeedPanelProps {
   isOpen: boolean;
   onClose: () => void;
   context?: string;
-  onLaunchPreflight?: () => void;
+  onLaunchPreCheck?: () => void;
   onStartUpdate?: () => void;
   preloadedMessages?: Message[];
   autoScroll?: boolean;
@@ -39,7 +39,7 @@ export default function LightSpeedPanel({
   isOpen, 
   onClose, 
   context, 
-  onLaunchPreflight, 
+  onLaunchPreCheck, 
   onStartUpdate, 
   preloadedMessages, 
   autoScroll = false,
@@ -102,7 +102,7 @@ export default function LightSpeedPanel({
           'Which operators need updates?',
         ];
       } else if (location.pathname.includes('/preflight-results')) {
-        contextMessage = "✅ **Great news!** All preflight checks passed successfully.\n\n**What I found:**\n• All 8 checks completed without critical issues\n• Cluster health is optimal for update\n• All operators are compatible with OpenShift 4.22.0\n• Estimated update time: 2 hours 12 minutes\n\n**Recommended Next Steps:**\n1. **Start the cluster update** - Your cluster is ready to proceed\n2. **Review operator updates** - 1 operator (Ansible Automation Platform) has an update available\n3. **Check API migrations** - 1 API requires permission verification";
+        contextMessage = "✅ **Great news!** All pre-checks passed successfully.\n\n**What I found:**\n• All 8 checks completed without critical issues\n• Cluster health is optimal for update\n• All operators are compatible with OpenShift 4.22.0\n• Estimated update time: 2 hours 12 minutes\n\n**Recommended Next Steps:**\n1. **Start the cluster update** - Your cluster is ready to proceed\n2. **Review operator updates** - 1 operator (Ansible Automation Platform) has an update available\n3. **Check API migrations** - 1 API requires permission verification";
         suggestions = [
           "Start the cluster update",
           "How do I update the Ansible Automation Platform operator?",
@@ -111,7 +111,7 @@ export default function LightSpeedPanel({
           "How can I minimize downtime?"
         ];
       } else if (location.pathname.includes('/preflight-failed')) {
-        contextMessage = "⚠️ **Preflight checks found issues that need attention.**\n\nI've analyzed the failures and can guide you through fixing each one.";
+        contextMessage = "⚠️ **Pre-checks found issues that need attention.**\n\nI've analyzed the failures and can guide you through fixing each one.";
         suggestions = [
           "Show me step-by-step remediation",
           "Help me fix the storage issue",
@@ -141,9 +141,9 @@ export default function LightSpeedPanel({
           "How do I verify everything works?",
         ];
       } else if (location.pathname.includes('/cluster-update')) {
-        contextMessage = "I can see you're planning a **cluster update**. I'll help you every step of the way!\n\n**I can help with:**\n• Running preflight checks\n• Explaining risks and compatibility\n• Guiding through the update process\n• Troubleshooting any issues\n\nWhat would you like to know?";
+        contextMessage = "I can see you're planning a **cluster update**. I'll help you every step of the way!\n\n**I can help with:**\n• Running pre-checks\n• Explaining risks and compatibility\n• Guiding through the update process\n• Troubleshooting any issues\n\nWhat would you like to know?";
         suggestions = [
-          'Run preflight checks',
+          'Run pre-checks',
           'What are the risks?',
           'How long will it take?',
           'Start the update',
@@ -250,7 +250,7 @@ export default function LightSpeedPanel({
         suggestions = ["Show me what changed", "Which operators still need updates?"];
       } else if (location.pathname.includes('/cluster-update')) {
         pageContext = "📍 You're now on the **Cluster Update** page. Ready to help!";
-        suggestions = ['Run preflight checks', 'What are the risks?'];
+        suggestions = ['Run pre-checks', 'What are the risks?'];
       } else if (location.pathname.includes('/workloads')) {
         pageContext = "📍 Now viewing **Workloads**. I can help you manage your pods, deployments, and more!";
         suggestions = ['Why is a pod pending?', 'How do I scale a deployment?'];
@@ -348,8 +348,8 @@ export default function LightSpeedPanel({
       content: suggestion,
     });
     
-    // Run preflight checks
-    if (lowerSuggestion.includes('run preflight') || lowerSuggestion.includes('launch preflight')) {
+    // Run pre-checks
+    if (lowerSuggestion.includes('run pre-check') || lowerSuggestion.includes('launch pre-check') || lowerSuggestion.includes('run preflight') || lowerSuggestion.includes('launch preflight')) {
       navigate('/administration/cluster-update/in-progress', { state: { aiMode: true } });
       return;
     }
@@ -359,13 +359,13 @@ export default function LightSpeedPanel({
       if (location.pathname.includes('/preflight-results')) {
         navigate('/administration/cluster-update/in-progress');
       } else {
-        const msg = "🚀 Great! Let's get your cluster updated to 4.22.0.\n\nFirst, let me run the preflight checks to make sure everything's ready. Think of it as a pre-flight inspection before takeoff! ✈️";
+        const msg = "🚀 Great! Let's get your cluster updated to 4.22.0.\n\nFirst, let me run the pre-checks to make sure everything's ready. Think of it as a pre-check inspection before takeoff! ✈️";
         setIsTyping(true);
         setTimeout(() => {
           addMessage({
             type: 'ai',
             content: msg,
-            suggestions: ["Run preflight checks now"]
+            suggestions: ["Run pre-checks now"]
           });
           setIsTyping(false);
         }, getTypingDelay(msg));
@@ -404,7 +404,7 @@ export default function LightSpeedPanel({
     
     // Export report
     if (lowerSuggestion.includes('export') || lowerSuggestion.includes('report')) {
-      const msg = "📄 Generating preflight report...\n\n✓ Report exported as `preflight-report-2026-03-17.txt`\n\nThis report includes all check results, cluster health data, and recommended actions. Perfect for sharing with your team or keeping for compliance! 📋";
+      const msg = "📄 Generating pre-check report...\n\n✓ Report exported as `pre-check-report-2026-03-17.txt`\n\nThis report includes all check results, cluster health data, and recommended actions. Perfect for sharing with your team or keeping for compliance! 📋";
       setIsTyping(true);
       setTimeout(() => {
         addMessage({
@@ -427,7 +427,7 @@ export default function LightSpeedPanel({
           suggestions: [
             "Show me storage breakdown",
             "Check operator health",
-            "Run preflight checks"
+            "Run pre-checks"
           ]
         });
         setIsTyping(false);

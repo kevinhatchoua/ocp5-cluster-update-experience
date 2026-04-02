@@ -34,7 +34,7 @@ const errorScenarios: Record<string, ErrorScenario> = {
       "etcd health",
       "API compatibility",
     ],
-    aiContext: `I see that your preflight checks have failed with a storage capacity issue:
+    aiContext: `I see that your pre-checks have failed with a storage capacity issue:
 
 **Critical Issue:**
 • Worker node 'worker-east-01' has insufficient storage (5% free)
@@ -67,7 +67,7 @@ Would you like me to guide you through any of these steps?`,
       "etcd health",
       "Storage capacity",
     ],
-    aiContext: `I see that your preflight checks have detected deprecated API usage:
+    aiContext: `I see that your pre-checks have detected deprecated API usage:
 
 **Warning:**
 • 3 deployments are using deprecated API 'apps/v1beta1'
@@ -79,7 +79,7 @@ The apps/v1beta1 API was deprecated and will be removed in the target version. T
 1. List affected deployments: \`oc get deployments --all-namespaces -o json | grep "apps/v1beta1"\`
 2. For each deployment, update the apiVersion field from "apps/v1beta1" to "apps/v1"
 3. Review and update any CI/CD pipelines or GitOps configurations
-4. Re-run preflight checks to verify
+4. Re-run pre-checks to verify
 
 Would you like me to provide specific commands for migrating these deployments?`,
   },
@@ -100,7 +100,7 @@ Would you like me to provide specific commands for migrating these deployments?`
       "Storage capacity",
       "API compatibility",
     ],
-    aiContext: `I see that your preflight checks have detected an operator compatibility issue:
+    aiContext: `I see that your pre-checks have detected an operator compatibility issue:
 
 **Critical Issue:**
 • Airflow Helm Operator v2.1.0 is incompatible with cluster version 4.22.0
@@ -113,7 +113,7 @@ The current version of Airflow Helm Operator uses APIs and features that are not
 2. Update the operator subscription to allow v2.4.0
 3. Wait for the operator to update automatically
 4. Verify the new version: \`oc get csv -n openshift-operators | grep airflow\`
-5. Re-run preflight checks
+5. Re-run pre-checks
 
 Would you like detailed steps for updating this operator?`,
   },
@@ -133,7 +133,7 @@ Would you like detailed steps for updating this operator?`,
       "etcd health",
       "Storage capacity",
     ],
-    aiContext: `I see that your preflight checks have detected a network connectivity issue:
+    aiContext: `I see that your pre-checks have detected a network connectivity issue:
 
 **Critical Issue:**
 • Unable to reach OpenShift image registry at registry.redhat.io
@@ -166,7 +166,7 @@ Would you like me to help you diagnose which component is causing the connectivi
       "Network connectivity",
       "Storage capacity",
     ],
-    aiContext: `I see that your preflight checks have detected an etcd health issue:
+    aiContext: `I see that your pre-checks have detected an etcd health issue:
 
 **Critical Issue:**
 • etcd cluster member 'etcd-master-2' is reporting high latency (>500ms)
@@ -209,7 +209,7 @@ Would you like me to help you investigate the specific cause of this latency iss
       "Network connectivity",
       "etcd health",
     ],
-    aiContext: `I see that your preflight checks have failed with multiple issues:
+    aiContext: `I see that your pre-checks have failed with multiple issues:
 
 **Critical Issues:**
 • Worker node 'worker-east-01' has insufficient storage (5% free)
@@ -253,7 +253,7 @@ export default function PreflightFailedPage() {
     setIsAIOpen(true);
   };
 
-  const handleRerunPreflight = () => {
+  const handleRerunPreCheck = () => {
     navigate('/administration/cluster-update/preflight', {
       state: { aiMode: false, simulateError: false }
     });
@@ -266,14 +266,14 @@ export default function PreflightFailedPage() {
           items={[
             { label: "Home", path: "/" },
             { label: "Administrator" },
-            { label: "Cluster Update", path: "/administration/cluster-update" },
-            { label: "Preflight Failed" },
+            { label: "Cluster Settings", path: "/administration/cluster-settings" },
+            { label: "Pre-check Failed" },
           ]}
         />
 
         <div className="mb-[24px]">
           <h1 className="font-['Red_Hat_Display_VF:Medium',sans-serif] font-medium leading-[36.4px] text-[#151515] dark:text-white text-[28px] mb-[8px]">
-            Preflight Check Failed
+            Pre-check Failed
           </h1>
           <p className="text-[14px] text-[#4d4d4d] dark:text-[#b0b0b0]">
             Some issues were detected that must be resolved before updating
@@ -288,7 +288,7 @@ export default function PreflightFailedPage() {
             </div>
             <div className="flex-1">
               <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[20px] mb-[8px]">
-                Preflight Checks Failed
+                Pre-checks Failed
               </h2>
               <p className="text-[14px] text-[#151515] dark:text-white mb-[16px]">
                 We found <span className="font-semibold">{failedChecks.length} {failedChecks.length === 1 ? 'issue' : 'issues'}</span> that must be resolved before you can safely update to version 4.22.0.
@@ -401,14 +401,14 @@ export default function PreflightFailedPage() {
               Ask AI to help resolve issues
             </button>
             <button
-              onClick={handleRerunPreflight}
+              onClick={handleRerunPreCheck}
               className="bg-white dark:bg-[rgba(255,255,255,0.05)] border-2 border-[#c7c7c7] dark:border-[#707070] text-[#151515] dark:text-white px-[24px] py-[12px] rounded-[8px] font-semibold transition-colors flex items-center gap-[8px] hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.05)]"
             >
               <RefreshCw className="size-[16px]" />
-              Re-run preflight checks
+              Re-run pre-checks
             </button>
             <button
-              onClick={() => navigate('/administration/cluster-update')}
+              onClick={() => navigate('/administration/cluster-settings')}
               className="border-2 border-[#c7c7c7] dark:border-[#707070] text-[#151515] dark:text-white px-[24px] py-[12px] rounded-[8px] font-semibold transition-colors hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.05)]"
             >
               Return to update plan

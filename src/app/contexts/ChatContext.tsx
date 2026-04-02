@@ -35,7 +35,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       content: 'Hi Kevin! 👋 I\'m OpenShift LightSpeed, your AI assistant for cluster and operator management!\n\nI can help you with:\n\n• **Cluster updates** 🔄 Operator lifecycle management\n• **General cluster information and health** 💚\n• **Troubleshooting and diagnostics** 🔍\n\nWhat would you like to know?',
       timestamp: new Date(),
       suggestions: [
-        'Run preflight checks',
+        'Run pre-checks',
         'Show cluster health status',
         'Check operator compatibility',
         'What\'s new in OpenShift 4.22.0?'
@@ -74,7 +74,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         content: 'Hi Kevin! 👋 I\'m OpenShift LightSpeed, your AI assistant for cluster and operator management!\n\nI can help you with:\n\n• **Cluster updates** 🔄 Operator lifecycle management\n• **General cluster information and health** 💚\n• **Troubleshooting and diagnostics** 🔍\n\nWhat would you like to know?',
         timestamp: new Date(),
         suggestions: [
-          'Run preflight checks',
+          'Run pre-checks',
           'Show cluster health status',
           'Check operator compatibility',
           'What\'s new in OpenShift 4.22.0?'

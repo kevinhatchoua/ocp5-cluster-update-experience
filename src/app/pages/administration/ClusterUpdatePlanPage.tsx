@@ -6,12 +6,19 @@ import Breadcrumbs from "../../components/Breadcrumbs";
 
 type TabKey = "update-plan" | "update-history";
 
+export type RiskResolution = {
+  type: "update-operator" | "wait-for-fix" | "update-z-stream" | "accept-only";
+  description: string;
+  actionAvailable?: boolean;
+};
+
 export type OperatorIssue = {
   name: string;
   message: string;
   slug: string;
   severity: "critical" | "warning";
   url?: string;
+  resolution?: RiskResolution;
 };
 
 export type VersionEntry = {
@@ -58,20 +65,45 @@ export const channelVersions: Record<string, { groups: VersionGroup[]; banner?: 
           {
             version: "5.1.10", recommended: true, risk: "Low Risk", riskColor: "#3e8635", features: 4, bugFixes: 12, date: "Mar 22, 2026",
             operatorIssues: [
-              { name: "cluster-logging", slug: "cluster-logging-6.4.3-max-ocp-5.0", severity: "critical", message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading.", url: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html" },
-              { name: "cloud-credential", slug: "cloud-credential-iam-update-required", severity: "warning", message: "cloudcredential.operator.openshift.io/cluster object needs updating before upgrade. See Manually Creating IAM.", url: "https://docs.openshift.com/container-platform/latest/authentication/managing_cloud_provider_credentials/about-cloud-credential-operator.html" },
+              { name: "ClusterLoggingMaxVersion", slug: "ClusterLoggingMaxVersion", severity: "critical", message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading.", url: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html", resolution: { type: "update-operator", description: "Update cluster-logging operator from v6.4.3 to v6.5.1+.", actionAvailable: true } },
+              { name: "CloudCredentialIAMUpdate", slug: "CloudCredentialIAMUpdate", severity: "warning", message: "cloudcredential.operator.openshift.io/cluster object needs updating before upgrade. The IAM configuration created for 5.0 is missing permissions required by 5.1. See Manually Creating IAM.", url: "https://docs.openshift.com/container-platform/latest/authentication/managing_cloud_provider_credentials/about-cloud-credential-operator.html", resolution: { type: "accept-only", description: "No automated fix. Manually update IAM configuration per the linked documentation, then accept this risk." } },
             ],
           },
           { version: "5.1.9", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 2, bugFixes: 8, date: "Mar 16, 2026",
             operatorIssues: [
-              { name: "cluster-logging", slug: "cluster-logging-6.4.3-max-ocp-5.0", severity: "critical", message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading.", url: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html" },
+              { name: "ClusterLoggingMaxVersion", slug: "ClusterLoggingMaxVersion", severity: "critical", message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading.", url: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html", resolution: { type: "update-operator", description: "Update cluster-logging operator from v6.4.3 to v6.5.1+.", actionAvailable: true } },
             ],
           },
           { version: "5.1.8", recommended: false, risk: "Medium Risk", riskColor: "#c58c00", features: 3, bugFixes: 15, date: "Mar 8, 2026",
             operatorIssues: [
-              { name: "cluster-logging", slug: "cluster-logging-6.4.3-max-ocp-5.0", severity: "critical", message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading.", url: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html" },
-              { name: "operator-lifecycle-manager", slug: "olm-4.21-incompatible-5.1", severity: "critical", message: "Incompatible operator-lifecycle-manager version detected. Update to 4.22.0 or higher.", url: "https://docs.openshift.com/container-platform/latest/operators/admin/olm-upgrading-operators.html" },
-              { name: "cloud-credential", slug: "cloud-credential-iam-update-required", severity: "warning", message: "cloudcredential.operator.openshift.io/cluster object needs updating before upgrade. See Manually Creating IAM." },
+              { name: "ClusterLoggingMaxVersion", slug: "ClusterLoggingMaxVersion", severity: "critical", message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading.", url: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html", resolution: { type: "update-operator", description: "Update cluster-logging operator from v6.4.3 to v6.5.1+.", actionAvailable: true } },
+              { name: "OLMIncompatible", slug: "OLMIncompatible", severity: "critical", message: "Incompatible operator-lifecycle-manager version detected. OLM 4.21.0 does not support 5.1 workload APIs. Update to 4.22.0 or higher.", url: "https://docs.openshift.com/container-platform/latest/operators/admin/olm-upgrading-operators.html", resolution: { type: "update-operator", description: "Update OLM from v4.21.0 to v4.22.0+.", actionAvailable: true } },
+              { name: "CloudCredentialIAMUpdate", slug: "CloudCredentialIAMUpdate", severity: "warning", message: "cloudcredential.operator.openshift.io/cluster object needs updating before upgrade. See Manually Creating IAM.", resolution: { type: "accept-only", description: "No automated fix. Manually update IAM configuration per documentation, then accept this risk." } },
+            ],
+          },
+          { version: "5.1.7", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 1, bugFixes: 6, date: "Feb 28, 2026",
+            operatorIssues: [
+              { name: "ClusterLoggingMaxVersion", slug: "ClusterLoggingMaxVersion", severity: "critical", message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading.", url: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html", resolution: { type: "update-operator", description: "Update cluster-logging operator from v6.4.3 to v6.5.1+.", actionAvailable: true } },
+            ],
+          },
+          { version: "5.1.6", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 2, bugFixes: 9, date: "Feb 18, 2026",
+            operatorIssues: [
+              { name: "ClusterLoggingMaxVersion", slug: "ClusterLoggingMaxVersion", severity: "critical", message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading.", url: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html", resolution: { type: "update-operator", description: "Update cluster-logging operator from v6.4.3 to v6.5.1+.", actionAvailable: true } },
+            ],
+          },
+          { version: "5.1.5", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 1, bugFixes: 4, date: "Feb 8, 2026",
+            operatorIssues: [
+              { name: "ClusterLoggingMaxVersion", slug: "ClusterLoggingMaxVersion", severity: "critical", message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading.", url: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html", resolution: { type: "update-operator", description: "Update cluster-logging operator from v6.4.3 to v6.5.1+.", actionAvailable: true } },
+            ],
+          },
+          { version: "5.1.4", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 0, bugFixes: 5, date: "Jan 28, 2026",
+            operatorIssues: [
+              { name: "ClusterLoggingMaxVersion", slug: "ClusterLoggingMaxVersion", severity: "critical", message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading.", url: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html", resolution: { type: "update-operator", description: "Update cluster-logging operator from v6.4.3 to v6.5.1+.", actionAvailable: true } },
+            ],
+          },
+          { version: "5.1.3", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 0, bugFixes: 3, date: "Jan 18, 2026",
+            operatorIssues: [
+              { name: "ClusterLoggingMaxVersion", slug: "ClusterLoggingMaxVersion", severity: "critical", message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading.", url: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html", resolution: { type: "update-operator", description: "Update cluster-logging operator from v6.4.3 to v6.5.1+.", actionAvailable: true } },
             ],
           },
         ],
@@ -199,17 +231,17 @@ type UpdateHistoryEntry = {
   startedAt: string;
   completedAt: string;
   duration: string;
-  preflight: { passed: number; failed: number; total: number };
+  preCheck: { passed: number; failed: number; total: number };
   compatSummary?: string;
 };
 
 const updateHistory: UpdateHistoryEntry[] = [
-  { version: "5.0.0", status: "Completed", method: "Agent", decision: "Approved", initiatedBy: "admin@example.com", startedAt: "Mar 1, 2026 02:00 UTC", completedAt: "Mar 1, 2026 03:48 UTC", duration: "1h 48m", preflight: { passed: 6, failed: 0, total: 6 }, compatSummary: "All operators compatible. No API deprecations detected." },
-  { version: "4.18.6", status: "Completed", method: "Agent", decision: "Auto-approved", initiatedBy: "cluster-update-agent", startedAt: "Feb 12, 2026 03:00 UTC", completedAt: "Feb 12, 2026 04:32 UTC", duration: "1h 32m", preflight: { passed: 6, failed: 0, total: 6 }, compatSummary: "Z-stream update — all checks passed automatically." },
-  { version: "4.18.4", status: "Completed", method: "Manual", decision: "N/A", initiatedBy: "admin@example.com", startedAt: "Jan 22, 2026 02:00 UTC", completedAt: "Jan 22, 2026 03:15 UTC", duration: "1h 15m", preflight: { passed: 5, failed: 1, total: 6 }, compatSummary: "cluster-logging operator warning (non-blocking)." },
-  { version: "4.18.2", status: "Completed", method: "Manual", decision: "N/A", initiatedBy: "devops-team@example.com", startedAt: "Dec 15, 2025 03:00 UTC", completedAt: "Dec 15, 2025 04:22 UTC", duration: "1h 22m", preflight: { passed: 6, failed: 0, total: 6 } },
-  { version: "4.17.9", status: "Failed", method: "Agent", decision: "Auto-approved", initiatedBy: "cluster-update-agent", startedAt: "Nov 28, 2025 02:00 UTC", completedAt: "Nov 28, 2025 02:45 UTC", duration: "45m", preflight: { passed: 4, failed: 2, total: 6 }, compatSummary: "Operator compatibility check failed. Automatic rollback triggered." },
-  { version: "4.17.8", status: "Rejected", method: "Agent", decision: "Rejected", initiatedBy: "admin@example.com", startedAt: "Nov 20, 2025 02:00 UTC", completedAt: "Nov 20, 2025 02:02 UTC", duration: "2m", preflight: { passed: 3, failed: 3, total: 6 }, compatSummary: "Multiple operator incompatibilities. 2 deprecated APIs in use. Admin rejected update plan." },
+  { version: "5.0.0", status: "Completed", method: "Agent", decision: "Approved", initiatedBy: "admin@example.com", startedAt: "Mar 1, 2026 02:00 UTC", completedAt: "Mar 1, 2026 03:48 UTC", duration: "1h 48m", preCheck: { passed: 6, failed: 0, total: 6 }, compatSummary: "All operators compatible. No API deprecations detected." },
+  { version: "4.18.6", status: "Completed", method: "Agent", decision: "Auto-approved", initiatedBy: "cluster-update-agent", startedAt: "Feb 12, 2026 03:00 UTC", completedAt: "Feb 12, 2026 04:32 UTC", duration: "1h 32m", preCheck: { passed: 6, failed: 0, total: 6 }, compatSummary: "Z-stream update — all checks passed automatically." },
+  { version: "4.18.4", status: "Completed", method: "Manual", decision: "N/A", initiatedBy: "admin@example.com", startedAt: "Jan 22, 2026 02:00 UTC", completedAt: "Jan 22, 2026 03:15 UTC", duration: "1h 15m", preCheck: { passed: 5, failed: 1, total: 6 }, compatSummary: "cluster-logging operator warning (non-blocking)." },
+  { version: "4.18.2", status: "Completed", method: "Manual", decision: "N/A", initiatedBy: "devops-team@example.com", startedAt: "Dec 15, 2025 03:00 UTC", completedAt: "Dec 15, 2025 04:22 UTC", duration: "1h 22m", preCheck: { passed: 6, failed: 0, total: 6 } },
+  { version: "4.17.9", status: "Failed", method: "Agent", decision: "Auto-approved", initiatedBy: "cluster-update-agent", startedAt: "Nov 28, 2025 02:00 UTC", completedAt: "Nov 28, 2025 02:45 UTC", duration: "45m", preCheck: { passed: 4, failed: 2, total: 6 }, compatSummary: "Operator compatibility check failed. Automatic rollback triggered." },
+  { version: "4.17.8", status: "Rejected", method: "Agent", decision: "Rejected", initiatedBy: "admin@example.com", startedAt: "Nov 20, 2025 02:00 UTC", completedAt: "Nov 20, 2025 02:02 UTC", duration: "2m", preCheck: { passed: 3, failed: 3, total: 6 }, compatSummary: "Multiple operator incompatibilities. 2 deprecated APIs in use. Admin rejected update plan." },
 ];
 
 
@@ -296,12 +328,12 @@ export default function ClusterUpdatePlanPage() {
     <div className="flex h-full relative min-w-0">
       <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-[24px] pb-[48px]">
       <Breadcrumbs items={[
-        { label: "Administration", path: "/administration/cluster-update" },
-        { label: "Cluster Update" },
+        { label: "Administration", path: "/administration/cluster-settings" },
+        { label: "Cluster Settings" },
       ]} />
 
       <h1 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[28px] mb-[16px]">
-        Cluster Update
+        Cluster Settings
       </h1>
 
       <div className="border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)] mb-[24px] flex gap-[0px]">
@@ -340,9 +372,6 @@ export default function ClusterUpdatePlanPage() {
 
           {/* AI Assessment */}
           <AiAssessmentSection openChatbot={openChatbot} selectedVersion={selectedVersion} />
-
-          {/* Preflight Checks from Target Release */}
-          <PreflightFromTargetSection selectedVersion={selectedVersion} openChatbot={openChatbot} />
 
           {/* Cluster Details */}
           <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
@@ -414,15 +443,15 @@ export function OlsChatbot({ context, selectedVersion, selectedChannel, onClose,
     if (context === "recommendations") {
       initial.push({ role: "assistant", text: `Based on your cluster's workload profile and update history, here are my recommendations:\n\n• **Recommended version**: ${selectedVersion} — Low risk with strong community adoption\n• **Best update window**: Weekdays 2:00-4:00 AM UTC based on your traffic patterns\n• **Pre-update actions**: Update cluster-logging operator to v6.5+ before proceeding\n• **Estimated downtime**: ~2 minutes for API server restart` });
     } else if (context === "agent-config") {
-      initial.push({ role: "assistant", text: "I can help you configure the agent-based update strategy. The agent will:\n\n• **Analyze workload patterns** to find optimal update windows\n• **Run pre-flight checks** automatically before each update\n• **Coordinate operator updates** in the correct dependency order\n• **Monitor rollout health** and trigger automatic rollback if issues are detected\n\nWould you like to configure the update schedule, set rollback thresholds, or review the current agent policy?" });
+      initial.push({ role: "assistant", text: "I can help you configure the agent-based update strategy. The agent will:\n\n• **Analyze workload patterns** to find optimal update windows\n• **Run pre-checks** automatically before each update\n• **Coordinate operator updates** in the correct dependency order\n• **Monitor rollout health** and trigger automatic rollback if issues are detected\n\nWould you like to configure the update schedule, set rollback thresholds, or review the current agent policy?" });
     } else if (context === "agent-monitor") {
       initial.push({ role: "assistant", text: "The update agent is currently monitoring your cluster. Here's what I can help with:\n\n• View the current agent status and decision log\n• Explain why the agent chose a specific update window\n• Review rollback criteria and thresholds\n• Adjust agent behavior for upcoming maintenance windows\n\nWhat would you like to know?" });
-    } else if (context === "agent-precheck") {
-      initial.push({ role: "assistant", text: `Starting AI-powered pre-check for update to **${selectedVersion}**...\n\n✅ **Cluster Health** — All components healthy\n✅ **Node Status** — 6/6 nodes Ready\n✅ **Storage Health** — 85% available, all PVs bound\n✅ **Network Health** — OVN verified, no packet loss\n✅ **Certificates** — Valid for >90 days\n✅ **etcd** — Quorum established\n\n⚠️ **Operator Compatibility** — 2 operators need attention:\n• cluster-logging v6.4.3 (max OCP 5.0) → Update to v6.5.1+\n• elasticsearch-operator v5.7.2 (max OCP 5.0) → Update to v5.8.0+\n\n**Next steps:**\n1. Update the incompatible operators from the Cluster Operators tab\n2. Re-run the pre-check to confirm all clear\n3. Approve the update plan to proceed\n\nWould you like me to start the operator updates automatically?` });
+    } else if (context === "agent-precheck" || context === "ai-precheck") {
+      initial.push({ role: "assistant", text: `Running AI-powered pre-check for update to **${selectedVersion}**...\n\n**Pre-checks from Target Release Payload (${selectedVersion})**\nThese checks are shipped with the target release payload and validate cluster readiness against version-specific requirements.\n\n✅ **ClusterVersionUpgradeable** — ClusterVersion conditions permit upgrade\n✅ **ClusterOperatorDegraded** — No cluster operators are degraded\n✅ **ClusterOperatorAvailable** — All cluster operators are available\n✅ **MachineConfigPoolDraining** — MachineConfigPools can drain nodes safely\n⚠️ **PodDisruptionBudgetAtLimit** — 1 PDB at maxUnavailable=0, pod eviction may stall\n❌ **DeprecatedAPIInUse** — 3 resources using rbac.authorization.k8s.io/v1beta1, migrate to v1\n\n**Cluster Health Pre-checks**\n✅ **Node Status** — 6/6 nodes Ready\n✅ **Storage Health** — 85% available, all PVs bound\n✅ **Network Health** — OVN verified, no packet loss\n✅ **Certificates** — Valid for >90 days\n✅ **etcd** — Quorum established\n\n⚠️ **Operator Compatibility** — 2 operators need attention:\n• cluster-logging v6.4.3 (max OCP 5.0) → Update to v6.5.1+\n• elasticsearch-operator v5.7.2 (max OCP 5.0) → Update to v5.8.0+\n\n**Recommended next steps:**\n1. Migrate deprecated rbac.authorization.k8s.io/v1beta1 resources to v1\n2. Review PodDisruptionBudget settings to avoid eviction stalls during rolling update\n3. Update the 2 incompatible operators from the Installed Software page\n4. Re-run the pre-check to confirm all clear\n5. Approve the update plan to proceed` });
     } else if (context === "compatibility-analysis") {
       initial.push({ role: "assistant", text: `I've analyzed the compatibility profile for updating to **${selectedVersion}** on the **${selectedChannel}** channel. Here's what I found:\n\n**Operator Issues:**\n• **Cluster Logging v6.4.3** — max supported OCP is 5.0. You need v6.5.1+ before upgrading.\n• **Elasticsearch Operator v5.7.2** — max supported OCP is 5.0. Upgrade to v5.8.0+.\n• **OLM v4.21.0** — recommended to update to v4.22.0 for full 5.1 support.\n\n**API Deprecations:**\n• \`flowcontrol.apiserver.k8s.io/v1beta2\` — migrate to \`v1\` before 5.2.\n\n**Recommendation:** Update the 2 incompatible operators first, then approve the update plan. I can generate a step-by-step remediation runbook if needed.` });
     } else if (context === "agent-start") {
-      initial.push({ role: "assistant", text: `Starting AI-managed update to **${selectedVersion}**...\n\n**Agent Status:** Active\n**Current Phase:** Generating update plan\n\n📋 **Actions completed:**\n1. ✅ Cluster health verified — all components healthy\n2. ✅ Pre-flight checks passed (6/6)\n3. ✅ Compatibility analysis complete — 2 issues found\n4. ⏳ Awaiting plan approval\n\n**Next step:** Review the proposed update plan below and approve to proceed. The agent will execute the update during the optimal window.\n\nI'll keep you updated on progress. You can pause or cancel the agent at any time from the status bar above.` });
+      initial.push({ role: "assistant", text: `Starting AI-managed update to **${selectedVersion}**...\n\n**Agent Status:** Active\n**Current Phase:** Generating update plan\n\n📋 **Actions completed:**\n1. ✅ Cluster health verified — all components healthy\n2. ✅ Pre-checks passed (6/6)\n3. ✅ Compatibility analysis complete — 2 issues found\n4. ⏳ Awaiting plan approval\n\n**Next step:** Review the proposed update plan below and approve to proceed. The agent will execute the update during the optimal window.\n\nI'll keep you updated on progress. You can pause or cancel the agent at any time from the status bar above.` });
     } else if (context === "agent-paused") {
       initial.push({ role: "assistant", text: `⏸️ **Agent paused** at ${new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}\n\n**Status:** The update agent has been paused. No further actions will be taken until you resume.\n\n**State preserved:**\n• Update plan: Pending approval\n• Target version: ${selectedVersion}\n• Scheduled window: Wed Apr 2, 02:00–05:00 UTC\n\n**Actions available:**\n• **Resume** — Continue from where the agent left off\n• **Cancel** — Discard the plan and stop the agent\n\nThe scheduled execution window will be skipped while paused.` });
     } else if (context === "agent-resumed") {
@@ -430,7 +459,7 @@ export function OlsChatbot({ context, selectedVersion, selectedChannel, onClose,
     } else if (context === "agent-cancelled") {
       initial.push({ role: "assistant", text: `🛑 **Update cancelled** at ${new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}\n\n**Status:** The update agent has been stopped and the update plan has been discarded.\n\n**What was cleared:**\n• Proposed update plan\n• Accepted risks\n• Scheduled execution window\n\n**To start a new update:**\n1. Click "Start update with AI" to begin a fresh update session\n2. Or use "Update pre-check with AI" to run checks first\n\nYour cluster remains on version **5.0.0**. No changes were made.` });
     } else if (context === "update-executing") {
-      initial.push({ role: "assistant", text: `🚀 **Update started** at ${new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}\n\n**Target:** 5.0.0 → ${selectedVersion}\n**Strategy:** Rolling update with automatic rollback\n\n**Current progress:**\n1. ✅ Pre-flight checks passed\n2. ✅ Operator updates initiated\n3. ⏳ Control plane nodes updating...\n4. ⏳ Worker nodes pending\n\n**Live monitoring active.** I'll alert you if any health check degrades.\n\n• API Server: Healthy\n• etcd: Healthy\n• Ingress: Healthy\n\nEstimated completion: ~1h 45m. The cluster remains operational during the rolling update.` });
+      initial.push({ role: "assistant", text: `🚀 **Update started** at ${new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}\n\n**Target:** 5.0.0 → ${selectedVersion}\n**Strategy:** Rolling update with automatic rollback\n\n**Current progress:**\n1. ✅ Pre-checks passed\n2. ✅ Operator updates initiated\n3. ⏳ Control plane nodes updating...\n4. ⏳ Worker nodes pending\n\n**Live monitoring active.** I'll alert you if any health check degrades.\n\n• API Server: Healthy\n• etcd: Healthy\n• Ingress: Healthy\n\nEstimated completion: ~1h 45m. The cluster remains operational during the rolling update.` });
     } else if (context === "update-completed") {
       initial.push({ role: "assistant", text: `✅ **Update complete!** at ${new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}\n\n**Cluster version:** ${selectedVersion}\n**Duration:** 1h 38m\n\n**Post-update verification:**\n✅ API server responding\n✅ All 6 nodes Ready\n✅ All cluster operators available\n✅ No degraded operators\n✅ Ingress healthy\n✅ Workloads stable\n\n**Operators updated:**\n• Cluster Logging: 6.4.3 → 6.5.1\n• Elasticsearch Operator: 5.7.2 → 5.8.0\n• OLM: 4.21.0 → 4.22.0\n\nYour cluster is now running **${selectedVersion}**. All health checks passed. You can view the full update log in the Update History tab.` });
     } else if (context === "update-failed") {
@@ -445,9 +474,8 @@ export function OlsChatbot({ context, selectedVersion, selectedChannel, onClose,
     const lastMsg = initial[initial.length - 1];
     if (lastMsg && lastMsg.role === "assistant") {
       const contextActions: Record<string, ChatAction[]> = {
-        "agent-precheck": [
-          { label: "Re-run pre-checks", variant: "secondary", actionId: "rerun-precheck" },
-        ],
+        "agent-precheck": [],
+        "ai-precheck": [],
         "agent-start": [
           { label: "Review update plan", variant: "primary", actionId: "view-plan" },
         ],
@@ -500,13 +528,13 @@ export function OlsChatbot({ context, selectedVersion, selectedChannel, onClose,
       if (lowerMsg.includes("operator") || lowerMsg.includes("compatibility") || lowerMsg.includes("blocked")) {
         response = { role: "assistant", text: "Based on my analysis, you have **2 operators** that need updating before proceeding:\n\n• **Cluster Logging v6.4.3** → Update to v6.5.1+\n• **Elasticsearch Operator v5.7.2** → Update to v5.8.0+\n\nI recommend updating these operators before approving the update plan. You can accept the known risks from the alert banner in the Available Updates section.", actions: [{ label: "Review update plan", variant: "primary", actionId: "view-plan" }] };
       } else if (lowerMsg.includes("approve") || lowerMsg.includes("plan")) {
-        response = { role: "assistant", text: "The update plan is pending your approval. Here's a summary:\n\n• **Target:** 5.0.0 → 5.1.10\n• **Pre-flight:** 6/6 passed\n• **Compatibility:** 2 blocking issues\n• **Schedule:** Wed Apr 2, 02:00–05:00 UTC\n\nYou can approve the plan from the decision bar below the update plan, or accept the known risks to proceed despite the incompatibilities.", actions: [{ label: "Review update plan", variant: "primary", actionId: "view-plan" }] };
+        response = { role: "assistant", text: "The update plan is pending your approval. Here's a summary:\n\n• **Target:** 5.0.0 → 5.1.10\n• **Pre-check:** 6/6 passed\n• **Compatibility:** 2 blocking issues\n• **Schedule:** Wed Apr 2, 02:00–05:00 UTC\n\nYou can approve the plan from the decision bar below the update plan, or accept the known risks to proceed despite the incompatibilities.", actions: [{ label: "Review update plan", variant: "primary", actionId: "view-plan" }] };
       } else if (lowerMsg.includes("schedule") || lowerMsg.includes("window") || lowerMsg.includes("when")) {
         response = { role: "assistant", text: "Based on your cluster's workload patterns, I recommend:\n\n• **Optimal window:** Wed Apr 2, 02:00–05:00 UTC\n• **Estimated duration:** 1h 45m\n• **Risk level:** Low\n\nThis window was selected because your cluster shows the lowest traffic during this period. You can adjust preferences in Agent Configuration → Scheduling." };
       } else if (lowerMsg.includes("rollback") || lowerMsg.includes("revert")) {
         response = { role: "assistant", text: "Automatic rollback is currently **enabled**. If health checks fail within 30 minutes of update completion, the agent will automatically revert to version 5.0.0.\n\n**Rollback details:**\n• Estimated time: ~30 minutes\n• All nodes will be reverted\n• Operator versions will be restored\n\nYou can configure this in Agent Configuration → Automatic Actions." };
       } else if (lowerMsg.includes("history") || lowerMsg.includes("previous") || lowerMsg.includes("past")) {
-        response = { role: "assistant", text: "Your cluster has 6 previous updates on record:\n\n• **5.0.0** — Completed (Agent, 1h 48m)\n• **4.18.6** — Completed (Agent, auto-approved)\n• **4.18.4** — Completed (Manual, 1h 15m)\n• **4.17.9** — Failed (Agent, auto-rollback)\n• **4.17.8** — Rejected (pre-flight failures)\n\nWould you like details on any specific update?", actions: [{ label: "View full history", variant: "primary", actionId: "view-history" }] };
+        response = { role: "assistant", text: "Your cluster has 6 previous updates on record:\n\n• **5.0.0** — Completed (Agent, 1h 48m)\n• **4.18.6** — Completed (Agent, auto-approved)\n• **4.18.4** — Completed (Manual, 1h 15m)\n• **4.17.9** — Failed (Agent, auto-rollback)\n• **4.17.8** — Rejected (pre-check failures)\n\nWould you like details on any specific update?", actions: [{ label: "View full history", variant: "primary", actionId: "view-history" }] };
       } else if (lowerMsg.includes("risk") || lowerMsg.includes("safe")) {
         response = { role: "assistant", text: "**Risk assessment for 5.0.0 → 5.1.10:**\n\n• **Overall risk:** Low (based on community adoption and test coverage)\n• **Blocking issues:** 2 incompatible operators\n• **API deprecations:** 1 warning (non-blocking)\n• **Custom resources:** No incompatibilities found\n\nThe 2 blocking operators can be updated beforehand, or you can accept the risks and proceed. The agent will attempt automatic mitigation during the update if enabled." };
       } else {
@@ -603,7 +631,7 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
   const [agentStatus, setAgentStatus] = useState<"idle" | "active" | "paused" | "updating" | "completed" | "failed" | "rolling-back">("idle");
   const [configTab, setConfigTab] = useState<"actions" | "compliance" | "scheduling" | "notifications">("actions");
 
-  const [autoPreflight, setAutoPreflight] = useState(true);
+  const [autoPreCheck, setAutoPreCheck] = useState(true);
   const [autoRollback, setAutoRollback] = useState(true);
   const [autoOperatorUpdate, setAutoOperatorUpdate] = useState(false);
   const [autoRiskMitigation, setAutoRiskMitigation] = useState(true);
@@ -694,7 +722,7 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
     openChatbot("update-rollback");
   };
 
-  const agentPreflightChecks = [
+  const agentPreChecks = [
     { label: "Cluster Health", status: "pass" as const, detail: "All cluster components reporting healthy" },
     { label: "Node Status", status: "pass" as const, detail: "6/6 nodes Ready, schedulable" },
     { label: "Storage Health", status: "pass" as const, detail: "85% capacity available, all PVs bound" },
@@ -853,10 +881,10 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
             <div className="space-y-[12px]">
               <div className="flex items-center justify-between bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[16px] py-[12px]">
                 <div>
-                  <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium">Automatic pre-flight checks</p>
+                  <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium">Automatic pre-checks</p>
                   <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Run all health and compatibility checks before each update attempt</p>
                 </div>
-                <Toggle enabled={autoPreflight} onChange={() => setAutoPreflight(!autoPreflight)} />
+                <Toggle enabled={autoPreCheck} onChange={() => setAutoPreCheck(!autoPreCheck)} />
               </div>
               <div className="flex items-center justify-between bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[16px] py-[12px]">
                 <div>
@@ -1037,17 +1065,17 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
           <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[14px] mb-[16px] font-['Red_Hat_Text:Regular',sans-serif]">AI-generated update plan for your cluster</p>
 
           <div className="space-y-[20px]">
-            {/* Pre-Flight Checks Module */}
+            {/* Pre-Checks Module */}
             <div>
               <div className="flex items-center gap-[8px] mb-[12px]">
                 <Shield className="size-[16px] text-[#3e8635]" />
-                <h3 className="text-[15px] font-semibold text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">Pre-Flight Checks</h3>
+                <h3 className="text-[15px] font-semibold text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">Pre-Checks</h3>
                 <span className="text-[12px] text-[#3e8635] font-semibold px-[8px] py-[1px] rounded-full bg-[rgba(62,134,53,0.1)] font-['Red_Hat_Text:Regular',sans-serif]">
-                  {agentPreflightChecks.filter(c => c.status === "pass").length}/{agentPreflightChecks.length} passed
+                  {agentPreChecks.filter(c => c.status === "pass").length}/{agentPreChecks.length} passed
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-[8px]">
-                {agentPreflightChecks.map((check) => (
+                {agentPreChecks.map((check) => (
                   <div key={check.label} className="flex items-start gap-[8px] bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] rounded-[8px] px-[12px] py-[10px]">
                     <CheckCircle className="size-[14px] text-[#3e8635] shrink-0 mt-[1px]" />
                     <div>
@@ -1762,6 +1790,41 @@ function InfoTooltip() {
   );
 }
 
+function ChannelTooltip() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div className="relative inline-flex" ref={ref}>
+      <button onClick={() => setOpen(!open)} className="bg-transparent border-0 cursor-pointer p-[2px] text-[#6a6e73] dark:text-[#b0b0b0] hover:text-[#0066cc] dark:hover:text-[#4dabf7] transition-colors" aria-label="Learn more about update channels">
+        <HelpCircle className="size-[16px]" />
+      </button>
+      {open && (
+        <div className="absolute top-[28px] left-1/2 -translate-x-1/2 z-50 w-[320px] bg-white dark:bg-[#1a1a1a] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] rounded-[8px] shadow-[0_4px_16px_rgba(0,0,0,0.12)] p-[16px]">
+          <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-[12px] h-[12px] bg-white dark:bg-[#1a1a1a] border-l border-t border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] rotate-45" />
+          <p className="text-[#151515] dark:text-white text-[13px] font-['Red_Hat_Text:Regular',sans-serif] font-medium mb-[4px]">Update channels</p>
+          <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] mb-[8px]">
+            Channels determine which versions are available for update. <strong>fast</strong> delivers updates as soon as they pass CI, <strong>stable</strong> waits for broader adoption, <strong>eus</strong> provides extended update support for select minor versions, and <strong>candidate</strong> includes pre-release builds for early testing.
+          </p>
+          <a href="https://docs.openshift.com/container-platform/latest/updating/understanding_updates/understanding-update-channels-releases.html" target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[13px] no-underline hover:underline font-['Red_Hat_Text:Regular',sans-serif]">
+            Learn more about channels <ExternalLink className="size-[11px]" />
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── AI Assessment Section ─── */
 export function AiAssessmentSection({ openChatbot, selectedVersion }: { openChatbot: (ctx: string) => void; selectedVersion: string }) {
   const [expanded, setExpanded] = useState(true);
@@ -1796,199 +1859,6 @@ export function AiAssessmentSection({ openChatbot, selectedVersion }: { openChat
   );
 }
 
-/* ─── Preflight from Target Payload Section (OTA-1930 / HPUX-1403) ─── */
-type PreflightJob = {
-  name: string;
-  description: string;
-  status: "passing" | "failing" | "warning" | "in-progress" | "pending";
-  message?: string;
-  source: "payload" | "cluster";
-};
-
-export function PreflightFromTargetSection({ selectedVersion, openChatbot }: { selectedVersion: string; openChatbot: (ctx: string) => void }) {
-  const [expanded, setExpanded] = useState(true);
-  const [updateMode, setUpdateMode] = useState<"" | "Preflight">("Preflight");
-  const [preflightRunning, setPreflightRunning] = useState(false);
-  const [preflightComplete, setPreflightComplete] = useState(false);
-
-  const [preflightJobs, setPreflightJobs] = useState<PreflightJob[]>([
-    { name: "ClusterVersionUpgradeable", description: "Verifies ClusterVersion conditions permit upgrade", status: "pending", source: "payload" },
-    { name: "ClusterOperatorDegraded", description: "Checks no cluster operators are degraded", status: "pending", source: "payload" },
-    { name: "ClusterOperatorAvailable", description: "Confirms all cluster operators are available", status: "pending", source: "payload" },
-    { name: "MachineConfigPoolDraining", description: "Validates MachineConfigPools can drain nodes safely", status: "pending", source: "payload" },
-    { name: "PodDisruptionBudgetAtLimit", description: "Checks PDBs allow sufficient disruption for rolling update", status: "pending", source: "payload" },
-    { name: "DeprecatedAPIInUse", description: "Scans for deprecated API usage that will break in target version", status: "pending", source: "payload" },
-  ]);
-
-  const runPreflight = () => {
-    setPreflightRunning(true);
-    setPreflightComplete(false);
-    setPreflightJobs(prev => prev.map(j => ({ ...j, status: "pending" as const })));
-
-    const results: PreflightJob["status"][] = ["passing", "passing", "passing", "passing", "warning", "failing"];
-    const messages = ["", "", "", "", "1 PDB at maxUnavailable=0 — pod eviction may stall", "3 resources using rbac.authorization.k8s.io/v1beta1 — migrate to v1"];
-
-    let index = 0;
-    const interval = setInterval(() => {
-      if (index < results.length) {
-        setPreflightJobs(prev => prev.map((j, i) => i === index ? { ...j, status: "in-progress" } : j));
-        const capturedIndex = index;
-        setTimeout(() => {
-          setPreflightJobs(prev => prev.map((j, i) => i === capturedIndex ? { ...j, status: results[capturedIndex], message: messages[capturedIndex] || undefined } : j));
-        }, 500);
-        index++;
-      } else {
-        clearInterval(interval);
-        setPreflightRunning(false);
-        setPreflightComplete(true);
-      }
-    }, 700);
-  };
-
-  const statusIcon = (status: PreflightJob["status"]) => {
-    switch (status) {
-      case "passing": return <CheckCircle className="size-[14px] text-[#3d7317] shrink-0" />;
-      case "failing": return <AlertCircle className="size-[14px] text-[#b1380b] shrink-0" />;
-      case "warning": return <AlertTriangle className="size-[14px] text-[#dca614] shrink-0" />;
-      case "in-progress": return <Loader2 className="size-[14px] text-[#0066cc] animate-spin shrink-0" />;
-      case "pending": return <div className="size-[14px] rounded-full border-2 border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] shrink-0" />;
-    }
-  };
-
-  const statusBadge = (status: PreflightJob["status"]) => {
-    const styles: Record<string, string> = {
-      passing: "bg-[rgba(61,115,23,0.1)] text-[#3d7317]",
-      failing: "bg-[rgba(177,56,11,0.1)] text-[#b1380b]",
-      warning: "bg-[rgba(220,166,20,0.1)] text-[#795600]",
-      "in-progress": "bg-[rgba(0,102,204,0.1)] text-[#0066cc]",
-      pending: "bg-[rgba(0,0,0,0.05)] text-[#6a6e73]",
-    };
-    return (
-      <span className={`text-[11px] px-[6px] py-[1px] rounded-[4px] font-semibold ${styles[status]}`}>
-        {status === "in-progress" ? "running" : status}
-      </span>
-    );
-  };
-
-  const passingCount = preflightJobs.filter(j => j.status === "passing").length;
-  const failingCount = preflightJobs.filter(j => j.status === "failing").length;
-  const warningCount = preflightJobs.filter(j => j.status === "warning").length;
-
-  return (
-    <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
-      <button onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-[8px] bg-transparent border-0 cursor-pointer p-0 hover:opacity-80 transition-opacity w-full text-left">
-        {expanded ? <ChevronDown className="size-[16px] text-[#151515] dark:text-white" /> : <ChevronRight className="size-[16px] text-[#151515] dark:text-white" />}
-        <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Preflight Checks from Target Release</h2>
-        {preflightComplete && (
-          <div className="flex items-center gap-[6px] ml-[8px]">
-            {failingCount > 0 && <span className="text-[11px] px-[6px] py-[1px] rounded-[4px] font-semibold bg-[rgba(177,56,11,0.1)] text-[#b1380b]">{failingCount} failed</span>}
-            {warningCount > 0 && <span className="text-[11px] px-[6px] py-[1px] rounded-[4px] font-semibold bg-[rgba(220,166,20,0.1)] text-[#795600]">{warningCount} warning</span>}
-            {failingCount === 0 && warningCount === 0 && <span className="text-[11px] px-[6px] py-[1px] rounded-[4px] font-semibold bg-[rgba(61,115,23,0.1)] text-[#3d7317]">All passed</span>}
-          </div>
-        )}
-      </button>
-
-      {expanded && (
-        <div className="mt-[16px]">
-          <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif] mb-[16px]">
-            These checks are shipped with the target release payload ({selectedVersion}) and validate cluster readiness against version-specific requirements.
-          </p>
-
-          {/* desiredUpdate.mode control */}
-          <div className="rounded-[8px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[16px] mb-[16px]">
-            <div className="flex items-start gap-[12px]">
-              <Settings className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0] mt-[2px] shrink-0" />
-              <div className="flex-1">
-                <p className="text-[14px] text-[#151515] dark:text-white font-medium font-['Red_Hat_Text',sans-serif] mb-[4px]">
-                  Update mode <span className="font-['Red_Hat_Mono',sans-serif] text-[12px] text-[#5e40be]">spec.desiredUpdate.mode</span>
-                </p>
-                <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif] mb-[12px]">
-                  Controls whether preflight checks gate the update or run as a dry-run without committing.
-                </p>
-                <div className="flex items-center gap-[8px]">
-                  <button onClick={() => setUpdateMode("Preflight")}
-                    className={`text-[13px] px-[14px] py-[6px] rounded-[999px] border cursor-pointer transition-colors font-['Red_Hat_Text',sans-serif] font-medium ${
-                      updateMode === "Preflight"
-                        ? "bg-[#0066cc] text-white border-[#0066cc]"
-                        : "bg-transparent text-[#4d4d4d] dark:text-[#b0b0b0] border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90]"
-                    }`}>
-                    Preflight (dry-run)
-                  </button>
-                  <button onClick={() => setUpdateMode("")}
-                    className={`text-[13px] px-[14px] py-[6px] rounded-[999px] border cursor-pointer transition-colors font-['Red_Hat_Text',sans-serif] font-medium ${
-                      updateMode === ""
-                        ? "bg-[#0066cc] text-white border-[#0066cc]"
-                        : "bg-transparent text-[#4d4d4d] dark:text-[#b0b0b0] border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90]"
-                    }`}>
-                    Normal update
-                  </button>
-                </div>
-                {updateMode === "Preflight" && (
-                  <p className="text-[11px] text-[#0066cc] dark:text-[#4dabf7] font-['Red_Hat_Text',sans-serif] mt-[8px]">
-                    Preflight mode runs compatibility checks against the target release without performing an actual update. Results will appear in status.conditionalUpdateRisks.
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Preflight job list */}
-          <div className="space-y-[8px] mb-[16px]">
-            {preflightJobs.map((job) => (
-              <div key={job.name} className="flex items-center justify-between p-[12px] rounded-[8px] border border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] bg-white dark:bg-[rgba(255,255,255,0.02)]">
-                <div className="flex items-center gap-[10px] flex-1 min-w-0">
-                  {statusIcon(job.status)}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-[6px]">
-                      <span className="text-[13px] text-[#151515] dark:text-white font-medium font-['Red_Hat_Text',sans-serif]">{job.name}</span>
-                      <span className="text-[10px] px-[5px] py-[1px] rounded-[3px] bg-[rgba(94,64,190,0.08)] text-[#5e40be] font-['Red_Hat_Mono',sans-serif] font-semibold">{job.source}</span>
-                    </div>
-                    <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif]">{job.description}</p>
-                    {job.message && (
-                      <p className="text-[11px] text-[#b1380b] dark:text-[#ee0000] font-['Red_Hat_Text',sans-serif] mt-[2px]">{job.message}</p>
-                    )}
-                  </div>
-                </div>
-                {statusBadge(job.status)}
-              </div>
-            ))}
-          </div>
-
-          {/* Summary + actions */}
-          {preflightComplete && (
-            <div className={`rounded-[8px] p-[12px] mb-[16px] ${
-              failingCount > 0 ? "bg-[rgba(177,56,11,0.05)] border border-[#b1380b]"
-              : warningCount > 0 ? "bg-[rgba(220,166,20,0.05)] border border-[#dca614]"
-              : "bg-[rgba(61,115,23,0.05)] border border-[#3d7317]"
-            }`}>
-              <p className="text-[13px] font-['Red_Hat_Text',sans-serif] font-medium text-[#151515] dark:text-white">
-                {passingCount} passed{warningCount > 0 ? `, ${warningCount} warning${warningCount !== 1 ? "s" : ""}` : ""}{failingCount > 0 ? `, ${failingCount} failed` : ""} of {preflightJobs.length} preflight checks from {selectedVersion} payload
-              </p>
-            </div>
-          )}
-
-          <div className="flex items-center gap-[8px]">
-            <button onClick={runPreflight} disabled={preflightRunning}
-              className={`flex items-center gap-[6px] text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 transition-colors font-['Red_Hat_Text',sans-serif] font-medium ${
-                preflightRunning
-                  ? "bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed"
-                  : "bg-[#0066cc] hover:bg-[#004080] text-white cursor-pointer"
-              }`}>
-              {preflightRunning ? <><Loader2 className="size-[14px] animate-spin" /> Running checks...</> : <><RefreshCw className="size-[14px]" /> {preflightComplete ? "Re-run preflight" : "Run preflight checks"}</>}
-            </button>
-            {preflightComplete && failingCount > 0 && (
-              <button onClick={() => openChatbot("preflight-failures")}
-                className="flex items-center gap-[6px] text-[14px] px-[16px] py-[8px] rounded-[999px] border border-[#0066cc] dark:border-[#4dabf7] bg-transparent text-[#0066cc] dark:text-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text',sans-serif] font-medium">
-                <Sparkles className="size-[14px]" /> Get AI help with failures
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 /* ─── Available Updates Section ─── */
 export function AvailableUpdatesSection({
@@ -2018,10 +1888,7 @@ export function AvailableUpdatesSection({
           <option value="candidate-5.1">candidate-5.1</option>
           <option value="eus-5.0">eus-5.0</option>
         </select>
-        <a href="https://docs.openshift.com/container-platform/latest/updating/understanding_updates/understanding-update-channels-releases.html" target="_blank" rel="noopener noreferrer"
-          className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[13px] no-underline hover:underline font-['Red_Hat_Text:Regular',sans-serif]">
-          Learn more about channels <ExternalLink className="size-[11px]" />
-        </a>
+        <ChannelTooltip />
       </div>
 
       {filteredGroups.length === 0 && (
@@ -2118,7 +1985,7 @@ function InstalledOperatorsSection({ selectedVersion, operators, navigate }: { s
 
   const navigateToUpdate = (op: typeof operatorsWithCompat[0]) => {
     navigate(`/ecosystem/installed-operators/${encodeURIComponent(op.name)}/update`, {
-      state: { returnTo: '/administration/cluster-update', operatorName: op.name, operatorData: op }
+      state: { returnTo: '/administration/cluster-settings', operatorName: op.name, operatorData: op }
     });
   };
 
@@ -2282,10 +2149,12 @@ function InstalledOperatorsSection({ selectedVersion, operators, navigate }: { s
 }
 
 /* ─── Version Group ─── */
-const COL_TEMPLATE = "32px 140px 180px 140px auto";
 
 function VersionGroupComponent({ label, versions, expanded, setExpanded, selectedVersion, setSelectedVersion, navigate }: any) {
   const [acceptedSlugs, setAcceptedSlugs] = useState<Set<string>>(new Set());
+  const [expandedRiskSlug, setExpandedRiskSlug] = useState<string | null>(null);
+  const [showOlderReleases, setShowOlderReleases] = useState(false);
+  const [risksExpanded, setRisksExpanded] = useState(true);
 
   const toggleAccept = (slug: string) => {
     setAcceptedSlugs((prev) => {
@@ -2297,94 +2166,126 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
   };
 
   const selectedVer = versions.find((v: VersionEntry) => v.version === selectedVersion);
-  const versionIssues: { slug: string; name: string; severity: "critical" | "warning"; detail: string; updateAvailable?: string; url?: string; resolved?: boolean }[] = [];
+
+  const allRisks: (OperatorIssue & { resolved?: boolean })[] = [];
   if (selectedVer?.operatorIssues) {
     for (const issue of selectedVer.operatorIssues) {
-      const op = installedOperators.find(o => o.name.toLowerCase().replace(/\s+/g, "-") === issue.name || o.name === issue.name || issue.slug.includes(o.name.toLowerCase().replace(/\s+/g, "-")));
-      const resolved = op?.updateAvailable ? false : (op?.maxOcpVersion ? compareVersions(op.maxOcpVersion, selectedVersion.split(".").slice(0, 2).join(".")) >= 0 : false);
-      versionIssues.push({ slug: issue.slug, name: issue.name, severity: issue.severity, detail: issue.message, updateAvailable: op?.updateAvailable, url: issue.url, resolved });
+      allRisks.push({ ...issue, resolved: false });
     }
   }
-  const incompatOps = installedOperators.filter(op => {
-    if (!op.maxOcpVersion || !selectedVersion) return false;
-    const targetMajorMinor = selectedVersion.split(".").slice(0, 2).join(".");
-    return compareVersions(op.maxOcpVersion, targetMajorMinor) < 0;
-  });
-  const upgradeableRisks = incompatOps
-    .filter(op => !versionIssues.some(r => r.name === op.name))
-    .map(op => ({
-      slug: `upgradeable-false-${op.name.toLowerCase().replace(/\s+/g, "-")}`,
-      name: op.name,
-      severity: "critical" as const,
-      detail: `${op.compatibilityMessage || "Operator is incompatible with the target cluster version."}${op.updateAvailable ? ` Update available: ${op.updateAvailable}.` : ""}`,
-      updateAvailable: op.updateAvailable,
-      url: undefined as string | undefined,
-      resolved: false,
-    }));
-  const allRisks = [...versionIssues, ...upgradeableRisks];
   const addressedCount = allRisks.filter(r => acceptedSlugs.has(r.slug) || r.resolved).length;
   const allAddressed = allRisks.length > 0 && addressedCount === allRisks.length;
   const hasNoRisks = allRisks.length === 0;
   const canUpdate = hasNoRisks || allAddressed;
 
-  const allGroupIssues = versions.flatMap((v: VersionEntry) => (v.operatorIssues || []));
-  const uniqueGroupIssueCount = allGroupIssues.filter((issue: any, idx: number, arr: any[]) => arr.findIndex((i: any) => i.slug === issue.slug) === idx).length;
+  // Compute shared risks (present on ALL versions in the group)
+  const allGroupSlugs = versions.map((v: VersionEntry) => new Set((v.operatorIssues || []).map((i: OperatorIssue) => i.slug)));
+  const sharedSlugs: string[] = [];
+  if (allGroupSlugs.length > 0) {
+    for (const slug of allGroupSlugs[0]) {
+      if (allGroupSlugs.every((s: Set<string>) => s.has(slug))) sharedSlugs.push(slug);
+    }
+  }
+
+  // Per-version unique risks (not in shared set)
+  const getUniqueRisks = (v: VersionEntry) => (v.operatorIssues || []).filter((i: OperatorIssue) => !sharedSlugs.includes(i.slug));
+
+  // Visible versions: show first 2 by default, rest behind "older" toggle
+  const VISIBLE_COUNT = 2;
+  const visibleVersions = showOlderReleases ? versions : versions.slice(0, VISIBLE_COUNT);
+  const hiddenCount = versions.length - VISIBLE_COUNT;
+
+  const severityColor = (sev: string) => sev === "critical" ? "bg-[rgba(177,56,11,0.08)] text-[#b1380b] border-[rgba(177,56,11,0.2)]" : "bg-[rgba(220,166,20,0.08)] text-[#795600] border-[rgba(220,166,20,0.25)]";
 
   return (
     <div className="mb-[8px]">
       <button onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-[8px] bg-transparent border-0 cursor-pointer p-[8px] -ml-[8px] hover:bg-[rgba(0,0,0,0.03)] dark:hover:bg-[rgba(255,255,255,0.03)] rounded-[999px] transition-colors w-full text-left">
+        className="flex items-center flex-wrap gap-[8px] bg-transparent border-0 cursor-pointer p-[8px] -ml-[8px] hover:bg-[rgba(0,0,0,0.03)] dark:hover:bg-[rgba(255,255,255,0.03)] rounded-[12px] transition-colors w-full text-left">
         {expanded ? <ChevronDown className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" /> : <ChevronRight className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" />}
         <span className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[15px]">{label}</span>
-        <span className="text-[11px] px-[8px] py-[2px] rounded-full bg-[#e7f1fa] dark:bg-[rgba(43,154,243,0.12)] text-[#0066cc] dark:text-[#4dabf7] font-semibold font-['Red_Hat_Text:Regular',sans-serif]">{versions.length} release{versions.length !== 1 ? "s" : ""}</span>
-        {uniqueGroupIssueCount > 0 && (
-          <span className="text-[11px] px-[8px] py-[2px] rounded-full bg-[rgba(197,140,0,0.1)] text-[#c58c00] font-semibold font-['Red_Hat_Text:Regular',sans-serif] flex items-center gap-[3px]">
-            <AlertTriangle className="size-[10px]" /> {uniqueGroupIssueCount} known issue{uniqueGroupIssueCount !== 1 ? "s" : ""}
+        <span className="text-[11px] px-[8px] py-[2px] rounded-full bg-[#e7f1fa] dark:bg-[rgba(43,154,243,0.12)] text-[#0066cc] dark:text-[#4dabf7] font-semibold font-['Red_Hat_Text:Regular',sans-serif]">{versions.length} update{versions.length !== 1 ? "s" : ""}</span>
+        {sharedSlugs.length > 0 && (
+          <span className="text-[11px] text-[#795600] dark:text-[#dca614] font-['Red_Hat_Text:Regular',sans-serif]">
+            all exposed to <span className="font-['Red_Hat_Mono:Regular',sans-serif] font-semibold">{sharedSlugs.join(", ")}</span>
           </span>
         )}
       </button>
 
       {expanded && (
-        <div className="mt-[4px]">
-          <div className="grid gap-[8px] px-[12px] py-[8px] text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)]"
-            style={{ gridTemplateColumns: COL_TEMPLATE }}>
-            <span /><span>Version</span><span>Details</span><span>Date</span><span />
-          </div>
-          {versions.map((v: VersionEntry) => {
+        <div className="mt-[4px] ml-[24px]">
+          {visibleVersions.map((v: VersionEntry) => {
             const isSelected = selectedVersion === v.version;
+            const uniqueRisks = getUniqueRisks(v);
             return (
               <div key={v.version}>
-                <div onClick={() => { setSelectedVersion(v.version); setAcceptedSlugs(new Set()); }}
-                  className={`grid gap-[8px] items-center px-[12px] py-[10px] w-full text-left cursor-pointer transition-colors border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] ${isSelected ? "bg-[#e7f1fa] dark:bg-[rgba(43,154,243,0.08)]" : "hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)]"}`}
-                  style={{ gridTemplateColumns: COL_TEMPLATE }}>
-                  <div className="flex items-center justify-center">
-                    <div className={`size-[18px] rounded-full border-2 flex items-center justify-center ${isSelected ? "border-[#0066cc] dark:border-[#4dabf7]" : "border-[#8a8d90]"}`}>
+                <div onClick={() => { setSelectedVersion(v.version); setAcceptedSlugs(new Set()); setExpandedRiskSlug(null); }}
+                  className={`flex items-start gap-[10px] px-[12px] py-[10px] cursor-pointer transition-colors border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] ${isSelected ? "bg-[#e7f1fa] dark:bg-[rgba(43,154,243,0.08)] rounded-t-[8px]" : "hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)]"}`}>
+                  <div className="flex items-center justify-center mt-[3px]">
+                    <div className={`size-[18px] rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected ? "border-[#0066cc] dark:border-[#4dabf7]" : "border-[#8a8d90]"}`}>
                       {isSelected && <div className="size-[10px] rounded-full bg-[#0066cc] dark:bg-[#4dabf7]" />}
                     </div>
                   </div>
-                  <div className="flex flex-col gap-[2px]">
-                    <div className="flex items-center gap-[8px]">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-[8px] mb-[2px]">
                       <Link to={`/administration/cluster-update/version/${v.version}`} onClick={(e) => e.stopPropagation()}
                         className="text-[#0066cc] dark:text-[#4dabf7] text-[14px] no-underline hover:underline font-['Red_Hat_Mono:Regular',sans-serif]">{v.version}</Link>
                       {v.recommended && <span className="bg-[#e7f1fa] dark:bg-[rgba(43,154,243,0.15)] text-[#0066cc] dark:text-[#4dabf7] text-[11px] px-[8px] py-[2px] rounded-full font-semibold">Recommended</span>}
+                      <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{v.date}</span>
                     </div>
+                    <div className="flex items-center gap-[6px] mb-[4px]">
+                      <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{v.features} features · {v.bugFixes} bug fixes</span>
+                      <a href="https://docs.openshift.com/container-platform/latest/release_notes/ocp-4-18-release-notes.html" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-[3px] text-[#0066cc] dark:text-[#4dabf7] text-[11px] no-underline hover:underline font-['Red_Hat_Text:Regular',sans-serif]">
+                        Release notes <ExternalLink className="size-[10px]" />
+                      </a>
+                    </div>
+                    {/* Per-version unique risk slugs */}
+                    {uniqueRisks.length > 0 && (
+                      <div className="flex flex-wrap gap-[4px] mt-[4px]">
+                        {uniqueRisks.map((risk: OperatorIssue) => (
+                          <button key={risk.slug} onClick={(e) => { e.stopPropagation(); setExpandedRiskSlug(expandedRiskSlug === `${v.version}:${risk.slug}` ? null : `${v.version}:${risk.slug}`); setSelectedVersion(v.version); }}
+                            className={`text-[11px] px-[6px] py-[2px] rounded-[4px] font-['Red_Hat_Mono:Regular',sans-serif] font-semibold border cursor-pointer transition-colors ${severityColor(risk.severity)} hover:opacity-80`}>
+                            {risk.slug}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {/* Inline risk detail popover */}
+                    {uniqueRisks.map((risk: OperatorIssue) => (
+                      expandedRiskSlug === `${v.version}:${risk.slug}` && (
+                        <div key={`detail-${risk.slug}`} className="mt-[8px] rounded-[8px] bg-[#fafafa] dark:bg-[rgba(255,255,255,0.03)] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[12px]" onClick={(e) => e.stopPropagation()}>
+                          <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text',sans-serif] mb-[6px]">{risk.message}</p>
+                          {risk.url && (
+                            <a href={risk.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[12px] no-underline hover:underline font-['Red_Hat_Text',sans-serif]">
+                              View impact statement <ExternalLink className="size-[11px]" />
+                            </a>
+                          )}
+                        </div>
+                      )
+                    ))}
                   </div>
-                  <span className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{v.features} features &middot; {v.bugFixes} bug fixes</span>
-                  <div className="flex flex-col gap-[2px]">
-                    <span className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{v.date}</span>
-                    <a href="https://docs.openshift.com/container-platform/latest/release_notes/ocp-4-18-release-notes.html" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[12px] no-underline hover:underline font-['Red_Hat_Text:Regular',sans-serif]">
-                      Release notes <ExternalLink className="size-[11px]" />
-                    </a>
-                  </div>
-                  <div />
                 </div>
               </div>
             );
           })}
 
+          {/* Older releases collapse */}
+          {!showOlderReleases && hiddenCount > 0 && (
+            <button onClick={() => setShowOlderReleases(true)}
+              className="flex items-center gap-[6px] w-full px-[12px] py-[10px] text-[13px] text-[#0066cc] dark:text-[#4dabf7] font-['Red_Hat_Text:Regular',sans-serif] font-medium bg-transparent border-0 cursor-pointer hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)] transition-colors border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]">
+              <ChevronRight className="size-[14px]" />
+              {hiddenCount} older release{hiddenCount !== 1 ? "s" : ""} (click to expand)
+            </button>
+          )}
+          {showOlderReleases && hiddenCount > 0 && (
+            <button onClick={() => setShowOlderReleases(false)}
+              className="flex items-center gap-[6px] w-full px-[12px] py-[6px] text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] bg-transparent border-0 cursor-pointer hover:text-[#0066cc] transition-colors">
+              <ChevronDown className="size-[12px]" /> Hide older releases
+            </button>
+          )}
+
           {/* Inline Risk Review Panel */}
           {selectedVersion && selectedVer && (
-            <div className="mt-[12px] mx-[4px]">
+            <div className="mt-[12px]">
               {hasNoRisks ? (
                 <div className="rounded-[16px] border-l-[3px] border-l-[#3d7317] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] bg-white dark:bg-[#1a1a1a] p-[20px]">
                   <div className="flex items-center gap-[10px] mb-[16px]">
@@ -2404,20 +2305,24 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                 </div>
               ) : (
                 <div className="rounded-[16px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] bg-white dark:bg-[#1a1a1a] p-[20px]">
-                  <div className="flex items-center justify-between mb-[16px]">
+                  <button
+                    onClick={() => setRisksExpanded(!risksExpanded)}
+                    className="w-full flex items-center justify-between bg-transparent border-0 cursor-pointer p-0 text-left"
+                    aria-expanded={risksExpanded}
+                  >
                     <div className="flex items-center gap-[8px]">
-                      <AlertTriangle className="size-[16px] text-[#dca614]" />
-                      <h3 className="font-['Red_Hat_Display',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px]">
+                      {risksExpanded ? <ChevronDown className="size-[16px] text-[#151515] dark:text-white" /> : <ChevronRight className="size-[16px] text-[#151515] dark:text-white" />}
+                      <h3 className="font-['Red_Hat_Display',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px] m-0">
                         Review risks for {selectedVersion}
                       </h3>
                     </div>
                     <span className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif]">
                       {addressedCount} of {allRisks.length} risk{allRisks.length !== 1 ? "s" : ""} addressed
                     </span>
-                  </div>
+                  </button>
 
-                  {/* Progress bar */}
-                  <div className="h-[4px] bg-[#e0e0e0] dark:bg-[rgba(255,255,255,0.1)] rounded-full mb-[16px] overflow-hidden">
+                  {/* Progress bar — always visible */}
+                  <div className="h-[4px] bg-[#e0e0e0] dark:bg-[rgba(255,255,255,0.1)] rounded-full mt-[16px] overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-300"
                       style={{
@@ -2427,13 +2332,10 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                     />
                   </div>
 
-                  <div className="space-y-[10px] mb-[20px]">
+                  {risksExpanded && <div className="space-y-[10px] mt-[16px] mb-[20px]">
                     {allRisks.map((risk) => {
                       const isAccepted = acceptedSlugs.has(risk.slug);
-                      const isResolved = !!(risk as any).resolved;
-                      const matchedOp = installedOperators.find(op =>
-                        risk.slug.includes(op.name.toLowerCase().replace(/\s+/g, "-"))
-                      );
+                      const isResolved = !!risk.resolved;
                       const statusLabel = isResolved ? "resolved" : isAccepted ? "accepted" : risk.severity;
                       const statusColor = isResolved
                         ? "bg-[rgba(61,115,23,0.1)] text-[#3d7317]"
@@ -2443,48 +2345,61 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                       const borderColor = isResolved || isAccepted
                         ? "border-[#3d7317] bg-[rgba(61,115,23,0.03)]"
                         : "border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)]";
+                      const resolution = risk.resolution;
                       return (
                         <div key={risk.slug}
                           className={`rounded-[12px] border p-[16px] transition-colors ${borderColor}`}>
                           <div className="flex items-start justify-between gap-[12px]">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-[6px] mb-[4px]">
-                                {isResolved
-                                  ? <CheckCircle className="size-[14px] text-[#3d7317] shrink-0" />
-                                  : isAccepted
-                                    ? <CheckCircle className="size-[14px] text-[#3d7317] shrink-0" />
-                                    : risk.severity === "critical"
-                                      ? <AlertCircle className="size-[14px] text-[#b1380b] shrink-0" />
-                                      : <AlertTriangle className="size-[14px] text-[#dca614] shrink-0" />
-                                }
-                                <span className="text-[14px] text-[#151515] dark:text-white font-medium font-['Red_Hat_Text',sans-serif]">{risk.name}</span>
+                                <span className="text-[13px] text-[#151515] dark:text-white font-semibold font-['Red_Hat_Mono:Regular',sans-serif]">{risk.slug}</span>
                                 <span className={`text-[11px] px-[6px] py-[1px] rounded-[4px] font-semibold ${statusColor}`}>
                                   {statusLabel}
                                 </span>
                               </div>
-                              <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif] mb-[10px]">{risk.detail}</p>
-                              {(risk as any).url && (
-                                <a href={(risk as any).url} target="_blank" rel="noopener noreferrer"
+                              <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif] mb-[8px]">{risk.message}</p>
+                              {risk.url && (
+                                <a href={risk.url} target="_blank" rel="noopener noreferrer"
                                   className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[12px] no-underline hover:underline font-['Red_Hat_Text',sans-serif] mb-[10px]">
-                                  Learn more about this risk <ExternalLink className="size-[11px]" />
+                                  View impact statement <ExternalLink className="size-[11px]" />
                                 </a>
                               )}
+
+                              {/* Contextual resolution guidance */}
+                              {!isResolved && !isAccepted && resolution && (
+                                <div className="rounded-[8px] bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] px-[12px] py-[8px] mb-[10px]">
+                                  <div className="flex items-start gap-[6px]">
+                                    {resolution.type === "update-operator" && resolution.actionAvailable && (
+                                      <ArrowRight className="size-[12px] text-[#0066cc] mt-[2px] shrink-0" />
+                                    )}
+                                    {resolution.type === "update-operator" && !resolution.actionAvailable && (
+                                      <Clock className="size-[12px] text-[#795600] mt-[2px] shrink-0" />
+                                    )}
+                                    {resolution.type === "wait-for-fix" && (
+                                      <Clock className="size-[12px] text-[#795600] mt-[2px] shrink-0" />
+                                    )}
+                                    {resolution.type === "update-z-stream" && (
+                                      <Info className="size-[12px] text-[#0066cc] mt-[2px] shrink-0" />
+                                    )}
+                                    {resolution.type === "accept-only" && (
+                                      <Info className="size-[12px] text-[#4d4d4d] mt-[2px] shrink-0" />
+                                    )}
+                                    <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif]">{resolution.description}</p>
+                                  </div>
+                                </div>
+                              )}
+
                               <div className="flex items-center gap-[8px]">
                                 {isResolved ? (
                                   <span className="text-[13px] text-[#3d7317] font-['Red_Hat_Text',sans-serif] font-medium flex items-center gap-[4px]">
-                                    <CheckCircle className="size-[12px]" /> Operator updated — risk resolved
+                                    <CheckCircle className="size-[12px]" /> Risk resolved
                                   </span>
                                 ) : (
                                   <>
-                                    {(risk.updateAvailable || matchedOp?.updateAvailable) && !isAccepted && (
-                                      <button onClick={() => {
-                                        const opName = matchedOp?.name || risk.name;
-                                        navigate(`/ecosystem/installed-operators/${encodeURIComponent(opName)}/update`, {
-                                          state: { returnTo: '/administration/cluster-settings', operatorName: opName }
-                                        });
-                                      }}
+                                    {resolution?.type === "update-operator" && resolution.actionAvailable && !isAccepted && (
+                                      <button onClick={() => navigate('/administration/installed-operators')}
                                         className="text-[13px] px-[12px] py-[5px] rounded-[999px] bg-[#0066cc] hover:bg-[#004080] text-white border-0 cursor-pointer transition-colors font-['Red_Hat_Text',sans-serif] font-medium flex items-center gap-[4px]">
-                                        Resolve <ArrowRight className="size-[12px]" />
+                                        Update operator <ArrowRight className="size-[12px]" />
                                       </button>
                                     )}
                                     <button onClick={() => toggleAccept(risk.slug)}
@@ -2503,7 +2418,7 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                         </div>
                       );
                     })}
-                  </div>
+                  </div>}
 
                   <div className="flex items-center gap-[12px] pt-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
                     <button
@@ -2555,7 +2470,7 @@ function UpdateHistoryTab() {
       </div>
       <div className="border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)] rounded-[8px] overflow-hidden">
         <div className="grid grid-cols-[90px_100px_72px_100px_1fr_140px_72px] gap-[8px] px-[16px] py-[10px] text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)]">
-          <span>Version</span><span>Status</span><span>Method</span><span>Decision</span><span>Initiated by</span><span>Date</span><span>Pre-flight</span>
+          <span>Version</span><span>Status</span><span>Method</span><span>Decision</span><span>Initiated by</span><span>Date</span><span>Pre-check</span>
         </div>
         {filtered.map((entry, i) => {
           const isExpanded = expandedRow === i;
@@ -2585,8 +2500,8 @@ function UpdateHistoryTab() {
                 <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] truncate" title={entry.initiatedBy}>{entry.initiatedBy}</span>
                 <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{entry.startedAt.split(" ").slice(0, 3).join(" ")}</span>
                 <span>
-                  <span className={`text-[11px] px-[6px] py-[2px] rounded-[4px] font-semibold ${entry.preflight.failed === 0 ? "bg-[rgba(62,134,53,0.1)] text-[#3e8635]" : "bg-[rgba(201,25,11,0.1)] text-[#c9190b]"}`}>
-                    {entry.preflight.passed}/{entry.preflight.total}
+                  <span className={`text-[11px] px-[6px] py-[2px] rounded-[4px] font-semibold ${entry.preCheck.failed === 0 ? "bg-[rgba(62,134,53,0.1)] text-[#3e8635]" : "bg-[rgba(201,25,11,0.1)] text-[#c9190b]"}`}>
+                    {entry.preCheck.passed}/{entry.preCheck.total}
                   </span>
                 </span>
               </div>
@@ -2610,12 +2525,12 @@ function UpdateHistoryTab() {
                   </div>
                   <div className="grid grid-cols-2 gap-[16px]">
                     <div>
-                      <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Pre-flight Summary</p>
+                      <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Pre-check Summary</p>
                       <div className="flex items-center gap-[8px]">
                         <span className="text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">
-                          <span className="text-[#3e8635] font-semibold">{entry.preflight.passed} passed</span>
-                          {entry.preflight.failed > 0 && <span className="text-[#c9190b] font-semibold"> · {entry.preflight.failed} failed</span>}
-                          <span className="text-[#4d4d4d] dark:text-[#b0b0b0]"> of {entry.preflight.total} checks</span>
+                          <span className="text-[#3e8635] font-semibold">{entry.preCheck.passed} passed</span>
+                          {entry.preCheck.failed > 0 && <span className="text-[#c9190b] font-semibold"> · {entry.preCheck.failed} failed</span>}
+                          <span className="text-[#4d4d4d] dark:text-[#b0b0b0]"> of {entry.preCheck.total} checks</span>
                         </span>
                       </div>
                     </div>

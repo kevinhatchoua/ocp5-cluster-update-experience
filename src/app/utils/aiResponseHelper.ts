@@ -66,9 +66,9 @@ export function extractIntent(userInput: string): {
     };
   }
   
-  if (/preflight|check|validate|ready/.test(lowerInput)) {
+  if (/pre-check|check|validate|ready/.test(lowerInput)) {
     return {
-      primaryIntent: 'preflight_check',
+      primaryIntent: 'pre_check',
       entities: [],
       confidence: 0.85
     };
@@ -401,9 +401,9 @@ function getClusterUpdateResponse(
   if (pathname.includes('/preflight')) {
     if (/result|status|pass|fail/.test(lowerInput)) {
       return {
-        content: `🔍 **Preflight Check Status**\n\nPreflight checks validate your cluster is ready for update. They check:\n\n✅ **Infrastructure:**\n• Node health and capacity\n• Resource availability\n• Network connectivity\n\n✅ **Software:**\n• Operator compatibility\n• API migrations\n• Deprecated features\n\n✅ **Configuration:**\n• RBAC permissions\n• Storage classes\n• Custom resources\n\nWould you like me to run the checks?`,
+        content: `🔍 **Pre-check Status**\n\nPre-checks validate your cluster is ready for update. They check:\n\n✅ **Infrastructure:**\n• Node health and capacity\n• Resource availability\n• Network connectivity\n\n✅ **Software:**\n• Operator compatibility\n• API migrations\n• Deprecated features\n\n✅ **Configuration:**\n• RBAC permissions\n• Storage classes\n• Custom resources\n\nWould you like me to run the checks?`,
         suggestions: [
-          'Run preflight checks',
+          'Run pre-checks',
           'Explain check failures',
           'Show remediation steps'
         ]
@@ -413,7 +413,7 @@ function getClusterUpdateResponse(
   
   if (/when|how long|time|duration/.test(lowerInput)) {
     return {
-      content: `⏱️ **Update Timeline**\n\n**Estimated Duration:** 2-3 hours\n\n**Breakdown:**\n• **Preflight checks:** 5-10 minutes\n• **Control plane update:** 45-60 minutes\n• **Worker node update:** 60-90 minutes\n• **Validation:** 15-20 minutes\n\n**Downtime:** Minimal! Your workloads stay running during rolling updates.\n\n**Best Time:** Schedule during low-traffic periods for peace of mind.`,
+      content: `⏱️ **Update Timeline**\n\n**Estimated Duration:** 2-3 hours\n\n**Breakdown:**\n• **Pre-checks:** 5-10 minutes\n• **Control plane update:** 45-60 minutes\n• **Worker node update:** 60-90 minutes\n• **Validation:** 15-20 minutes\n\n**Downtime:** Minimal! Your workloads stay running during rolling updates.\n\n**Best Time:** Schedule during low-traffic periods for peace of mind.`,
       suggestions: [
         'Start update now',
         'Schedule for later',
@@ -424,7 +424,7 @@ function getClusterUpdateResponse(
   
   if (/cancel|stop|abort/.test(lowerInput)) {
     return {
-      content: `⚠️ **About Canceling Updates**\n\nOpenShift updates use a rolling strategy and are designed to be safe:\n\n**Can I cancel?**\n• ✅ Before starting: Yes, anytime\n• ⚠️ During preflight: Yes, safely\n• ❌ During update: Not recommended\n\n**Why not cancel mid-update?**\n• Cluster could be in inconsistent state\n• Some nodes updated, others not\n• May require manual recovery\n\n**Alternative:** Let the update complete, then rollback if needed.`,
+      content: `⚠️ **About Canceling Updates**\n\nOpenShift updates use a rolling strategy and are designed to be safe:\n\n**Can I cancel?**\n• ✅ Before starting: Yes, anytime\n• ⚠️ During pre-check: Yes, safely\n• ❌ During update: Not recommended\n\n**Why not cancel mid-update?**\n• Cluster could be in inconsistent state\n• Some nodes updated, others not\n• May require manual recovery\n\n**Alternative:** Let the update complete, then rollback if needed.`,
       suggestions: [
         'Tell me about rollbacks',
         'What if something goes wrong?',
@@ -434,9 +434,9 @@ function getClusterUpdateResponse(
   }
   
   return {
-    content: `🔄 **Cluster Update Assistant**\n\nI'm here to help with your OpenShift update! I can:\n\n• Run preflight compatibility checks\n• Explain update process and timeline\n• Guide you through each step\n• Help with operator updates\n• Troubleshoot issues\n\nWhat would you like to know?`,
+    content: `🔄 **Cluster Update Assistant**\n\nI'm here to help with your OpenShift update! I can:\n\n• Run pre-check compatibility checks\n• Explain update process and timeline\n• Guide you through each step\n• Help with operator updates\n• Troubleshoot issues\n\nWhat would you like to know?`,
     suggestions: [
-      'Run preflight checks',
+      'Run pre-checks',
       'How long will it take?',
       'What are the risks?',
       'Start the update'
@@ -558,7 +558,7 @@ function getGeneralResponse(
   }
   
   return {
-    content: `I'm OpenShift LightSpeed, your AI assistant! I can help with:\n\n🔄 **Updates & Maintenance:**\n• Cluster updates\n• Operator management\n• Preflight checks\n\n💚 **Health & Monitoring:**\n• Cluster status\n• Resource usage\n• Troubleshooting\n\n🚀 **Workload Management:**\n• Deploy applications\n• Scale resources\n• Configure services\n\nWhat would you like to know?`,
+    content: `I'm OpenShift LightSpeed, your AI assistant! I can help with:\n\n🔄 **Updates & Maintenance:**\n• Cluster updates\n• Operator management\n• Pre-checks\n\n💚 **Health & Monitoring:**\n• Cluster status\n• Resource usage\n• Troubleshooting\n\n🚀 **Workload Management:**\n• Deploy applications\n• Scale resources\n• Configure services\n\nWhat would you like to know?`,
     suggestions: [
       'Show cluster health',
       'Check for updates',

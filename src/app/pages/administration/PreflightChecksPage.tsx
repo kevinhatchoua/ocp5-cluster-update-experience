@@ -40,7 +40,7 @@ export default function PreflightChecksPage() {
       </Link>
 
       <h1 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[28px] mb-[4px]">
-        Pre-flight Checks &mdash; {version}
+        Pre-Checks &mdash; {version}
       </h1>
       <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[14px] mb-[24px] font-['Red_Hat_Text:Regular',sans-serif]">
         Validating cluster readiness before initiating the update.

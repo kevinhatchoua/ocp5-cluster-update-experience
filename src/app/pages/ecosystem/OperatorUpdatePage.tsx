@@ -81,8 +81,8 @@ export default function OperatorUpdatePage() {
       <div className="p-[24px]">
         <Breadcrumbs
           items={fromClusterUpdate ? [
-            { label: "Administration", path: "/administration/cluster-update" },
-            { label: "Cluster Update", path: "/administration/cluster-update" },
+            { label: "Administration", path: "/administration/cluster-settings" },
+            { label: "Cluster Update", path: "/administration/cluster-settings" },
             { label: `Update ${operator.name}` },
           ] : [
             { label: "Ecosystem", path: "/ecosystem" },
@@ -254,7 +254,7 @@ export default function OperatorUpdatePage() {
                         </span>
                       </div>
                       <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0]">
-                        <Link to="/administration/cluster-update" className="text-[#0066cc] dark:text-[#4dabf7] hover:underline">
+                        <Link to="/administration/cluster-settings" className="text-[#0066cc] dark:text-[#4dabf7] hover:underline">
                           Requires cluster update
                         </Link>
                       </p>
