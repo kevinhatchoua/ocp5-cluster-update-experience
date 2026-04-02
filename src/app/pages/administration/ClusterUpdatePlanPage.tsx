@@ -11,6 +11,7 @@ export type OperatorIssue = {
   message: string;
   slug: string;
   severity: "critical" | "warning";
+  url?: string;
 };
 
 export type VersionEntry = {
@@ -57,19 +58,19 @@ export const channelVersions: Record<string, { groups: VersionGroup[]; banner?: 
           {
             version: "5.1.10", recommended: true, risk: "Low Risk", riskColor: "#3e8635", features: 4, bugFixes: 12, date: "Mar 22, 2026",
             operatorIssues: [
-              { name: "cluster-logging", slug: "cluster-logging-6.4.3-max-ocp-5.0", severity: "critical", message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading." },
-              { name: "cloud-credential", slug: "cloud-credential-iam-update-required", severity: "warning", message: "cloudcredential.operator.openshift.io/cluster object needs updating before upgrade. See Manually Creating IAM." },
+              { name: "cluster-logging", slug: "cluster-logging-6.4.3-max-ocp-5.0", severity: "critical", message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading.", url: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html" },
+              { name: "cloud-credential", slug: "cloud-credential-iam-update-required", severity: "warning", message: "cloudcredential.operator.openshift.io/cluster object needs updating before upgrade. See Manually Creating IAM.", url: "https://docs.openshift.com/container-platform/latest/authentication/managing_cloud_provider_credentials/about-cloud-credential-operator.html" },
             ],
           },
           { version: "5.1.9", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 2, bugFixes: 8, date: "Mar 16, 2026",
             operatorIssues: [
-              { name: "cluster-logging", slug: "cluster-logging-6.4.3-max-ocp-5.0", severity: "critical", message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading." },
+              { name: "cluster-logging", slug: "cluster-logging-6.4.3-max-ocp-5.0", severity: "critical", message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading.", url: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html" },
             ],
           },
           { version: "5.1.8", recommended: false, risk: "Medium Risk", riskColor: "#c58c00", features: 3, bugFixes: 15, date: "Mar 8, 2026",
             operatorIssues: [
-              { name: "cluster-logging", slug: "cluster-logging-6.4.3-max-ocp-5.0", severity: "critical", message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading." },
-              { name: "operator-lifecycle-manager", slug: "olm-4.21-incompatible-5.1", severity: "critical", message: "Incompatible operator-lifecycle-manager version detected. Update to 4.22.0 or higher." },
+              { name: "cluster-logging", slug: "cluster-logging-6.4.3-max-ocp-5.0", severity: "critical", message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading.", url: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html" },
+              { name: "operator-lifecycle-manager", slug: "olm-4.21-incompatible-5.1", severity: "critical", message: "Incompatible operator-lifecycle-manager version detected. Update to 4.22.0 or higher.", url: "https://docs.openshift.com/container-platform/latest/operators/admin/olm-upgrading-operators.html" },
               { name: "cloud-credential", slug: "cloud-credential-iam-update-required", severity: "warning", message: "cloudcredential.operator.openshift.io/cluster object needs updating before upgrade. See Manually Creating IAM." },
             ],
           },
@@ -102,8 +103,8 @@ export const channelVersions: Record<string, { groups: VersionGroup[]; banner?: 
     banner: { title: "OpenShift 5.1 is available!", description: "Stable channel releases are production-ready and fully tested.", link: "See what's new in 5.1" },
     groups: [
       { label: "5.1", versions: [
-          { version: "5.1.9", recommended: true, risk: "Low Risk", riskColor: "#3e8635", features: 2, bugFixes: 8, date: "Mar 16, 2026", operatorIssues: [{ name: "cluster-logging", slug: "cluster-logging-6.4.3-max-ocp-5.0", severity: "critical" as const, message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading." }] },
-          { version: "5.1.7", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 1, bugFixes: 10, date: "Feb 28, 2026", operatorIssues: [{ name: "cluster-logging", slug: "cluster-logging-6.4.3-max-ocp-5.0", severity: "critical" as const, message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading." }] },
+          { version: "5.1.9", recommended: true, risk: "Low Risk", riskColor: "#3e8635", features: 2, bugFixes: 8, date: "Mar 16, 2026", operatorIssues: [{ name: "cluster-logging", slug: "cluster-logging-6.4.3-max-ocp-5.0", severity: "critical" as const, message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading.", url: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html" }] },
+          { version: "5.1.7", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 1, bugFixes: 10, date: "Feb 28, 2026", operatorIssues: [{ name: "cluster-logging", slug: "cluster-logging-6.4.3-max-ocp-5.0", severity: "critical" as const, message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading.", url: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html" }] },
         ] },
       { label: "5.0", versions: [
           { version: "5.0.8", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 0, bugFixes: 6, date: "Mar 18, 2026" },
@@ -120,9 +121,9 @@ export const channelVersions: Record<string, { groups: VersionGroup[]; banner?: 
   },
   "candidate-5.1": {
     groups: [{ label: "5.1", versions: [
-          { version: "5.1.11-rc.2", recommended: false, risk: "High Risk", riskColor: "#c9190b", features: 6, bugFixes: 3, date: "Mar 28, 2026", operatorIssues: [{ name: "cluster-logging", slug: "cluster-logging-6.4.3-max-ocp-5.0", severity: "critical" as const, message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading." }, { name: "operator-lifecycle-manager", slug: "olm-candidate-compat", severity: "warning" as const, message: "Candidate channel versions may have incompatible operator dependencies. Review release notes carefully." }] },
-          { version: "5.1.11-rc.1", recommended: false, risk: "High Risk", riskColor: "#c9190b", features: 5, bugFixes: 2, date: "Mar 25, 2026", operatorIssues: [{ name: "cluster-logging", slug: "cluster-logging-6.4.3-max-ocp-5.0", severity: "critical" as const, message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading." }] },
-          { version: "5.1.10", recommended: true, risk: "Low Risk", riskColor: "#3e8635", features: 4, bugFixes: 12, date: "Mar 22, 2026", operatorIssues: [{ name: "cluster-logging", slug: "cluster-logging-6.4.3-max-ocp-5.0", severity: "critical" as const, message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading." }] },
+          { version: "5.1.11-rc.2", recommended: false, risk: "High Risk", riskColor: "#c9190b", features: 6, bugFixes: 3, date: "Mar 28, 2026", operatorIssues: [{ name: "cluster-logging", slug: "cluster-logging-6.4.3-max-ocp-5.0", severity: "critical" as const, message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading.", url: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html" }, { name: "operator-lifecycle-manager", slug: "olm-candidate-compat", severity: "warning" as const, message: "Candidate channel versions may have incompatible operator dependencies. Review release notes carefully.", url: "https://docs.openshift.com/container-platform/latest/updating/understanding_updates/understanding-update-channels-releases.html" }] },
+          { version: "5.1.11-rc.1", recommended: false, risk: "High Risk", riskColor: "#c9190b", features: 5, bugFixes: 2, date: "Mar 25, 2026", operatorIssues: [{ name: "cluster-logging", slug: "cluster-logging-6.4.3-max-ocp-5.0", severity: "critical" as const, message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading.", url: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html" }] },
+          { version: "5.1.10", recommended: true, risk: "Low Risk", riskColor: "#3e8635", features: 4, bugFixes: 12, date: "Mar 22, 2026", operatorIssues: [{ name: "cluster-logging", slug: "cluster-logging-6.4.3-max-ocp-5.0", severity: "critical" as const, message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before upgrading.", url: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html" }] },
         ] }],
   },
   "eus-5.0": {
@@ -339,6 +340,9 @@ export default function ClusterUpdatePlanPage() {
 
           {/* AI Assessment */}
           <AiAssessmentSection openChatbot={openChatbot} selectedVersion={selectedVersion} />
+
+          {/* Preflight Checks from Target Release */}
+          <PreflightFromTargetSection selectedVersion={selectedVersion} openChatbot={openChatbot} />
 
           {/* Cluster Details */}
           <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
@@ -1792,6 +1796,200 @@ export function AiAssessmentSection({ openChatbot, selectedVersion }: { openChat
   );
 }
 
+/* ─── Preflight from Target Payload Section (OTA-1930 / HPUX-1403) ─── */
+type PreflightJob = {
+  name: string;
+  description: string;
+  status: "passing" | "failing" | "warning" | "in-progress" | "pending";
+  message?: string;
+  source: "payload" | "cluster";
+};
+
+export function PreflightFromTargetSection({ selectedVersion, openChatbot }: { selectedVersion: string; openChatbot: (ctx: string) => void }) {
+  const [expanded, setExpanded] = useState(true);
+  const [updateMode, setUpdateMode] = useState<"" | "Preflight">("Preflight");
+  const [preflightRunning, setPreflightRunning] = useState(false);
+  const [preflightComplete, setPreflightComplete] = useState(false);
+
+  const [preflightJobs, setPreflightJobs] = useState<PreflightJob[]>([
+    { name: "ClusterVersionUpgradeable", description: "Verifies ClusterVersion conditions permit upgrade", status: "pending", source: "payload" },
+    { name: "ClusterOperatorDegraded", description: "Checks no cluster operators are degraded", status: "pending", source: "payload" },
+    { name: "ClusterOperatorAvailable", description: "Confirms all cluster operators are available", status: "pending", source: "payload" },
+    { name: "MachineConfigPoolDraining", description: "Validates MachineConfigPools can drain nodes safely", status: "pending", source: "payload" },
+    { name: "PodDisruptionBudgetAtLimit", description: "Checks PDBs allow sufficient disruption for rolling update", status: "pending", source: "payload" },
+    { name: "DeprecatedAPIInUse", description: "Scans for deprecated API usage that will break in target version", status: "pending", source: "payload" },
+  ]);
+
+  const runPreflight = () => {
+    setPreflightRunning(true);
+    setPreflightComplete(false);
+    setPreflightJobs(prev => prev.map(j => ({ ...j, status: "pending" as const })));
+
+    const results: PreflightJob["status"][] = ["passing", "passing", "passing", "passing", "warning", "failing"];
+    const messages = ["", "", "", "", "1 PDB at maxUnavailable=0 — pod eviction may stall", "3 resources using rbac.authorization.k8s.io/v1beta1 — migrate to v1"];
+
+    let index = 0;
+    const interval = setInterval(() => {
+      if (index < results.length) {
+        setPreflightJobs(prev => prev.map((j, i) => i === index ? { ...j, status: "in-progress" } : j));
+        const capturedIndex = index;
+        setTimeout(() => {
+          setPreflightJobs(prev => prev.map((j, i) => i === capturedIndex ? { ...j, status: results[capturedIndex], message: messages[capturedIndex] || undefined } : j));
+        }, 500);
+        index++;
+      } else {
+        clearInterval(interval);
+        setPreflightRunning(false);
+        setPreflightComplete(true);
+      }
+    }, 700);
+  };
+
+  const statusIcon = (status: PreflightJob["status"]) => {
+    switch (status) {
+      case "passing": return <CheckCircle className="size-[14px] text-[#3d7317] shrink-0" />;
+      case "failing": return <AlertCircle className="size-[14px] text-[#b1380b] shrink-0" />;
+      case "warning": return <AlertTriangle className="size-[14px] text-[#dca614] shrink-0" />;
+      case "in-progress": return <Loader2 className="size-[14px] text-[#0066cc] animate-spin shrink-0" />;
+      case "pending": return <div className="size-[14px] rounded-full border-2 border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] shrink-0" />;
+    }
+  };
+
+  const statusBadge = (status: PreflightJob["status"]) => {
+    const styles: Record<string, string> = {
+      passing: "bg-[rgba(61,115,23,0.1)] text-[#3d7317]",
+      failing: "bg-[rgba(177,56,11,0.1)] text-[#b1380b]",
+      warning: "bg-[rgba(220,166,20,0.1)] text-[#795600]",
+      "in-progress": "bg-[rgba(0,102,204,0.1)] text-[#0066cc]",
+      pending: "bg-[rgba(0,0,0,0.05)] text-[#6a6e73]",
+    };
+    return (
+      <span className={`text-[11px] px-[6px] py-[1px] rounded-[4px] font-semibold ${styles[status]}`}>
+        {status === "in-progress" ? "running" : status}
+      </span>
+    );
+  };
+
+  const passingCount = preflightJobs.filter(j => j.status === "passing").length;
+  const failingCount = preflightJobs.filter(j => j.status === "failing").length;
+  const warningCount = preflightJobs.filter(j => j.status === "warning").length;
+
+  return (
+    <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
+      <button onClick={() => setExpanded(!expanded)}
+        className="flex items-center gap-[8px] bg-transparent border-0 cursor-pointer p-0 hover:opacity-80 transition-opacity w-full text-left">
+        {expanded ? <ChevronDown className="size-[16px] text-[#151515] dark:text-white" /> : <ChevronRight className="size-[16px] text-[#151515] dark:text-white" />}
+        <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Preflight Checks from Target Release</h2>
+        {preflightComplete && (
+          <div className="flex items-center gap-[6px] ml-[8px]">
+            {failingCount > 0 && <span className="text-[11px] px-[6px] py-[1px] rounded-[4px] font-semibold bg-[rgba(177,56,11,0.1)] text-[#b1380b]">{failingCount} failed</span>}
+            {warningCount > 0 && <span className="text-[11px] px-[6px] py-[1px] rounded-[4px] font-semibold bg-[rgba(220,166,20,0.1)] text-[#795600]">{warningCount} warning</span>}
+            {failingCount === 0 && warningCount === 0 && <span className="text-[11px] px-[6px] py-[1px] rounded-[4px] font-semibold bg-[rgba(61,115,23,0.1)] text-[#3d7317]">All passed</span>}
+          </div>
+        )}
+      </button>
+
+      {expanded && (
+        <div className="mt-[16px]">
+          <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif] mb-[16px]">
+            These checks are shipped with the target release payload ({selectedVersion}) and validate cluster readiness against version-specific requirements.
+          </p>
+
+          {/* desiredUpdate.mode control */}
+          <div className="rounded-[8px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[16px] mb-[16px]">
+            <div className="flex items-start gap-[12px]">
+              <Settings className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0] mt-[2px] shrink-0" />
+              <div className="flex-1">
+                <p className="text-[14px] text-[#151515] dark:text-white font-medium font-['Red_Hat_Text',sans-serif] mb-[4px]">
+                  Update mode <span className="font-['Red_Hat_Mono',sans-serif] text-[12px] text-[#5e40be]">spec.desiredUpdate.mode</span>
+                </p>
+                <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif] mb-[12px]">
+                  Controls whether preflight checks gate the update or run as a dry-run without committing.
+                </p>
+                <div className="flex items-center gap-[8px]">
+                  <button onClick={() => setUpdateMode("Preflight")}
+                    className={`text-[13px] px-[14px] py-[6px] rounded-[999px] border cursor-pointer transition-colors font-['Red_Hat_Text',sans-serif] font-medium ${
+                      updateMode === "Preflight"
+                        ? "bg-[#0066cc] text-white border-[#0066cc]"
+                        : "bg-transparent text-[#4d4d4d] dark:text-[#b0b0b0] border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90]"
+                    }`}>
+                    Preflight (dry-run)
+                  </button>
+                  <button onClick={() => setUpdateMode("")}
+                    className={`text-[13px] px-[14px] py-[6px] rounded-[999px] border cursor-pointer transition-colors font-['Red_Hat_Text',sans-serif] font-medium ${
+                      updateMode === ""
+                        ? "bg-[#0066cc] text-white border-[#0066cc]"
+                        : "bg-transparent text-[#4d4d4d] dark:text-[#b0b0b0] border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90]"
+                    }`}>
+                    Normal update
+                  </button>
+                </div>
+                {updateMode === "Preflight" && (
+                  <p className="text-[11px] text-[#0066cc] dark:text-[#4dabf7] font-['Red_Hat_Text',sans-serif] mt-[8px]">
+                    Preflight mode runs compatibility checks against the target release without performing an actual update. Results will appear in status.conditionalUpdateRisks.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Preflight job list */}
+          <div className="space-y-[8px] mb-[16px]">
+            {preflightJobs.map((job) => (
+              <div key={job.name} className="flex items-center justify-between p-[12px] rounded-[8px] border border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] bg-white dark:bg-[rgba(255,255,255,0.02)]">
+                <div className="flex items-center gap-[10px] flex-1 min-w-0">
+                  {statusIcon(job.status)}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-[6px]">
+                      <span className="text-[13px] text-[#151515] dark:text-white font-medium font-['Red_Hat_Text',sans-serif]">{job.name}</span>
+                      <span className="text-[10px] px-[5px] py-[1px] rounded-[3px] bg-[rgba(94,64,190,0.08)] text-[#5e40be] font-['Red_Hat_Mono',sans-serif] font-semibold">{job.source}</span>
+                    </div>
+                    <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif]">{job.description}</p>
+                    {job.message && (
+                      <p className="text-[11px] text-[#b1380b] dark:text-[#ee0000] font-['Red_Hat_Text',sans-serif] mt-[2px]">{job.message}</p>
+                    )}
+                  </div>
+                </div>
+                {statusBadge(job.status)}
+              </div>
+            ))}
+          </div>
+
+          {/* Summary + actions */}
+          {preflightComplete && (
+            <div className={`rounded-[8px] p-[12px] mb-[16px] ${
+              failingCount > 0 ? "bg-[rgba(177,56,11,0.05)] border border-[#b1380b]"
+              : warningCount > 0 ? "bg-[rgba(220,166,20,0.05)] border border-[#dca614]"
+              : "bg-[rgba(61,115,23,0.05)] border border-[#3d7317]"
+            }`}>
+              <p className="text-[13px] font-['Red_Hat_Text',sans-serif] font-medium text-[#151515] dark:text-white">
+                {passingCount} passed{warningCount > 0 ? `, ${warningCount} warning${warningCount !== 1 ? "s" : ""}` : ""}{failingCount > 0 ? `, ${failingCount} failed` : ""} of {preflightJobs.length} preflight checks from {selectedVersion} payload
+              </p>
+            </div>
+          )}
+
+          <div className="flex items-center gap-[8px]">
+            <button onClick={runPreflight} disabled={preflightRunning}
+              className={`flex items-center gap-[6px] text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 transition-colors font-['Red_Hat_Text',sans-serif] font-medium ${
+                preflightRunning
+                  ? "bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed"
+                  : "bg-[#0066cc] hover:bg-[#004080] text-white cursor-pointer"
+              }`}>
+              {preflightRunning ? <><Loader2 className="size-[14px] animate-spin" /> Running checks...</> : <><RefreshCw className="size-[14px]" /> {preflightComplete ? "Re-run preflight" : "Run preflight checks"}</>}
+            </button>
+            {preflightComplete && failingCount > 0 && (
+              <button onClick={() => openChatbot("preflight-failures")}
+                className="flex items-center gap-[6px] text-[14px] px-[16px] py-[8px] rounded-[999px] border border-[#0066cc] dark:border-[#4dabf7] bg-transparent text-[#0066cc] dark:text-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text',sans-serif] font-medium">
+                <Sparkles className="size-[14px]" /> Get AI help with failures
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── Available Updates Section ─── */
 export function AvailableUpdatesSection({
   channelData, showZStreamOnly, setShowZStreamOnly,
@@ -2099,11 +2297,12 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
   };
 
   const selectedVer = versions.find((v: VersionEntry) => v.version === selectedVersion);
-  const versionIssues: { slug: string; name: string; severity: "critical" | "warning"; detail: string; updateAvailable?: string }[] = [];
+  const versionIssues: { slug: string; name: string; severity: "critical" | "warning"; detail: string; updateAvailable?: string; url?: string; resolved?: boolean }[] = [];
   if (selectedVer?.operatorIssues) {
     for (const issue of selectedVer.operatorIssues) {
       const op = installedOperators.find(o => o.name.toLowerCase().replace(/\s+/g, "-") === issue.name || o.name === issue.name || issue.slug.includes(o.name.toLowerCase().replace(/\s+/g, "-")));
-      versionIssues.push({ slug: issue.slug, name: issue.name, severity: issue.severity, detail: issue.message, updateAvailable: op?.updateAvailable });
+      const resolved = op?.updateAvailable ? false : (op?.maxOcpVersion ? compareVersions(op.maxOcpVersion, selectedVersion.split(".").slice(0, 2).join(".")) >= 0 : false);
+      versionIssues.push({ slug: issue.slug, name: issue.name, severity: issue.severity, detail: issue.message, updateAvailable: op?.updateAvailable, url: issue.url, resolved });
     }
   }
   const incompatOps = installedOperators.filter(op => {
@@ -2119,9 +2318,11 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
       severity: "critical" as const,
       detail: `${op.compatibilityMessage || "Operator is incompatible with the target cluster version."}${op.updateAvailable ? ` Update available: ${op.updateAvailable}.` : ""}`,
       updateAvailable: op.updateAvailable,
+      url: undefined as string | undefined,
+      resolved: false,
     }));
   const allRisks = [...versionIssues, ...upgradeableRisks];
-  const addressedCount = allRisks.filter(r => acceptedSlugs.has(r.slug)).length;
+  const addressedCount = allRisks.filter(r => acceptedSlugs.has(r.slug) || r.resolved).length;
   const allAddressed = allRisks.length > 0 && addressedCount === allRisks.length;
   const hasNoRisks = allRisks.length === 0;
   const canUpdate = hasNoRisks || allAddressed;
@@ -2229,51 +2430,73 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                   <div className="space-y-[10px] mb-[20px]">
                     {allRisks.map((risk) => {
                       const isAccepted = acceptedSlugs.has(risk.slug);
+                      const isResolved = !!(risk as any).resolved;
                       const matchedOp = installedOperators.find(op =>
                         risk.slug.includes(op.name.toLowerCase().replace(/\s+/g, "-"))
                       );
+                      const statusLabel = isResolved ? "resolved" : isAccepted ? "accepted" : risk.severity;
+                      const statusColor = isResolved
+                        ? "bg-[rgba(61,115,23,0.1)] text-[#3d7317]"
+                        : isAccepted ? "bg-[rgba(61,115,23,0.1)] text-[#3d7317]"
+                        : risk.severity === "critical" ? "bg-[rgba(177,56,11,0.1)] text-[#b1380b]"
+                        : "bg-[rgba(220,166,20,0.1)] text-[#795600]";
+                      const borderColor = isResolved || isAccepted
+                        ? "border-[#3d7317] bg-[rgba(61,115,23,0.03)]"
+                        : "border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)]";
                       return (
                         <div key={risk.slug}
-                          className={`rounded-[12px] border p-[16px] transition-colors ${isAccepted ? "border-[#3d7317] bg-[rgba(61,115,23,0.03)]" : "border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)]"}`}>
+                          className={`rounded-[12px] border p-[16px] transition-colors ${borderColor}`}>
                           <div className="flex items-start justify-between gap-[12px]">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-[6px] mb-[4px]">
-                                {isAccepted
+                                {isResolved
                                   ? <CheckCircle className="size-[14px] text-[#3d7317] shrink-0" />
-                                  : risk.severity === "critical"
-                                    ? <AlertCircle className="size-[14px] text-[#b1380b] shrink-0" />
-                                    : <AlertTriangle className="size-[14px] text-[#dca614] shrink-0" />
+                                  : isAccepted
+                                    ? <CheckCircle className="size-[14px] text-[#3d7317] shrink-0" />
+                                    : risk.severity === "critical"
+                                      ? <AlertCircle className="size-[14px] text-[#b1380b] shrink-0" />
+                                      : <AlertTriangle className="size-[14px] text-[#dca614] shrink-0" />
                                 }
                                 <span className="text-[14px] text-[#151515] dark:text-white font-medium font-['Red_Hat_Text',sans-serif]">{risk.name}</span>
-                                <span className={`text-[11px] px-[6px] py-[1px] rounded-[4px] font-semibold ${
-                                  isAccepted ? "bg-[rgba(61,115,23,0.1)] text-[#3d7317]"
-                                  : risk.severity === "critical" ? "bg-[rgba(177,56,11,0.1)] text-[#b1380b]"
-                                  : "bg-[rgba(220,166,20,0.1)] text-[#795600]"
-                                }`}>
-                                  {isAccepted ? "accepted" : risk.severity}
+                                <span className={`text-[11px] px-[6px] py-[1px] rounded-[4px] font-semibold ${statusColor}`}>
+                                  {statusLabel}
                                 </span>
                               </div>
                               <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif] mb-[10px]">{risk.detail}</p>
+                              {(risk as any).url && (
+                                <a href={(risk as any).url} target="_blank" rel="noopener noreferrer"
+                                  className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[12px] no-underline hover:underline font-['Red_Hat_Text',sans-serif] mb-[10px]">
+                                  Learn more about this risk <ExternalLink className="size-[11px]" />
+                                </a>
+                              )}
                               <div className="flex items-center gap-[8px]">
-                                {(risk.updateAvailable || matchedOp?.updateAvailable) && !isAccepted && (
-                                  <button onClick={() => {
-                                    const opName = matchedOp?.name || risk.name;
-                                    navigate(`/ecosystem/installed-operators/${encodeURIComponent(opName)}/update`, {
-                                      state: { returnTo: '/administration/cluster-settings', operatorName: opName }
-                                    });
-                                  }}
-                                    className="text-[13px] px-[12px] py-[5px] rounded-[999px] bg-[#0066cc] hover:bg-[#004080] text-white border-0 cursor-pointer transition-colors font-['Red_Hat_Text',sans-serif] font-medium flex items-center gap-[4px]">
-                                    Resolve <ArrowRight className="size-[12px]" />
-                                  </button>
+                                {isResolved ? (
+                                  <span className="text-[13px] text-[#3d7317] font-['Red_Hat_Text',sans-serif] font-medium flex items-center gap-[4px]">
+                                    <CheckCircle className="size-[12px]" /> Operator updated — risk resolved
+                                  </span>
+                                ) : (
+                                  <>
+                                    {(risk.updateAvailable || matchedOp?.updateAvailable) && !isAccepted && (
+                                      <button onClick={() => {
+                                        const opName = matchedOp?.name || risk.name;
+                                        navigate(`/ecosystem/installed-operators/${encodeURIComponent(opName)}/update`, {
+                                          state: { returnTo: '/administration/cluster-settings', operatorName: opName }
+                                        });
+                                      }}
+                                        className="text-[13px] px-[12px] py-[5px] rounded-[999px] bg-[#0066cc] hover:bg-[#004080] text-white border-0 cursor-pointer transition-colors font-['Red_Hat_Text',sans-serif] font-medium flex items-center gap-[4px]">
+                                        Resolve <ArrowRight className="size-[12px]" />
+                                      </button>
+                                    )}
+                                    <button onClick={() => toggleAccept(risk.slug)}
+                                      className={`text-[13px] px-[12px] py-[5px] rounded-[999px] cursor-pointer transition-colors font-['Red_Hat_Text',sans-serif] font-medium ${
+                                        isAccepted
+                                          ? "bg-[rgba(61,115,23,0.08)] text-[#3d7317] border border-[#3d7317] hover:bg-[rgba(61,115,23,0.15)]"
+                                          : "bg-transparent text-[#0066cc] dark:text-[#4dabf7] border border-[#0066cc] dark:border-[#4dabf7] hover:bg-[#0066cc]/5"
+                                      }`}>
+                                      {isAccepted ? "Accepted" : "Accept risk"}
+                                    </button>
+                                  </>
                                 )}
-                                <button onClick={() => toggleAccept(risk.slug)}
-                                  className={`text-[13px] px-[12px] py-[5px] rounded-[999px] cursor-pointer transition-colors font-['Red_Hat_Text',sans-serif] font-medium ${
-                                    isAccepted
-                                      ? "bg-[rgba(61,115,23,0.08)] text-[#3d7317] border border-[#3d7317] hover:bg-[rgba(61,115,23,0.15)]"
-                                      : "bg-transparent text-[#0066cc] dark:text-[#4dabf7] border border-[#0066cc] dark:border-[#4dabf7] hover:bg-[#0066cc]/5"
-                                  }`}>
-                                  {isAccepted ? "Accepted" : "Accept risk"}
-                                </button>
                               </div>
                             </div>
                           </div>

@@ -5,6 +5,7 @@ import FavoriteButton from "../../components/FavoriteButton";
 import {
   AiAssessmentSection,
   AvailableUpdatesSection,
+  PreflightFromTargetSection,
   OlsChatbot,
   channelVersions,
 } from "./ClusterUpdatePlanPage";
@@ -76,6 +77,9 @@ export default function ClusterSettingsPage() {
 
         {/* AI Assessment */}
         <AiAssessmentSection openChatbot={openChatbot} selectedVersion={selectedVersion} />
+
+        {/* Preflight Checks from Target Release */}
+        <PreflightFromTargetSection selectedVersion={selectedVersion} openChatbot={openChatbot} />
 
         {/* Available Updates */}
         <AvailableUpdatesSection
