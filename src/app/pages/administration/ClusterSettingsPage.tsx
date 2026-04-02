@@ -1,17 +1,52 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router";
-import { AlertTriangle } from "lucide-react";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import FavoriteButton from "../../components/FavoriteButton";
+import {
+  AiAssessmentSection,
+  AvailableUpdatesSection,
+  OlsChatbot,
+  channelVersions,
+} from "./ClusterUpdatePlanPage";
 
 export default function ClusterSettingsPage() {
   const navigate = useNavigate();
-  // Simulate checking if update is in progress
-  const [isUpdateInProgress] = useState(true); // In real app, this would come from global state/context
+
+  const [selectedChannel, setSelectedChannel] = useState("fast-5.1");
+  const [showZStreamOnly, setShowZStreamOnly] = useState(false);
+  const [selectedVersion, setSelectedVersion] = useState<string>("5.1.10");
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({ "5.1": true });
+
+  const [chatbotOpen, setChatbotOpen] = useState(false);
+  const [chatbotContext, setChatbotContext] = useState("");
+
+  const channelData = channelVersions[selectedChannel] ?? channelVersions["fast-5.1"];
+
+  const handleChannelChange = (channel: string) => {
+    setSelectedChannel(channel);
+    const data = channelVersions[channel];
+    if (data) {
+      const firstGroup = data.groups[0];
+      const newExpanded: Record<string, boolean> = {};
+      if (firstGroup) {
+        newExpanded[firstGroup.label] = true;
+        const rec = firstGroup.versions.find((v) => v.recommended);
+        setSelectedVersion(rec ? rec.version : firstGroup.versions[0]?.version ?? "");
+      }
+      setExpandedGroups(newExpanded);
+    }
+  };
+
+  const openChatbot = useCallback((context: string) => {
+    setChatbotContext(context);
+    setChatbotOpen(true);
+  }, []);
+
+  const handleChatAction = useCallback((_actionId: string) => {}, []);
 
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="p-[24px]">
+    <div className="flex h-full relative min-w-0">
+      <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-[24px] pb-[48px]">
         <Breadcrumbs
           items={[
             { label: "Home", path: "/" },
@@ -31,38 +66,32 @@ export default function ClusterSettingsPage() {
               Details
             </button>
             <button className="pb-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] hover:text-[#151515] dark:hover:text-white">
+              ClusterOperators
+            </button>
+            <button className="pb-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] hover:text-[#151515] dark:hover:text-white">
               Configuration
             </button>
           </div>
         </div>
 
-        {/* Update in Progress Warning */}
-        {isUpdateInProgress && (
-          <div className="bg-[#fdf7e7] dark:bg-[rgba(240,171,0,0.1)] border-2 border-[#f0ab00] dark:border-[#f4c145] rounded-[16px] p-[20px] mb-[24px]">
-            <div className="flex items-start gap-[16px] mb-[16px]">
-              <AlertTriangle className="size-[24px] text-[#f0ab00] dark:text-[#f4c145] flex-shrink-0 mt-[2px]" />
-              <div className="flex-1">
-                <h3 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px] mb-[8px]">
-                  This cluster should not be updated to a minor version.
-                </h3>
-                <p className="text-[14px] text-[#151515] dark:text-white mb-[12px]">
-                  An update is already in progress and details are in the Progressing condition.
-                </p>
-                <div className="flex gap-[12px]">
-                  <button
-                    onClick={() => navigate('/administration/cluster-update/in-progress')}
-                    className="bg-white dark:bg-[rgba(255,255,255,0.05)] border-2 border-[#f0ab00] dark:border-[#f4c145] text-[#151515] dark:text-white px-[16px] py-[8px] rounded-[8px] font-semibold text-[14px] hover:bg-[rgba(240,171,0,0.05)] dark:hover:bg-[rgba(240,171,0,0.1)] transition-colors"
-                  >
-                    Review update progress
-                  </button>
-                  <button className="text-[#0066cc] dark:text-[#4dabf7] hover:underline font-semibold text-[14px] px-[12px]">
-                    View Release Notes
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* AI Assessment */}
+        <AiAssessmentSection openChatbot={openChatbot} selectedVersion={selectedVersion} />
+
+        {/* Available Updates */}
+        <AvailableUpdatesSection
+          channelData={channelData}
+          showZStreamOnly={showZStreamOnly}
+          setShowZStreamOnly={setShowZStreamOnly}
+          expandedGroups={expandedGroups}
+          setExpandedGroups={setExpandedGroups}
+          selectedVersion={selectedVersion}
+          setSelectedVersion={setSelectedVersion}
+          navigate={navigate}
+          setActiveTab={() => {}}
+          openChatbot={openChatbot}
+          selectedChannel={selectedChannel}
+          handleChannelChange={handleChannelChange}
+        />
 
         {/* Cluster Details */}
         <div className="bg-[rgba(255,255,255,0.5)] dark:bg-[rgba(255,255,255,0.05)] rounded-[16px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.06)] p-[24px] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)] mb-[24px]">
@@ -125,6 +154,17 @@ export default function ClusterSettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* OLS Chatbot Panel */}
+      {chatbotOpen && (
+        <OlsChatbot
+          context={chatbotContext}
+          selectedVersion={selectedVersion}
+          selectedChannel={selectedChannel}
+          onClose={() => setChatbotOpen(false)}
+          onAction={handleChatAction}
+        />
+      )}
     </div>
   );
 }

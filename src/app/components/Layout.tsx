@@ -721,7 +721,6 @@ export default function Layout() {
         </div>
       ),
       subItems: [
-        { path: "/administration/cluster-update", label: "Cluster Update" },
         { path: "/administration/cluster-settings", label: "Cluster Settings" },
         { path: "/administration/namespaces", label: "Namespaces" },
         { path: "/administration/resource-quotas", label: "ResourceQuotas" },

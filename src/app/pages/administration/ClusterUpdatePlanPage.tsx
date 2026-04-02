@@ -6,14 +6,14 @@ import Breadcrumbs from "../../components/Breadcrumbs";
 
 type TabKey = "update-plan" | "update-history";
 
-type OperatorIssue = {
+export type OperatorIssue = {
   name: string;
   message: string;
   slug: string;
   severity: "critical" | "warning";
 };
 
-type VersionEntry = {
+export type VersionEntry = {
   version: string;
   recommended: boolean;
   risk: string;
@@ -24,7 +24,7 @@ type VersionEntry = {
   operatorIssues?: OperatorIssue[];
 };
 
-type VersionGroup = {
+export type VersionGroup = {
   label: string;
   versions: VersionEntry[];
 };
@@ -43,7 +43,7 @@ type ChatMessage = {
 };
 
 /* ─── Channel-specific version data ─── */
-const channelVersions: Record<string, { groups: VersionGroup[]; banner?: { title: string; description: string; link: string } }> = {
+export const channelVersions: Record<string, { groups: VersionGroup[]; banner?: { title: string; description: string; link: string } }> = {
   "fast-5.1": {
     banner: {
       title: "OpenShift 5.1 is available!",
@@ -402,7 +402,7 @@ export default function ClusterUpdatePlanPage() {
 }
 
 /* ─── OLS Chatbot Panel ─── */
-function OlsChatbot({ context, selectedVersion, selectedChannel, onClose, onAction }: { context: string; selectedVersion: string; selectedChannel: string; onClose: () => void; onAction: (actionId: string) => void }) {
+export function OlsChatbot({ context, selectedVersion, selectedChannel, onClose, onAction }: { context: string; selectedVersion: string; selectedChannel: string; onClose: () => void; onAction: (actionId: string) => void }) {
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     const initial: ChatMessage[] = [
       { role: "assistant", text: `Hello! I'm OpenShift Lightspeed, your AI assistant for cluster operations.\n\nI can see your cluster is currently on version **5.0.0** using the **${selectedChannel}** channel, and you're considering an update to **${selectedVersion}**.` },
@@ -1759,7 +1759,7 @@ function InfoTooltip() {
 }
 
 /* ─── AI Assessment Section ─── */
-function AiAssessmentSection({ openChatbot, selectedVersion }: { openChatbot: (ctx: string) => void; selectedVersion: string }) {
+export function AiAssessmentSection({ openChatbot, selectedVersion }: { openChatbot: (ctx: string) => void; selectedVersion: string }) {
   const [expanded, setExpanded] = useState(true);
 
   return (
@@ -1781,13 +1781,8 @@ function AiAssessmentSection({ openChatbot, selectedVersion }: { openChatbot: (c
 
           <div className="flex items-center gap-[8px]">
             <button onClick={() => openChatbot("ai-precheck")}
-              className="flex items-center gap-[8px] bg-[#0066cc] hover:bg-[#004080] text-white text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-              Pre-check with AI
-              <Sparkles className="size-[14px]" />
-            </button>
-            <button onClick={() => openChatbot("recommendations")}
               className="flex items-center gap-[8px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[14px] px-[16px] py-[8px] rounded-[999px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 dark:hover:bg-[#4dabf7]/10 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-              AI recommendations
+              Pre-check with AI
               <Sparkles className="size-[14px]" />
             </button>
           </div>
@@ -1798,7 +1793,7 @@ function AiAssessmentSection({ openChatbot, selectedVersion }: { openChatbot: (c
 }
 
 /* ─── Available Updates Section ─── */
-function AvailableUpdatesSection({
+export function AvailableUpdatesSection({
   channelData, showZStreamOnly, setShowZStreamOnly,
   expandedGroups, setExpandedGroups,
   selectedVersion, setSelectedVersion, navigate, setActiveTab, openChatbot,
@@ -2091,21 +2086,48 @@ function InstalledOperatorsSection({ selectedVersion, operators, navigate }: { s
 /* ─── Version Group ─── */
 const COL_TEMPLATE = "32px 140px 180px 140px auto";
 
-function VersionGroupComponent({ label, versions, expanded, setExpanded, selectedVersion, setSelectedVersion, navigate, setActiveTab }: any) {
-  const [showManualRiskModal, setShowManualRiskModal] = useState(false);
-  const [manualAcceptedSlugs, setManualAcceptedSlugs] = useState<Set<string>>(new Set());
-  const [riskModalVersion, setRiskModalVersion] = useState<string | null>(null);
+function VersionGroupComponent({ label, versions, expanded, setExpanded, selectedVersion, setSelectedVersion, navigate }: any) {
+  const [acceptedSlugs, setAcceptedSlugs] = useState<Set<string>>(new Set());
 
-  const allGroupIssues = versions.flatMap((v: VersionEntry) =>
-    (v.operatorIssues || []).map((issue: any) => ({ ...issue, version: v.version }))
-  );
-  const uniqueGroupIssues = allGroupIssues.filter((issue: any, idx: number, arr: any[]) =>
-    arr.findIndex((i: any) => i.slug === issue.slug) === idx
-  );
-  const unacceptedIssues = uniqueGroupIssues.filter((issue: any) => !manualAcceptedSlugs.has(issue.slug));
-  const unacceptedIncompatOps = installedOperators.filter(op =>
-    op.clusterCompatibility === "Incompatible" && !manualAcceptedSlugs.has(`upgradeable-false-${op.name.toLowerCase().replace(/\s+/g, "-")}`)
-  );
+  const toggleAccept = (slug: string) => {
+    setAcceptedSlugs((prev) => {
+      const next = new Set(prev);
+      if (next.has(slug)) next.delete(slug);
+      else next.add(slug);
+      return next;
+    });
+  };
+
+  const selectedVer = versions.find((v: VersionEntry) => v.version === selectedVersion);
+  const versionIssues: { slug: string; name: string; severity: "critical" | "warning"; detail: string; updateAvailable?: string }[] = [];
+  if (selectedVer?.operatorIssues) {
+    for (const issue of selectedVer.operatorIssues) {
+      const op = installedOperators.find(o => o.name.toLowerCase().replace(/\s+/g, "-") === issue.name || o.name === issue.name || issue.slug.includes(o.name.toLowerCase().replace(/\s+/g, "-")));
+      versionIssues.push({ slug: issue.slug, name: issue.name, severity: issue.severity, detail: issue.message, updateAvailable: op?.updateAvailable });
+    }
+  }
+  const incompatOps = installedOperators.filter(op => {
+    if (!op.maxOcpVersion || !selectedVersion) return false;
+    const targetMajorMinor = selectedVersion.split(".").slice(0, 2).join(".");
+    return compareVersions(op.maxOcpVersion, targetMajorMinor) < 0;
+  });
+  const upgradeableRisks = incompatOps
+    .filter(op => !versionIssues.some(r => r.name === op.name))
+    .map(op => ({
+      slug: `upgradeable-false-${op.name.toLowerCase().replace(/\s+/g, "-")}`,
+      name: op.name,
+      severity: "critical" as const,
+      detail: `${op.compatibilityMessage || "Operator is incompatible with the target cluster version."}${op.updateAvailable ? ` Update available: ${op.updateAvailable}.` : ""}`,
+      updateAvailable: op.updateAvailable,
+    }));
+  const allRisks = [...versionIssues, ...upgradeableRisks];
+  const addressedCount = allRisks.filter(r => acceptedSlugs.has(r.slug)).length;
+  const allAddressed = allRisks.length > 0 && addressedCount === allRisks.length;
+  const hasNoRisks = allRisks.length === 0;
+  const canUpdate = hasNoRisks || allAddressed;
+
+  const allGroupIssues = versions.flatMap((v: VersionEntry) => (v.operatorIssues || []));
+  const uniqueGroupIssueCount = allGroupIssues.filter((issue: any, idx: number, arr: any[]) => arr.findIndex((i: any) => i.slug === issue.slug) === idx).length;
 
   return (
     <div className="mb-[8px]">
@@ -2114,68 +2136,15 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
         {expanded ? <ChevronDown className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" /> : <ChevronRight className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" />}
         <span className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[15px]">{label}</span>
         <span className="text-[11px] px-[8px] py-[2px] rounded-full bg-[#e7f1fa] dark:bg-[rgba(43,154,243,0.12)] text-[#0066cc] dark:text-[#4dabf7] font-semibold font-['Red_Hat_Text:Regular',sans-serif]">{versions.length} release{versions.length !== 1 ? "s" : ""}</span>
-        {unacceptedIssues.length > 0 && (
+        {uniqueGroupIssueCount > 0 && (
           <span className="text-[11px] px-[8px] py-[2px] rounded-full bg-[rgba(197,140,0,0.1)] text-[#c58c00] font-semibold font-['Red_Hat_Text:Regular',sans-serif] flex items-center gap-[3px]">
-            <AlertTriangle className="size-[10px]" /> {unacceptedIssues.length} known issue{unacceptedIssues.length !== 1 ? "s" : ""}
-          </span>
-        )}
-        {manualAcceptedSlugs.size > 0 && unacceptedIssues.length === 0 && uniqueGroupIssues.length > 0 && (
-          <span className="text-[11px] px-[8px] py-[2px] rounded-full bg-[rgba(61,115,23,0.1)] text-[#3d7317] font-semibold font-['Red_Hat_Text:Regular',sans-serif] flex items-center gap-[3px]">
-            <CheckCircle className="size-[10px]" /> All risks accepted
+            <AlertTriangle className="size-[10px]" /> {uniqueGroupIssueCount} known issue{uniqueGroupIssueCount !== 1 ? "s" : ""}
           </span>
         )}
       </button>
 
       {expanded && (
         <div className="mt-[4px]">
-          {unacceptedIssues.length > 0 ? (
-            <div className="mx-[4px] mb-[8px] rounded-[16px] border-l-[2px] border-l-[#dca614] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] bg-white dark:bg-[#1a1a1a] p-[16px]">
-              <div className="flex items-start gap-[8px]">
-                <AlertTriangle className="size-[14px] text-[#dca614] shrink-0 mt-[2px]" />
-                <div className="flex-1">
-                  <p className="font-['Red_Hat_Text',sans-serif] font-medium text-[#151515] dark:text-white text-[14px] mb-[6px]">
-                    This cluster should not be updated to {label} until the following issues are resolved.
-                  </p>
-                  <ul className="list-disc pl-[18px] space-y-[3px] text-[14px] font-['Red_Hat_Text',sans-serif] text-[#4d4d4d] dark:text-[#b0b0b0] mb-[6px]">
-                    {unacceptedIssues.map((issue: any, i: number) => (
-                      <li key={i}><span className="text-[#151515] dark:text-white font-medium">{issue.name}:</span> {issue.message}</li>
-                    ))}
-                  </ul>
-                  {unacceptedIncompatOps.length > 0 && (
-                    <div className="flex items-center gap-[6px] mb-[8px] mt-[6px] py-[6px] px-[10px] rounded-[16px] bg-[rgba(177,56,11,0.04)] border border-[rgba(177,56,11,0.15)]">
-                      <AlertCircle className="size-[13px] text-[#b1380b] shrink-0" />
-                      <span className="text-[12px] font-['Red_Hat_Mono',sans-serif] text-[#b1380b] font-semibold">upgradeable=False</span>
-                      <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif]">
-                        — {unacceptedIncompatOps.map(op => op.name).join(", ")} {unacceptedIncompatOps.length === 1 ? "is" : "are"} incompatible with {label}
-                      </span>
-                      <a href="#operators-section" onClick={(e) => { e.stopPropagation(); }} className="ml-auto text-[12px] text-[#0066cc] dark:text-[#4dabf7] no-underline hover:underline font-['Red_Hat_Text',sans-serif] font-medium whitespace-nowrap flex items-center gap-[3px]">
-                        View operators <ArrowRight className="size-[10px]" />
-                      </a>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-[16px] flex-wrap mt-[8px]">
-                    <button onClick={(e) => { e.stopPropagation(); setRiskModalVersion(versions[0]?.version); setShowManualRiskModal(true); }}
-                      className="bg-transparent border border-[#0066cc] dark:border-[#4dabf7] text-[#0066cc] dark:text-[#4dabf7] text-[14px] px-[12px] py-[4px] rounded-[999px] cursor-pointer hover:bg-[#0066cc]/5 transition-colors font-['Red_Hat_Text',sans-serif] font-medium">
-                      {manualAcceptedSlugs.size > 0 ? "Review risks" : "Accept risks & update"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : manualAcceptedSlugs.size > 0 && uniqueGroupIssues.length > 0 && (
-            <div className="mx-[4px] mb-[8px] rounded-[16px] border-l-[2px] border-l-[#3d7317] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] bg-white dark:bg-[#1a1a1a] p-[16px]">
-              <div className="flex items-center gap-[8px]">
-                <CheckCircle className="size-[14px] text-[#3d7317] shrink-0" />
-                <p className="font-['Red_Hat_Text',sans-serif] font-medium text-[#151515] dark:text-white text-[14px] flex-1">
-                  Known risks accepted <span className="font-normal text-[#4d4d4d] dark:text-[#b0b0b0]">— {manualAcceptedSlugs.size} risk{manualAcceptedSlugs.size !== 1 ? "s" : ""} acknowledged for {label}</span>
-                </p>
-                <button onClick={(e) => { e.stopPropagation(); setRiskModalVersion(versions[0]?.version); setShowManualRiskModal(true); }}
-                  className="text-[13px] text-[#0066cc] dark:text-[#4dabf7] bg-transparent border-0 cursor-pointer hover:underline font-['Red_Hat_Text',sans-serif] font-medium whitespace-nowrap flex items-center gap-[4px]">
-                  Review risks <ArrowRight className="size-[10px]" />
-                </button>
-              </div>
-            </div>
-          )}
           <div className="grid gap-[8px] px-[12px] py-[8px] text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)]"
             style={{ gridTemplateColumns: COL_TEMPLATE }}>
             <span /><span>Version</span><span>Details</span><span>Date</span><span />
@@ -2184,7 +2153,7 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
             const isSelected = selectedVersion === v.version;
             return (
               <div key={v.version}>
-                <div onClick={() => setSelectedVersion(v.version)}
+                <div onClick={() => { setSelectedVersion(v.version); setAcceptedSlugs(new Set()); }}
                   className={`grid gap-[8px] items-center px-[12px] py-[10px] w-full text-left cursor-pointer transition-colors border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] ${isSelected ? "bg-[#e7f1fa] dark:bg-[rgba(43,154,243,0.08)]" : "hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)]"}`}
                   style={{ gridTemplateColumns: COL_TEMPLATE }}>
                   <div className="flex items-center justify-center">
@@ -2206,113 +2175,136 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                       Release notes <ExternalLink className="size-[11px]" />
                     </a>
                   </div>
-                  <div className="flex items-center gap-[8px]">
-                    {isSelected && (
-                      <button onClick={(e) => { e.stopPropagation(); navigate(`/administration/cluster-update/version/${v.version}`, { state: { version: v.version } }); }}
-                        className="bg-[#0066cc] hover:bg-[#004080] text-white text-[12px] px-[10px] py-[5px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium whitespace-nowrap">
-                        Update to {v.version}
-                      </button>
-                    )}
-                  </div>
+                  <div />
                 </div>
               </div>
             );
           })}
+
+          {/* Inline Risk Review Panel */}
+          {selectedVersion && selectedVer && (
+            <div className="mt-[12px] mx-[4px]">
+              {hasNoRisks ? (
+                <div className="rounded-[16px] border-l-[3px] border-l-[#3d7317] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] bg-white dark:bg-[#1a1a1a] p-[20px]">
+                  <div className="flex items-center gap-[10px] mb-[16px]">
+                    <CheckCircle className="size-[18px] text-[#3d7317]" />
+                    <div>
+                      <p className="font-['Red_Hat_Text',sans-serif] font-medium text-[#151515] dark:text-white text-[14px]">
+                        No known risks for {selectedVersion}
+                      </p>
+                      <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif]">Ready to update.</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigate(`/administration/cluster-update/version/${selectedVersion}`, { state: { version: selectedVersion } })}
+                    className="bg-[#0066cc] hover:bg-[#004080] text-white text-[14px] px-[20px] py-[9px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                    Update to {selectedVersion}
+                  </button>
+                </div>
+              ) : (
+                <div className="rounded-[16px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] bg-white dark:bg-[#1a1a1a] p-[20px]">
+                  <div className="flex items-center justify-between mb-[16px]">
+                    <div className="flex items-center gap-[8px]">
+                      <AlertTriangle className="size-[16px] text-[#dca614]" />
+                      <h3 className="font-['Red_Hat_Display',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px]">
+                        Review risks for {selectedVersion}
+                      </h3>
+                    </div>
+                    <span className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif]">
+                      {addressedCount} of {allRisks.length} risk{allRisks.length !== 1 ? "s" : ""} addressed
+                    </span>
+                  </div>
+
+                  {/* Progress bar */}
+                  <div className="h-[4px] bg-[#e0e0e0] dark:bg-[rgba(255,255,255,0.1)] rounded-full mb-[16px] overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-300"
+                      style={{
+                        width: `${allRisks.length > 0 ? (addressedCount / allRisks.length) * 100 : 0}%`,
+                        backgroundColor: allAddressed ? "#3d7317" : "#0066cc",
+                      }}
+                    />
+                  </div>
+
+                  <div className="space-y-[10px] mb-[20px]">
+                    {allRisks.map((risk) => {
+                      const isAccepted = acceptedSlugs.has(risk.slug);
+                      const matchedOp = installedOperators.find(op =>
+                        risk.slug.includes(op.name.toLowerCase().replace(/\s+/g, "-"))
+                      );
+                      return (
+                        <div key={risk.slug}
+                          className={`rounded-[12px] border p-[16px] transition-colors ${isAccepted ? "border-[#3d7317] bg-[rgba(61,115,23,0.03)]" : "border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)]"}`}>
+                          <div className="flex items-start justify-between gap-[12px]">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-[6px] mb-[4px]">
+                                {isAccepted
+                                  ? <CheckCircle className="size-[14px] text-[#3d7317] shrink-0" />
+                                  : risk.severity === "critical"
+                                    ? <AlertCircle className="size-[14px] text-[#b1380b] shrink-0" />
+                                    : <AlertTriangle className="size-[14px] text-[#dca614] shrink-0" />
+                                }
+                                <span className="text-[14px] text-[#151515] dark:text-white font-medium font-['Red_Hat_Text',sans-serif]">{risk.name}</span>
+                                <span className={`text-[11px] px-[6px] py-[1px] rounded-[4px] font-semibold ${
+                                  isAccepted ? "bg-[rgba(61,115,23,0.1)] text-[#3d7317]"
+                                  : risk.severity === "critical" ? "bg-[rgba(177,56,11,0.1)] text-[#b1380b]"
+                                  : "bg-[rgba(220,166,20,0.1)] text-[#795600]"
+                                }`}>
+                                  {isAccepted ? "accepted" : risk.severity}
+                                </span>
+                              </div>
+                              <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif] mb-[10px]">{risk.detail}</p>
+                              <div className="flex items-center gap-[8px]">
+                                {(risk.updateAvailable || matchedOp?.updateAvailable) && !isAccepted && (
+                                  <button onClick={() => {
+                                    const opName = matchedOp?.name || risk.name;
+                                    navigate(`/ecosystem/installed-operators/${encodeURIComponent(opName)}/update`, {
+                                      state: { returnTo: '/administration/cluster-settings', operatorName: opName }
+                                    });
+                                  }}
+                                    className="text-[13px] px-[12px] py-[5px] rounded-[999px] bg-[#0066cc] hover:bg-[#004080] text-white border-0 cursor-pointer transition-colors font-['Red_Hat_Text',sans-serif] font-medium flex items-center gap-[4px]">
+                                    Resolve <ArrowRight className="size-[12px]" />
+                                  </button>
+                                )}
+                                <button onClick={() => toggleAccept(risk.slug)}
+                                  className={`text-[13px] px-[12px] py-[5px] rounded-[999px] cursor-pointer transition-colors font-['Red_Hat_Text',sans-serif] font-medium ${
+                                    isAccepted
+                                      ? "bg-[rgba(61,115,23,0.08)] text-[#3d7317] border border-[#3d7317] hover:bg-[rgba(61,115,23,0.15)]"
+                                      : "bg-transparent text-[#0066cc] dark:text-[#4dabf7] border border-[#0066cc] dark:border-[#4dabf7] hover:bg-[#0066cc]/5"
+                                  }`}>
+                                  {isAccepted ? "Accepted" : "Accept risk"}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex items-center gap-[12px] pt-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
+                    <button
+                      disabled={!canUpdate}
+                      onClick={() => navigate(`/administration/cluster-update/version/${selectedVersion}`, { state: { version: selectedVersion, acceptedRisks: [...acceptedSlugs] } })}
+                      className={`text-[14px] px-[20px] py-[9px] rounded-[999px] border-0 transition-colors font-['Red_Hat_Text',sans-serif] font-medium ${
+                        canUpdate
+                          ? "bg-[#0066cc] hover:bg-[#004080] text-white cursor-pointer"
+                          : "bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed"
+                      }`}>
+                      Update to {selectedVersion}
+                    </button>
+                    {!canUpdate && (
+                      <span className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif]">
+                        Address all risks to proceed
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
-
-      {/* Manual Risk Acceptance Modal */}
-      {showManualRiskModal && riskModalVersion && (() => {
-        const ver = versions.find((v: VersionEntry) => v.version === riskModalVersion);
-        if (!ver?.operatorIssues?.length) return null;
-        const issueRisks = ver.operatorIssues.map((issue: any) => ({
-          slug: issue.slug,
-          name: issue.name,
-          severity: issue.severity,
-          detail: issue.message,
-        }));
-        const incompatOps = installedOperators.filter(op => op.clusterCompatibility === "Incompatible");
-        const upgradeableRisks = incompatOps
-          .filter(op => !issueRisks.some((r: any) => r.name === op.name))
-          .map(op => ({
-            slug: `upgradeable-false-${op.name.toLowerCase().replace(/\s+/g, "-")}`,
-            name: op.name,
-            severity: "critical" as const,
-            detail: `${op.compatibilityMessage || "Operator is incompatible with the target cluster version."}${op.updateAvailable ? ` Update available: ${op.updateAvailable}.` : ""}`,
-          }));
-        const allRisks = [...issueRisks, ...upgradeableRisks];
-        const selectedCount = allRisks.filter((r: any) => manualAcceptedSlugs.has(r.slug)).length;
-        const allSelected = selectedCount === allRisks.length;
-        const toggleAll = () => {
-          if (allSelected) { setManualAcceptedSlugs(new Set()); }
-          else { setManualAcceptedSlugs(new Set(allRisks.map((r: any) => r.slug))); }
-        };
-        return createPortal(
-          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40" onClick={() => setShowManualRiskModal(false)}>
-            <div className="bg-white dark:bg-[#1a1a1a] rounded-[16px] shadow-[0_10px_20px_rgba(41,41,41,0.15)] max-w-[560px] w-full mx-[16px] max-h-[80vh] flex flex-col" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
-              <div className="flex items-center justify-between px-[24px] py-[16px] border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)]">
-                <h3 className="text-[18px] font-['Red_Hat_Display',sans-serif] font-semibold text-[#151515] dark:text-white">Accept known risks</h3>
-                <button onClick={() => setShowManualRiskModal(false)} className="bg-transparent border-0 cursor-pointer text-[#6a6e73] hover:text-[#151515] dark:hover:text-white p-[4px]" aria-label="Close">
-                  <X className="size-[18px]" />
-                </button>
-              </div>
-              <div className="px-[24px] py-[16px] overflow-y-auto flex-1">
-                <div className="flex items-start gap-[8px] rounded-[16px] border-l-[2px] border-l-[#dca614] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] bg-white dark:bg-[#1a1a1a] px-[16px] py-[12px] mb-[16px]">
-                  <AlertTriangle className="size-[14px] text-[#dca614] shrink-0 mt-[2px]" />
-                  <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text',sans-serif]">
-                    Acknowledging these risks will set <span className="font-['Red_Hat_Mono',sans-serif] text-[#5e40be]">desiredUpdate.acceptedRisks</span> on the ClusterVersion resource. The update to <span className="font-semibold">{riskModalVersion}</span> will proceed despite known incompatibilities. You must accept all risks to proceed.
-                  </p>
-                </div>
-                <div className="flex items-center justify-between mb-[12px]">
-                  <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif] uppercase tracking-[0.5px] font-semibold">{allRisks.length} risk{allRisks.length !== 1 ? "s" : ""} identified</p>
-                  <label className="flex items-center gap-[6px] cursor-pointer">
-                    <input type="checkbox" checked={allSelected} onChange={toggleAll}
-                      className="size-[16px] accent-[#0066cc] cursor-pointer" />
-                    <span className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text',sans-serif] font-medium">Select all</span>
-                  </label>
-                </div>
-                <div className="space-y-[10px]">
-                  {allRisks.map((risk: any) => (
-                    <label key={risk.slug} className={`flex items-start gap-[12px] p-[14px] rounded-[16px] border cursor-pointer transition-colors ${manualAcceptedSlugs.has(risk.slug) ? "border-[#0066cc] bg-[#e7f1fa]/30 dark:bg-[rgba(43,154,243,0.06)]" : "border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90]"}`}>
-                      <input type="checkbox" checked={manualAcceptedSlugs.has(risk.slug)}
-                        onChange={() => { setManualAcceptedSlugs((prev) => { const next = new Set(prev); if (next.has(risk.slug)) next.delete(risk.slug); else next.add(risk.slug); return next; }); }}
-                        className="mt-[2px] size-[16px] accent-[#0066cc] cursor-pointer shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-[6px] mb-[4px]">
-                          {risk.severity === "critical" ? <AlertCircle className="size-[12px] text-[#b1380b] shrink-0" /> : <AlertTriangle className="size-[12px] text-[#dca614] shrink-0" />}
-                          <span className="text-[14px] text-[#151515] dark:text-white font-medium font-['Red_Hat_Text',sans-serif]">{risk.name}</span>
-                          <span className={`text-[11px] px-[6px] py-[1px] rounded-[4px] font-semibold ${risk.severity === "critical" ? "bg-[rgba(177,56,11,0.1)] text-[#b1380b]" : "bg-[rgba(220,166,20,0.1)] text-[#795600]"}`}>
-                            {risk.severity}
-                          </span>
-                        </div>
-                        <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif]">{risk.detail}</p>
-                        <p className="text-[11px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Mono',sans-serif] mt-[4px]">slug: {risk.slug}</p>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
-              <div className="flex items-center gap-[12px] px-[24px] py-[16px] border-t border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)]">
-                <button disabled={!allSelected}
-                  onClick={() => { setShowManualRiskModal(false); navigate(`/administration/cluster-update/version/${riskModalVersion}`, { state: { version: riskModalVersion, acceptedRisks: [...manualAcceptedSlugs] } }); }}
-                  className={`text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 transition-colors font-['Red_Hat_Text',sans-serif] font-medium ${allSelected ? "bg-[#0066cc] hover:bg-[#004080] text-white cursor-pointer" : "bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed"}`}>
-                  Accept all risks &amp; update to {riskModalVersion}
-                </button>
-                <button disabled={selectedCount === 0}
-                  onClick={() => setShowManualRiskModal(false)}
-                  className={`text-[14px] px-[16px] py-[8px] rounded-[999px] border transition-colors font-['Red_Hat_Text',sans-serif] font-medium ${selectedCount > 0 ? "border-[#0066cc] dark:border-[#4dabf7] text-[#0066cc] dark:text-[#4dabf7] bg-transparent cursor-pointer hover:bg-[#0066cc]/5" : "border-[#d2d2d2] text-[#6a6e73] bg-transparent cursor-not-allowed"}`}>
-                  Accept and save
-                </button>
-                <button onClick={() => setShowManualRiskModal(false)}
-                  className="text-[14px] px-[16px] py-[8px] bg-transparent border-0 text-[#0066cc] dark:text-[#4dabf7] cursor-pointer hover:underline font-['Red_Hat_Text',sans-serif] font-medium">
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body
-        );
-      })()}
     </div>
   );
 }
