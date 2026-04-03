@@ -12,6 +12,8 @@ export type RiskResolution = {
   actionAvailable?: boolean;
 };
 
+export type RiskSource = "cincinnati" | "preflight" | "cluster";
+
 export type OperatorIssue = {
   name: string;
   message: string;
@@ -19,6 +21,7 @@ export type OperatorIssue = {
   severity: "critical" | "warning";
   url?: string;
   resolution?: RiskResolution;
+  source?: RiskSource;
 };
 
 export type VersionEntry = {
@@ -443,7 +446,7 @@ export function OlsChatbot({ context, selectedVersion, selectedChannel, onClose,
     if (context === "recommendations") {
       initial.push({ role: "assistant", text: `Based on your cluster's workload profile and update history, here are my recommendations:\n\n• **Recommended version**: ${selectedVersion} — Low risk with strong community adoption\n• **Best update window**: Weekdays 2:00-4:00 AM UTC based on your traffic patterns\n• **Pre-update actions**: Update cluster-logging operator to v6.5+ before proceeding\n• **Estimated downtime**: ~2 minutes for API server restart` });
     } else if (context === "agent-config") {
-      initial.push({ role: "assistant", text: "I can help you configure the agent-based update strategy. The agent will:\n\n• **Analyze workload patterns** to find optimal update windows\n• **Run pre-checks** automatically before each update\n• **Coordinate operator updates** in the correct dependency order\n• **Monitor rollout health** and trigger automatic rollback if issues are detected\n\nWould you like to configure the update schedule, set rollback thresholds, or review the current agent policy?" });
+      initial.push({ role: "assistant", text: "I can help you configure the agent-based update strategy. The agent will:\n\n• **Analyze workload patterns** to find optimal update windows\n• **Assess readiness** automatically before each update\n• **Coordinate operator updates** in the correct dependency order\n• **Monitor rollout health** and trigger automatic rollback if issues are detected\n\nWould you like to configure the update schedule, set rollback thresholds, or review the current agent policy?" });
     } else if (context === "agent-monitor") {
       initial.push({ role: "assistant", text: "The update agent is currently monitoring your cluster. Here's what I can help with:\n\n• View the current agent status and decision log\n• Explain why the agent chose a specific update window\n• Review rollback criteria and thresholds\n• Adjust agent behavior for upcoming maintenance windows\n\nWhat would you like to know?" });
     } else if (context === "agent-precheck" || context === "ai-precheck") {
@@ -1825,7 +1828,7 @@ function ChannelTooltip() {
   );
 }
 
-/* ─── AI Assessment Section ─── */
+/* ─── AI Assessment Section (OCPSTRAT-2701) ─── */
 export function AiAssessmentSection({ openChatbot, selectedVersion }: { openChatbot: (ctx: string) => void; selectedVersion: string }) {
   const [expanded, setExpanded] = useState(true);
 
@@ -1842,13 +1845,15 @@ export function AiAssessmentSection({ openChatbot, selectedVersion }: { openChat
           <div className="rounded-[8px] border-2 border-[#5e40be] dark:border-[#b2a3e0] px-[16px] py-[12px] mb-[16px]">
             <div className="flex items-center gap-[10px]">
               <Info className="size-[16px] text-[#0066cc] dark:text-[#4dabf7] shrink-0" />
-              <p className="text-[#151515] dark:text-white text-[14px] font-['Red_Hat_Text:Regular',sans-serif]">Version {selectedVersion} Available</p>
+              <p className="text-[#151515] dark:text-white text-[14px] font-['Red_Hat_Text:Regular',sans-serif]">
+                Version {selectedVersion} Available
+              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-[8px]">
             <button onClick={() => openChatbot("ai-precheck")}
-              className="flex items-center gap-[8px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[14px] px-[16px] py-[8px] rounded-[999px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[#0066cc]/5 dark:hover:bg-[#4dabf7]/10 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+              className="flex items-center gap-[8px] bg-[#0066cc] hover:bg-[#004080] text-white text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
               Pre-check with AI
               <Sparkles className="size-[14px]" />
             </button>
@@ -2150,11 +2155,24 @@ function InstalledOperatorsSection({ selectedVersion, operators, navigate }: { s
 
 /* ─── Version Group ─── */
 
+const PREFLIGHT_RISKS: Record<string, OperatorIssue[]> = {
+  "5.1.10": [
+    { name: "PodDisruptionBudgetAtLimit", slug: "PodDisruptionBudgetAtLimit", severity: "warning", message: "PDB \"zookeeper-pdb\" in namespace data-services is at maxUnavailable=0. Pod eviction during node drain may stall the update.", url: "https://docs.openshift.com/container-platform/latest/nodes/pods/nodes-pods-configuring.html#nodes-pods-configuring-pod-distruption-about_nodes-pods-configuring", source: "preflight", resolution: { type: "accept-only", description: "Adjust the PDB maxUnavailable to at least 1, or accept that node drains may take longer." } },
+    { name: "DeprecatedAPIInUse", slug: "DeprecatedAPIInUse", severity: "critical", message: "3 resources still using rbac.authorization.k8s.io/v1beta1 — migrate to v1 before updating. Affected: ClusterRoleBinding/legacy-admin, RoleBinding/app-reader, RoleBinding/ci-deployer.", url: "https://docs.openshift.com/container-platform/latest/updating/preparing_for_updates/updating-cluster-prepare.html#update-preparing-migrate_updating-cluster-prepare", source: "preflight", resolution: { type: "update-z-stream", description: "Migrate deprecated API resources to v1 before proceeding. Run `oc get apirequestcounts` to identify all affected resources." } },
+  ],
+  "5.1.9": [
+    { name: "PodDisruptionBudgetAtLimit", slug: "PodDisruptionBudgetAtLimit", severity: "warning", message: "PDB \"zookeeper-pdb\" in namespace data-services is at maxUnavailable=0. Pod eviction during node drain may stall the update.", source: "preflight", resolution: { type: "accept-only", description: "Adjust the PDB maxUnavailable to at least 1, or accept that node drains may take longer." } },
+  ],
+};
+
 function VersionGroupComponent({ label, versions, expanded, setExpanded, selectedVersion, setSelectedVersion, navigate }: any) {
   const [acceptedSlugs, setAcceptedSlugs] = useState<Set<string>>(new Set());
   const [expandedRiskSlug, setExpandedRiskSlug] = useState<string | null>(null);
+  const [expandedRiskDetail, setExpandedRiskDetail] = useState<string | null>(null);
   const [showOlderReleases, setShowOlderReleases] = useState(false);
-  const [risksExpanded, setRisksExpanded] = useState(true);
+  const [showPreflightModal, setShowPreflightModal] = useState(false);
+  const [preflightStatus, setPreflightStatus] = useState<"idle" | "running" | "complete">("idle");
+  const riskReviewRef = useRef<HTMLDivElement>(null);
 
   const toggleAccept = (slug: string) => {
     setAcceptedSlugs((prev) => {
@@ -2165,12 +2183,32 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
     });
   };
 
+  useEffect(() => {
+    if (!showPreflightModal || preflightStatus === "complete") return;
+    setPreflightStatus("running");
+    const timer = setTimeout(() => setPreflightStatus("complete"), 3000);
+    return () => clearTimeout(timer);
+  }, [showPreflightModal]);
+
+  useEffect(() => {
+    setPreflightStatus("idle");
+  }, [selectedVersion]);
+
   const selectedVer = versions.find((v: VersionEntry) => v.version === selectedVersion);
+
+  const preflightRisks: OperatorIssue[] = preflightStatus === "complete" && selectedVersion
+    ? (PREFLIGHT_RISKS[selectedVersion] || [])
+    : [];
 
   const allRisks: (OperatorIssue & { resolved?: boolean })[] = [];
   if (selectedVer?.operatorIssues) {
     for (const issue of selectedVer.operatorIssues) {
-      allRisks.push({ ...issue, resolved: false });
+      allRisks.push({ ...issue, source: issue.source || "cincinnati", resolved: false });
+    }
+  }
+  for (const pr of preflightRisks) {
+    if (!allRisks.some(r => r.slug === pr.slug)) {
+      allRisks.push({ ...pr, resolved: false });
     }
   }
   const addressedCount = allRisks.filter(r => acceptedSlugs.has(r.slug) || r.resolved).length;
@@ -2232,13 +2270,12 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                       {v.recommended && <span className="bg-[#e7f1fa] dark:bg-[rgba(43,154,243,0.15)] text-[#0066cc] dark:text-[#4dabf7] text-[11px] px-[8px] py-[2px] rounded-full font-semibold">Recommended</span>}
                       <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{v.date}</span>
                     </div>
-                    <div className="flex items-center gap-[6px] mb-[4px]">
+                    <div className="flex items-center gap-[6px]">
                       <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{v.features} features · {v.bugFixes} bug fixes</span>
                       <a href="https://docs.openshift.com/container-platform/latest/release_notes/ocp-4-18-release-notes.html" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-[3px] text-[#0066cc] dark:text-[#4dabf7] text-[11px] no-underline hover:underline font-['Red_Hat_Text:Regular',sans-serif]">
                         Release notes <ExternalLink className="size-[10px]" />
                       </a>
                     </div>
-                    {/* Per-version unique risk slugs */}
                     {uniqueRisks.length > 0 && (
                       <div className="flex flex-wrap gap-[4px] mt-[4px]">
                         {uniqueRisks.map((risk: OperatorIssue) => (
@@ -2249,7 +2286,6 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                         ))}
                       </div>
                     )}
-                    {/* Inline risk detail popover */}
                     {uniqueRisks.map((risk: OperatorIssue) => (
                       expandedRiskSlug === `${v.version}:${risk.slug}` && (
                         <div key={`detail-${risk.slug}`} className="mt-[8px] rounded-[8px] bg-[#fafafa] dark:bg-[rgba(255,255,255,0.03)] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[12px]" onClick={(e) => e.stopPropagation()}>
@@ -2283,9 +2319,99 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
             </button>
           )}
 
+          {/* Pre-check from target release modal */}
+          {showPreflightModal && createPortal(
+            <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40" onClick={() => { if (preflightStatus !== "running") setShowPreflightModal(false); }}>
+              <div className="bg-white dark:bg-[#1a1a1a] rounded-[16px] shadow-[0_10px_20px_rgba(41,41,41,0.15)] max-w-[560px] w-full mx-[16px] max-h-[80vh] flex flex-col" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                <div className="flex items-center justify-between px-[24px] py-[16px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
+                  <div className="flex items-center gap-[10px]">
+                    <Shield className="size-[18px] text-[#0066cc] dark:text-[#4dabf7]" />
+                    <h3 className="font-['Red_Hat_Display',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px] m-0">Pre-check from target release</h3>
+                  </div>
+                  <button onClick={() => { if (preflightStatus !== "running") setShowPreflightModal(false); }} disabled={preflightStatus === "running"}
+                    className="bg-transparent border-0 cursor-pointer p-[4px] text-[#6a6e73] hover:text-[#151515] dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed">
+                    <X className="size-[18px]" />
+                  </button>
+                </div>
+                <div className="px-[24px] py-[20px] overflow-y-auto flex-1">
+                  <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[16px]">
+                    Deploys <strong>{selectedVersion}</strong>'s CVO in preflight mode to validate your cluster state against the target version's requirements.
+                  </p>
+                  <div className="rounded-[8px] bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] px-[12px] py-[8px] mb-[16px]">
+                    <p className="text-[11px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Mono:Regular',sans-serif]">
+                      spec.desiredUpdate.mode: Preflight
+                    </p>
+                  </div>
+
+                  {preflightStatus === "running" && (
+                    <div className="flex flex-col items-center py-[24px] gap-[12px]">
+                      <Loader2 className="size-[28px] text-[#0066cc] animate-spin" />
+                      <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium">Target CVO deployment running</p>
+                      <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Monitoring cluster state against {selectedVersion} requirements...</p>
+                    </div>
+                  )}
+
+                  {preflightStatus === "complete" && (
+                    <div>
+                      {preflightRisks.length === 0 ? (
+                        <div className="flex items-center gap-[10px] rounded-[12px] border border-[#3d7317] bg-[rgba(61,115,23,0.04)] p-[16px]">
+                          <CheckCircle className="size-[18px] text-[#3d7317] shrink-0" />
+                          <div>
+                            <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium">No additional concerns found</p>
+                            <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">The target CVO validated your cluster state successfully.</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="flex items-center gap-[8px] mb-[12px]">
+                            <AlertTriangle className="size-[16px] text-[#dca614]" />
+                            <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                              {preflightRisks.length} concern{preflightRisks.length !== 1 ? "s" : ""} found
+                            </p>
+                          </div>
+                          <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[12px]">
+                            These concerns have been merged into the risk review for {selectedVersion}. Address or accept each risk before updating.
+                          </p>
+                          <div className="space-y-[8px]">
+                            {preflightRisks.map((risk) => (
+                              <div key={risk.slug} className="rounded-[8px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[12px]">
+                                <div className="flex items-center gap-[6px] mb-[4px]">
+                                  <span className="text-[13px] text-[#151515] dark:text-white font-semibold font-['Red_Hat_Mono:Regular',sans-serif]">{risk.slug}</span>
+                                  <span className={`text-[11px] px-[6px] py-[1px] rounded-[4px] font-semibold ${risk.severity === "critical" ? "bg-[rgba(177,56,11,0.1)] text-[#b1380b]" : "bg-[rgba(220,166,20,0.1)] text-[#795600]"}`}>
+                                    {risk.severity}
+                                  </span>
+                                </div>
+                                <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif]">{risk.message}</p>
+                                {risk.url && (
+                                  <a href={risk.url} target="_blank" rel="noopener noreferrer"
+                                    className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[12px] no-underline hover:underline font-['Red_Hat_Text',sans-serif] mt-[6px]">
+                                    View impact statement <ExternalLink className="size-[11px]" />
+                                  </a>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                {preflightStatus === "complete" && (
+                  <div className="flex justify-end gap-[8px] px-[24px] py-[14px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
+                    <button onClick={() => { setShowPreflightModal(false); if (preflightRisks.length > 0) { setTimeout(() => riskReviewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100); } }}
+                      className="text-[14px] px-[20px] py-[9px] rounded-[999px] bg-[#0066cc] hover:bg-[#004080] text-white border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                      {preflightRisks.length > 0 ? "Review risks" : "Close"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>,
+            document.body
+          )}
+
           {/* Inline Risk Review Panel */}
           {selectedVersion && selectedVer && (
-            <div className="mt-[12px]">
+            <div ref={riskReviewRef}>
               {hasNoRisks ? (
                 <div className="rounded-[16px] border-l-[3px] border-l-[#3d7317] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] bg-white dark:bg-[#1a1a1a] p-[20px]">
                   <div className="flex items-center gap-[10px] mb-[16px]">
@@ -2297,31 +2423,36 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                       <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif]">Ready to update.</p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => navigate(`/administration/cluster-update/version/${selectedVersion}`, { state: { version: selectedVersion } })}
-                    className="bg-[#0066cc] hover:bg-[#004080] text-white text-[14px] px-[20px] py-[9px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-                    Update to {selectedVersion}
-                  </button>
+                  <div className="flex items-center gap-[10px]">
+                    <button
+                      onClick={() => navigate(`/administration/cluster-update/version/${selectedVersion}`, { state: { version: selectedVersion } })}
+                      className="bg-[#0066cc] hover:bg-[#004080] text-white text-[14px] px-[20px] py-[9px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                      Update to {selectedVersion}
+                    </button>
+                    <button
+                      onClick={() => setShowPreflightModal(true)}
+                      className="text-[14px] px-[20px] py-[9px] rounded-[999px] border border-[#0066cc] dark:border-[#4dabf7] bg-transparent text-[#0066cc] dark:text-[#4dabf7] cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium hover:bg-[#0066cc]/5 flex items-center gap-[6px]">
+                      <Shield className="size-[14px]" /> Run preflight
+                      {preflightStatus === "complete" && preflightRisks.length > 0 && (
+                        <span className="bg-[#dca614] text-white text-[10px] font-bold rounded-full size-[18px] flex items-center justify-center -mr-[4px]">{preflightRisks.length}</span>
+                      )}
+                      {preflightStatus === "complete" && preflightRisks.length === 0 && (
+                        <CheckCircle className="size-[14px] text-[#3d7317]" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="rounded-[16px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] bg-white dark:bg-[#1a1a1a] p-[20px]">
-                  <button
-                    onClick={() => setRisksExpanded(!risksExpanded)}
-                    className="w-full flex items-center justify-between bg-transparent border-0 cursor-pointer p-0 text-left"
-                    aria-expanded={risksExpanded}
-                  >
-                    <div className="flex items-center gap-[8px]">
-                      {risksExpanded ? <ChevronDown className="size-[16px] text-[#151515] dark:text-white" /> : <ChevronRight className="size-[16px] text-[#151515] dark:text-white" />}
-                      <h3 className="font-['Red_Hat_Display',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px] m-0">
-                        Review risks for {selectedVersion}
-                      </h3>
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-['Red_Hat_Display',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px] m-0">
+                      Review risks for {selectedVersion}
+                    </h3>
                     <span className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif]">
                       {addressedCount} of {allRisks.length} risk{allRisks.length !== 1 ? "s" : ""} addressed
                     </span>
-                  </button>
+                  </div>
 
-                  {/* Progress bar — always visible */}
                   <div className="h-[4px] bg-[#e0e0e0] dark:bg-[rgba(255,255,255,0.1)] rounded-full mt-[16px] overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-300"
@@ -2332,7 +2463,7 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                     />
                   </div>
 
-                  {risksExpanded && <div className="space-y-[10px] mt-[16px] mb-[20px]">
+                  <div className="space-y-[6px] mt-[16px] mb-[16px]">
                     {allRisks.map((risk) => {
                       const isAccepted = acceptedSlugs.has(risk.slug);
                       const isResolved = !!risk.resolved;
@@ -2346,17 +2477,37 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                         ? "border-[#3d7317] bg-[rgba(61,115,23,0.03)]"
                         : "border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)]";
                       const resolution = risk.resolution;
+                      const isDetailOpen = expandedRiskDetail === risk.slug;
                       return (
                         <div key={risk.slug}
-                          className={`rounded-[12px] border p-[16px] transition-colors ${borderColor}`}>
-                          <div className="flex items-start justify-between gap-[12px]">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-[6px] mb-[4px]">
-                                <span className="text-[13px] text-[#151515] dark:text-white font-semibold font-['Red_Hat_Mono:Regular',sans-serif]">{risk.slug}</span>
-                                <span className={`text-[11px] px-[6px] py-[1px] rounded-[4px] font-semibold ${statusColor}`}>
-                                  {statusLabel}
-                                </span>
-                              </div>
+                          className={`rounded-[10px] border transition-colors ${borderColor}`}>
+                          {/* Compact header row — always visible */}
+                          <button
+                            onClick={() => setExpandedRiskDetail(isDetailOpen ? null : risk.slug)}
+                            className="flex items-center gap-[8px] w-full bg-transparent border-0 cursor-pointer px-[14px] py-[10px] text-left"
+                          >
+                            {isDetailOpen ? <ChevronDown className="size-[12px] text-[#4d4d4d] shrink-0" /> : <ChevronRight className="size-[12px] text-[#4d4d4d] shrink-0" />}
+                            <span className="text-[13px] text-[#151515] dark:text-white font-semibold font-['Red_Hat_Mono:Regular',sans-serif]">{risk.slug}</span>
+                            <span className={`text-[11px] px-[6px] py-[1px] rounded-[4px] font-semibold ${statusColor}`}>
+                              {statusLabel}
+                            </span>
+                            {risk.source === "preflight" && (
+                              <span className="text-[10px] px-[5px] py-[1px] rounded-[4px] bg-[rgba(0,102,204,0.08)] text-[#0066cc] dark:bg-[rgba(77,171,247,0.12)] dark:text-[#4dabf7] font-semibold font-['Red_Hat_Text:Regular',sans-serif] flex items-center gap-[3px]">
+                                <Shield className="size-[9px]" /> preflight
+                              </span>
+                            )}
+                            {(risk.source === "cincinnati" || !risk.source) && (
+                              <span className="text-[10px] px-[5px] py-[1px] rounded-[4px] bg-[rgba(0,0,0,0.04)] text-[#6a6e73] dark:bg-[rgba(255,255,255,0.06)] dark:text-[#8a8d90] font-semibold font-['Red_Hat_Text:Regular',sans-serif]">
+                                cincinnati
+                              </span>
+                            )}
+                            <span className="flex-1" />
+                            {(isResolved || isAccepted) && <CheckCircle className="size-[14px] text-[#3d7317] shrink-0" />}
+                          </button>
+
+                          {/* Expanded detail — message, resolution, actions */}
+                          {isDetailOpen && (
+                            <div className="px-[14px] pb-[14px] pt-0 ml-[20px]">
                               <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif] mb-[8px]">{risk.message}</p>
                               {risk.url && (
                                 <a href={risk.url} target="_blank" rel="noopener noreferrer"
@@ -2365,25 +2516,14 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                                 </a>
                               )}
 
-                              {/* Contextual resolution guidance */}
                               {!isResolved && !isAccepted && resolution && (
                                 <div className="rounded-[8px] bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] px-[12px] py-[8px] mb-[10px]">
                                   <div className="flex items-start gap-[6px]">
-                                    {resolution.type === "update-operator" && resolution.actionAvailable && (
-                                      <ArrowRight className="size-[12px] text-[#0066cc] mt-[2px] shrink-0" />
-                                    )}
-                                    {resolution.type === "update-operator" && !resolution.actionAvailable && (
-                                      <Clock className="size-[12px] text-[#795600] mt-[2px] shrink-0" />
-                                    )}
-                                    {resolution.type === "wait-for-fix" && (
-                                      <Clock className="size-[12px] text-[#795600] mt-[2px] shrink-0" />
-                                    )}
-                                    {resolution.type === "update-z-stream" && (
-                                      <Info className="size-[12px] text-[#0066cc] mt-[2px] shrink-0" />
-                                    )}
-                                    {resolution.type === "accept-only" && (
-                                      <Info className="size-[12px] text-[#4d4d4d] mt-[2px] shrink-0" />
-                                    )}
+                                    {(resolution.type === "update-operator" && resolution.actionAvailable) && <ArrowRight className="size-[12px] text-[#0066cc] mt-[2px] shrink-0" />}
+                                    {(resolution.type === "update-operator" && !resolution.actionAvailable) && <Clock className="size-[12px] text-[#795600] mt-[2px] shrink-0" />}
+                                    {resolution.type === "wait-for-fix" && <Clock className="size-[12px] text-[#795600] mt-[2px] shrink-0" />}
+                                    {resolution.type === "update-z-stream" && <Info className="size-[12px] text-[#0066cc] mt-[2px] shrink-0" />}
+                                    {resolution.type === "accept-only" && <Info className="size-[12px] text-[#4d4d4d] mt-[2px] shrink-0" />}
                                     <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif]">{resolution.description}</p>
                                   </div>
                                 </div>
@@ -2414,13 +2554,13 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                                 )}
                               </div>
                             </div>
-                          </div>
+                          )}
                         </div>
                       );
                     })}
-                  </div>}
+                  </div>
 
-                  <div className="flex items-center gap-[12px] pt-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
+                  <div className="flex items-center gap-[10px] pt-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
                     <button
                       disabled={!canUpdate}
                       onClick={() => navigate(`/administration/cluster-update/version/${selectedVersion}`, { state: { version: selectedVersion, acceptedRisks: [...acceptedSlugs] } })}
@@ -2430,6 +2570,17 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                           : "bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed"
                       }`}>
                       Update to {selectedVersion}
+                    </button>
+                    <button
+                      onClick={() => setShowPreflightModal(true)}
+                      className="text-[14px] px-[20px] py-[9px] rounded-[999px] border border-[#0066cc] dark:border-[#4dabf7] bg-transparent text-[#0066cc] dark:text-[#4dabf7] cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium hover:bg-[#0066cc]/5 flex items-center gap-[6px]">
+                      <Shield className="size-[14px]" /> Run preflight
+                      {preflightStatus === "complete" && preflightRisks.length > 0 && (
+                        <span className="bg-[#dca614] text-white text-[10px] font-bold rounded-full size-[18px] flex items-center justify-center -mr-[4px]">{preflightRisks.length}</span>
+                      )}
+                      {preflightStatus === "complete" && preflightRisks.length === 0 && (
+                        <CheckCircle className="size-[14px] text-[#3d7317]" />
+                      )}
                     </button>
                     {!canUpdate && (
                       <span className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif]">

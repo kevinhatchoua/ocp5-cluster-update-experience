@@ -405,7 +405,7 @@ export default function PreflightFailedPage() {
               className="bg-white dark:bg-[rgba(255,255,255,0.05)] border-2 border-[#c7c7c7] dark:border-[#707070] text-[#151515] dark:text-white px-[24px] py-[12px] rounded-[8px] font-semibold transition-colors flex items-center gap-[8px] hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.05)]"
             >
               <RefreshCw className="size-[16px]" />
-              Re-run pre-checks
+              Re-run preflight
             </button>
             <button
               onClick={() => navigate('/administration/cluster-settings')}

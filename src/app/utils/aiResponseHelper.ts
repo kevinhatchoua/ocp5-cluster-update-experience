@@ -403,7 +403,7 @@ function getClusterUpdateResponse(
       return {
         content: `🔍 **Pre-check Status**\n\nPre-checks validate your cluster is ready for update. They check:\n\n✅ **Infrastructure:**\n• Node health and capacity\n• Resource availability\n• Network connectivity\n\n✅ **Software:**\n• Operator compatibility\n• API migrations\n• Deprecated features\n\n✅ **Configuration:**\n• RBAC permissions\n• Storage classes\n• Custom resources\n\nWould you like me to run the checks?`,
         suggestions: [
-          'Run pre-checks',
+          'Assess readiness',
           'Explain check failures',
           'Show remediation steps'
         ]
@@ -434,9 +434,9 @@ function getClusterUpdateResponse(
   }
   
   return {
-    content: `🔄 **Cluster Update Assistant**\n\nI'm here to help with your OpenShift update! I can:\n\n• Run pre-check compatibility checks\n• Explain update process and timeline\n• Guide you through each step\n• Help with operator updates\n• Troubleshoot issues\n\nWhat would you like to know?`,
+    content: `🔄 **Cluster Update Assistant**\n\nI'm here to help with your OpenShift update! I can:\n\n• Assess cluster readiness and compatibility\n• Explain update process and timeline\n• Guide you through each step\n• Help with operator updates\n• Troubleshoot issues\n\nWhat would you like to know?`,
     suggestions: [
-      'Run pre-checks',
+      'Assess readiness',
       'How long will it take?',
       'What are the risks?',
       'Start the update'

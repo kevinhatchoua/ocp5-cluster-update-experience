@@ -143,7 +143,7 @@ export default function LightSpeedPanel({
       } else if (location.pathname.includes('/cluster-update')) {
         contextMessage = "I can see you're planning a **cluster update**. I'll help you every step of the way!\n\n**I can help with:**\n• Running pre-checks\n• Explaining risks and compatibility\n• Guiding through the update process\n• Troubleshooting any issues\n\nWhat would you like to know?";
         suggestions = [
-          'Run pre-checks',
+          'Assess readiness with Lightspeed',
           'What are the risks?',
           'How long will it take?',
           'Start the update',
@@ -250,7 +250,7 @@ export default function LightSpeedPanel({
         suggestions = ["Show me what changed", "Which operators still need updates?"];
       } else if (location.pathname.includes('/cluster-update')) {
         pageContext = "📍 You're now on the **Cluster Update** page. Ready to help!";
-        suggestions = ['Run pre-checks', 'What are the risks?'];
+        suggestions = ['Assess readiness', 'What are the risks?'];
       } else if (location.pathname.includes('/workloads')) {
         pageContext = "📍 Now viewing **Workloads**. I can help you manage your pods, deployments, and more!";
         suggestions = ['Why is a pod pending?', 'How do I scale a deployment?'];
@@ -348,8 +348,7 @@ export default function LightSpeedPanel({
       content: suggestion,
     });
     
-    // Run pre-checks
-    if (lowerSuggestion.includes('run pre-check') || lowerSuggestion.includes('launch pre-check') || lowerSuggestion.includes('run preflight') || lowerSuggestion.includes('launch preflight')) {
+    if (lowerSuggestion.includes('run pre-check') || lowerSuggestion.includes('launch pre-check') || lowerSuggestion.includes('run preflight') || lowerSuggestion.includes('launch preflight') || lowerSuggestion.includes('assess readiness')) {
       navigate('/administration/cluster-update/in-progress', { state: { aiMode: true } });
       return;
     }
@@ -365,7 +364,7 @@ export default function LightSpeedPanel({
           addMessage({
             type: 'ai',
             content: msg,
-            suggestions: ["Run pre-checks now"]
+            suggestions: ["Assess readiness now"]
           });
           setIsTyping(false);
         }, getTypingDelay(msg));
@@ -427,7 +426,7 @@ export default function LightSpeedPanel({
           suggestions: [
             "Show me storage breakdown",
             "Check operator health",
-            "Run pre-checks"
+            "Assess readiness"
           ]
         });
         setIsTyping(false);

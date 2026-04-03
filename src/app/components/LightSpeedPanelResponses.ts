@@ -309,11 +309,11 @@ export function getAIResponse(userInput: string, currentPath?: string): {
     
     if (lowerInput.includes('check') && lowerInput.includes('update')) {
       return {
-        content: `🔄 **Cluster Update Status**\n\n**Current version:** OpenShift 4.21.8\n**Available update:** OpenShift 4.22.0 (stable channel)\n\n**Before updating:**\n1. ✅ Cluster health is good\n2. ⚠️ 2 operators need updates first (Ansible Automation Platform, Elasticsearch)\n3. ⚠️ 1 alert to review (machine-config operator degraded)\n\n**Recommended approach:**\n1. Fix the machine-config operator issue\n2. Update Ansible Automation Platform (10 min)\n3. Update Elasticsearch (5 min)\n4. Run pre-checks\n5. Start cluster update (~2 hours)\n\nWant to start with the operator updates?`,
+        content: `🔄 **Cluster Update Status**\n\n**Current version:** OpenShift 4.21.8\n**Available update:** OpenShift 4.22.0 (stable channel)\n\n**Before updating:**\n1. ✅ Cluster health is good\n2. ⚠️ 2 operators need updates first (Ansible Automation Platform, Elasticsearch)\n3. ⚠️ 1 alert to review (machine-config operator degraded)\n\n**Recommended approach:**\n1. Fix the machine-config operator issue\n2. Update Ansible Automation Platform (10 min)\n3. Update Elasticsearch (5 min)\n4. Run preflight validation\n5. Start cluster update (~2 hours)\n\nWant to start with the operator updates?`,
         suggestions: [
           'Go to Cluster Update page',
           'Update operators first',
-          'Run pre-checks',
+          'Assess readiness',
           'What are the risks?'
         ]
       };
@@ -375,9 +375,9 @@ export function getAIResponse(userInput: string, currentPath?: string): {
     
     if (lowerInput.includes('check') && lowerInput.includes('update')) {
       return {
-        content: `🔄 **Update Readiness Assessment**\n\n**Target:** OpenShift 4.22.0 (available on stable channel)\n\n**Checklist:**\n✅ Cluster health: Good\n✅ etcd: Healthy\n⚠️ Operators: 2 need updates first\n⚠️ Alerts: 1 active (machine-config degraded)\n✅ API compatibility: No deprecated APIs in use\n✅ Storage: Sufficient for update\n\n**Recommended sequence:**\n1. Resolve machine-config operator issue\n2. Update Ansible Automation Platform + Elasticsearch\n3. Run pre-checks\n4. Start cluster update\n\n**Estimated total time:** ~2.5 hours (including operator updates)`,
+        content: `🔄 **Update Readiness Assessment**\n\n**Target:** OpenShift 4.22.0 (available on stable channel)\n\n**Checklist:**\n✅ Cluster health: Good\n✅ etcd: Healthy\n⚠️ Operators: 2 need updates first\n⚠️ Alerts: 1 active (machine-config degraded)\n✅ API compatibility: No deprecated APIs in use\n✅ Storage: Sufficient for update\n\n**Recommended sequence:**\n1. Resolve machine-config operator issue\n2. Update Ansible Automation Platform + Elasticsearch\n3. Run preflight validation\n4. Start cluster update\n\n**Estimated total time:** ~2.5 hours (including operator updates)`,
         suggestions: [
-          'Run pre-checks',
+          'Assess readiness',
           'Fix machine-config operator',
           'Update operators first',
           'Start the update'
@@ -803,7 +803,7 @@ export function getAIResponse(userInput: string, currentPath?: string): {
         'Fix it now — relax the PDB',
         'Check if everything is healthy after',
         'Proceed to cluster update',
-        'Run pre-checks again'
+        'Assess readiness again'
       ]
     };
   }
@@ -1111,7 +1111,7 @@ export function getAIResponse(userInput: string, currentPath?: string): {
       suggestions: [
         'Show detailed node status',
         'Check operator health',
-        'Run pre-checks',
+        'Assess readiness',
         'View alerts'
       ]
     };
@@ -1119,9 +1119,9 @@ export function getAIResponse(userInput: string, currentPath?: string): {
   
   if (lowerInput.includes('update') && lowerInput.includes('cluster')) {
     return {
-      content: `🔄 **Cluster Update Assistant**\n\nI'm here to help with your OpenShift update! I can:\n\n• Run pre-check compatibility checks\n• Explain update process and timeline\n• Guide you through each step\n• Help with operator updates\n• Troubleshoot any issues\n\nWhat would you like to know?`,
+      content: `🔄 **Cluster Update Assistant**\n\nI'm here to help with your OpenShift update! I can:\n\n• Assess cluster readiness and compatibility\n• Explain update process and timeline\n• Guide you through each step\n• Help with operator updates\n• Troubleshoot any issues\n\nWhat would you like to know?`,
       suggestions: [
-        'Run pre-checks',
+        'Assess readiness',
         'How long will it take?',
         'What are the risks?',
         'Start the update'
