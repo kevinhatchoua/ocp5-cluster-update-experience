@@ -101,10 +101,10 @@ export default function SoftwareLifecycleManagementPage() {
                     Update operators now
                   </button>
                   <Link
-                    to="/administration/cluster-update"
+                    to="/administration/cluster-settings"
                     className="text-[14px] text-[#0066cc] dark:text-[#4dabf7] hover:underline font-semibold"
                   >
-                    View cluster update plan
+                    View cluster settings
                   </Link>
                 </div>
               </div>
@@ -287,10 +287,10 @@ export default function SoftwareLifecycleManagementPage() {
 
               <div className="flex gap-[12px]">
                 <Link
-                  to="/administration/cluster-update"
+                  to="/administration/cluster-settings"
                   className="px-[16px] py-[10px] bg-[#0066cc] hover:bg-[#004080] dark:bg-[#4dabf7] dark:hover:bg-[#339af0] text-white rounded-[8px] font-semibold text-[14px] transition-colors"
                 >
-                  View cluster update plan
+                  View cluster settings
                 </Link>
                 {clusterUpdate.blockedByOperators.length > 0 && (
                   <button

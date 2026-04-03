@@ -721,7 +721,6 @@ export default function Layout() {
         </div>
       ),
       subItems: [
-        { path: "/administration/cluster-update", label: "Cluster Update" },
         { path: "/administration/cluster-settings", label: "Cluster Settings" },
         { path: "/administration/namespaces", label: "Namespaces" },
         { path: "/administration/resource-quotas", label: "ResourceQuotas" },
@@ -963,7 +962,7 @@ export default function Layout() {
       <div 
         className={`absolute bottom-[16px] ${contentTop} transition-all duration-300 ease-in-out ${contentLeftPosition} ${contentRight}`}
       >
-        <div className="bg-white/90 dark:bg-[#1a1a1a]/90 no-glass:bg-white no-glass:dark:bg-[#1a1a1a] backdrop-blur-xl no-glass:backdrop-blur-none rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.08)] shadow-[0px_4px_10px_0px_rgba(41,41,41,0.15)] h-full overflow-y-auto">
+        <div className="bg-white/90 dark:bg-[#1a1a1a]/90 no-glass:bg-white no-glass:dark:bg-[#1a1a1a] backdrop-blur-xl no-glass:backdrop-blur-none rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.08)] shadow-[0px_4px_10px_0px_rgba(41,41,41,0.15)] h-full overflow-y-auto overflow-x-hidden">
           <Outlet />
         </div>
       </div>

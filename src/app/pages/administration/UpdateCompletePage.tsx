@@ -36,7 +36,7 @@ export default function UpdateCompletePage() {
 
       <div className="flex justify-center">
         <button
-          onClick={() => navigate("/administration/cluster-update")}
+          onClick={() => navigate("/administration/cluster-settings")}
           className="bg-[#0066cc] hover:bg-[#004080] text-white border-0 px-[24px] py-[10px] rounded-[8px] cursor-pointer text-[14px] font-['Red_Hat_Text:Regular',sans-serif] font-semibold transition-colors"
         >
           Return to Updates

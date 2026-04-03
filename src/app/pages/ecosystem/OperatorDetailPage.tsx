@@ -377,10 +377,10 @@ To use the guided installer to provision an environment, open the Installer link
                         Update your cluster before updating this operator.
                       </p>
                       <Link
-                        to="/administration/cluster-update"
+                        to="/administration/cluster-settings"
                         className="text-[13px] text-[#0066cc] dark:text-[#4dabf7] hover:underline font-semibold"
                       >
-                        View cluster update plan
+                        View cluster settings
                       </Link>
                     </div>
                   </div>

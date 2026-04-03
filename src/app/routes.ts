@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, redirect } from "react-router";
 import RootLayout from "./components/RootLayout";
 import Layout from "./components/Layout";
 import HomePage from "./pages/HomePage";
@@ -23,12 +23,9 @@ import AlertsPage from "./pages/AlertsPage";
 import ActivityDetailsPage from "./pages/ActivityDetailsPage";
 import ClusterInventoryPage from "./pages/ClusterInventoryPage";
 import ClusterSettingsPage from "./pages/administration/ClusterSettingsPage";
-import ClusterUpdatePlanPage from "./pages/administration/ClusterUpdatePlanPage";
+
 import ClusterUpdateInProgressPage from "./pages/administration/ClusterUpdateInProgressPage";
 import OperatorsLifecyclePage from "./pages/administration/OperatorsLifecyclePage";
-import PreflightChecksPage from "./pages/administration/PreflightChecksPage";
-import PreflightResultsPage from "./pages/administration/PreflightResultsPage";
-import PreflightFailedPage from "./pages/administration/PreflightFailedPage";
 import UpdateCompletePage from "./pages/administration/UpdateCompletePage";
 import UpdateFailedPage from "./pages/administration/UpdateFailedPage";
 import VersionDetailPage from "./pages/administration/VersionDetailPage";
@@ -93,14 +90,11 @@ export const router = createBrowserRouter([
           { path: "compute", Component: ComputePage },
           { path: "compute/nodes/:nodeName", Component: NodeDetailPage },
           { path: "user-management", Component: UserManagementPage },
-          { path: "administration/cluster-update", Component: ClusterUpdatePlanPage },
+          { path: "administration/cluster-update", loader: () => redirect("/administration/cluster-settings") },
           { path: "administration/cluster-update/version/:version", Component: VersionDetailPage },
           { path: "administration/cluster-update/in-progress", Component: ClusterUpdateInProgressPage },
           { path: "administration/cluster-update/operators", Component: OperatorsLifecyclePage },
           { path: "administration/cluster-update/history", Component: ClusterUpdateHistoryPage },
-          { path: "administration/cluster-update/preflight", Component: PreflightChecksPage },
-          { path: "administration/cluster-update/preflight-results", Component: PreflightResultsPage },
-          { path: "administration/cluster-update/preflight-failed", Component: PreflightFailedPage },
           { path: "administration/cluster-update/complete", Component: UpdateCompletePage },
           { path: "administration/cluster-update/failed", Component: UpdateFailedPage },
           { path: "administration/cluster-update/agent-mode", Component: AgentModePage },

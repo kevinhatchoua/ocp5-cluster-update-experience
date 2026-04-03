@@ -307,7 +307,7 @@ export function RequiredUpdateModal({ isOpen, onClose, operators }: RequiredUpda
                   Close
                 </button>
                 <button
-                  onClick={() => navigate('/administration/cluster-update')}
+                  onClick={() => navigate('/administration/cluster-settings')}
                   className="px-[16px] py-[10px] bg-[#0066cc] hover:bg-[#004080] dark:bg-[#4dabf7] dark:hover:bg-[#339af0] text-white rounded-[8px] font-semibold text-[14px] transition-colors"
                 >
                   View Cluster Update Plan

@@ -96,7 +96,7 @@ function DetailsCard() {
             <p className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold relative shrink-0 text-[#151515] dark:text-white text-[14px] w-full">OpenShift version</p>
             <div className="flex items-center gap-[8px] w-full">
               <p className="font-['Red_Hat_Mono:Regular',sans-serif] font-normal relative shrink-0 text-[#4d4d4d] dark:text-[#b0b0b0] text-[12px]">4.21.0</p>
-              <Link to="/administration/cluster-update" className="font-['Red_Hat_Text_VF:Regular',sans-serif] text-[11px] text-[#0066cc] dark:text-[#4dabf7] no-underline hover:underline px-[6px] py-[1px] bg-[#e7f1fa] dark:bg-[rgba(43,154,243,0.1)] rounded-[4px]">
+              <Link to="/administration/cluster-settings" className="font-['Red_Hat_Text_VF:Regular',sans-serif] text-[11px] text-[#0066cc] dark:text-[#4dabf7] no-underline hover:underline px-[6px] py-[1px] bg-[#e7f1fa] dark:bg-[rgba(43,154,243,0.1)] rounded-[4px]">
                 Update available
               </Link>
             </div>
@@ -284,7 +284,7 @@ function StatusCard() {
 
         <div className="content-stretch flex gap-[24px] items-center relative shrink-0 w-full flex-wrap">
           {[
-            { label: "Cluster", color: "#3e8635", path: "/administration/cluster-update" },
+            { label: "Cluster", color: "#3e8635", path: "/administration/cluster-settings" },
             { label: "Control Plane", color: "#3e8635", path: null },
             { label: "Operators", color: "#2b9af3", path: "/ecosystem/installed-operators" },
             { label: "Dynamic Plugins", color: "#3e8635", path: "/administration/dynamic-plugins" },
@@ -310,7 +310,7 @@ function StatusCard() {
             Cluster update available: 4.21.0 → 4.22.0
           </p>
           <div className="flex gap-[12px]">
-            <Link to="/administration/cluster-update" className="font-['Red_Hat_Text_VF:Regular',sans-serif] text-[13px] text-[#0066cc] dark:text-[#4dabf7] no-underline hover:underline whitespace-nowrap">
+            <Link to="/administration/cluster-settings" className="font-['Red_Hat_Text_VF:Regular',sans-serif] text-[13px] text-[#0066cc] dark:text-[#4dabf7] no-underline hover:underline whitespace-nowrap">
               Update plan
             </Link>
             <Link to="/ecosystem/installed-operators" className="font-['Red_Hat_Text_VF:Regular',sans-serif] text-[13px] text-[#0066cc] dark:text-[#4dabf7] no-underline hover:underline whitespace-nowrap">

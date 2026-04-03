@@ -9,7 +9,7 @@ export default function OperatorsLifecyclePage() {
 
   const handleTabClick = (tab: string) => {
     if (tab === 'plan') {
-      navigate('/administration/cluster-update');
+      navigate('/administration/cluster-settings');
     } else if (tab === 'operators') {
       navigate('/administration/cluster-update/operators');
     }
@@ -106,7 +106,7 @@ export default function OperatorsLifecyclePage() {
         <Breadcrumbs
           items={[
             { label: "Home", path: "/" },
-            { label: "Cluster Update" },
+            { label: "Cluster Settings", path: "/administration/cluster-settings" },
           ]}
         />
 

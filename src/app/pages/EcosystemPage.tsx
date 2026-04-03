@@ -31,10 +31,10 @@ export default function EcosystemPage() {
                 View installed software
               </Link>
               <Link
-                to="/administration/cluster-update"
+                to="/administration/cluster-settings"
                 className="text-[14px] text-[#0066cc] dark:text-[#4dabf7] hover:underline no-underline font-semibold"
               >
-                View cluster update plan
+                View cluster settings
               </Link>
             </div>
           </div>

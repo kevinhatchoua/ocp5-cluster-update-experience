@@ -1,15 +1,36 @@
 import { useState } from "react";
-import { useParams, Link, useNavigate } from "react-router";
+import { useParams, Link, useNavigate, useLocation } from "react-router";
 import { Info, ExternalLink, AlertTriangle, CheckCircle } from "lucide-react";
 import Breadcrumbs from "../../components/Breadcrumbs";
 
 export default function OperatorUpdatePage() {
-  const { operatorId } = useParams();
+  const { operatorId, operatorName: routeOperatorName } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showMoreVersions, setShowMoreVersions] = useState(false);
 
-  // Mock operator data
-  const operator = {
+  const locationState = location.state as { returnTo?: string; operatorName?: string; operatorData?: any } | null;
+  const fromClusterUpdate = !!locationState?.returnTo;
+  const opData = locationState?.operatorData;
+
+  const operator = opData ? {
+    id: operatorId || routeOperatorName,
+    name: opData.name,
+    currentVersion: opData.version,
+    currentChannel: opData.channel,
+    targetVersion: opData.updateAvailable,
+    targetChannel: opData.channel,
+    provider: opData.source === "Built-in" ? "Red Hat" : opData.source || "Red Hat",
+    updateStrategy: opData.autoUpdate ? "Automatic" : "Manual",
+    updateChannel: opData.channel,
+    versions: {
+      [opData.channel]: [
+        { version: opData.version, status: "current" },
+        { version: opData.updateAvailable, status: "target" },
+      ],
+    },
+    relatedOperators: [] as { name: string; status: string; version: string }[],
+  } : {
     id: operatorId,
     name: "Abot Operator-v3.0.0",
     currentVersion: "3.0.0",
@@ -19,7 +40,6 @@ export default function OperatorUpdatePage() {
     provider: "Refactz Technologies Pvt Ltd",
     updateStrategy: "Manual",
     updateChannel: "stable-4.5",
-    
     versions: {
       "Stable-4.5": [
         { version: "3.0.0", status: "current" },
@@ -34,7 +54,6 @@ export default function OperatorUpdatePage() {
         { version: "4.8.1", status: "future" },
       ],
     },
-    
     relatedOperators: [
       { name: "PostgreSQL", status: "Installed", version: "1.8.0" },
       { name: "PostgreSQL", status: "Pending update", version: "2.1.3" },
@@ -44,12 +63,16 @@ export default function OperatorUpdatePage() {
   };
 
   const handleApproveUpdate = () => {
-    // Navigate to update in progress
-    navigate(`/ecosystem/software-catalog/${operator.id}/installing`);
+    if (fromClusterUpdate && locationState?.returnTo) {
+      navigate(locationState.returnTo, {
+        state: { updatedOperator: locationState.operatorName, newVersion: operator.targetVersion }
+      });
+    } else {
+      navigate(`/ecosystem/software-catalog/${operator.id}/installing`);
+    }
   };
 
   const handlePreviewUpdate = () => {
-    // Show preview modal or navigate to preview page
     alert("Preview update functionality");
   };
 
@@ -57,7 +80,11 @@ export default function OperatorUpdatePage() {
     <div className="h-full overflow-y-auto">
       <div className="p-[24px]">
         <Breadcrumbs
-          items={[
+          items={fromClusterUpdate ? [
+            { label: "Administration", path: "/administration/cluster-settings" },
+            { label: "Cluster Update", path: "/administration/cluster-settings" },
+            { label: `Update ${operator.name}` },
+          ] : [
             { label: "Ecosystem", path: "/ecosystem" },
             { label: "Installed Software", path: "/ecosystem/installed-operators" },
             { label: operator.name, path: `/ecosystem/software-catalog/${operator.id}` },
@@ -227,7 +254,7 @@ export default function OperatorUpdatePage() {
                         </span>
                       </div>
                       <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0]">
-                        <Link to="/administration/cluster-update" className="text-[#0066cc] dark:text-[#4dabf7] hover:underline">
+                        <Link to="/administration/cluster-settings" className="text-[#0066cc] dark:text-[#4dabf7] hover:underline">
                           Requires cluster update
                         </Link>
                       </p>
