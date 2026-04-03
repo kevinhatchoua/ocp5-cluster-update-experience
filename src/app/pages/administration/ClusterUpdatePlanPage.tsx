@@ -2170,7 +2170,6 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
   const [expandedRiskSlug, setExpandedRiskSlug] = useState<string | null>(null);
   const [expandedRiskDetail, setExpandedRiskDetail] = useState<string | null>(null);
   const [showOlderReleases, setShowOlderReleases] = useState(false);
-  const [showPreflightModal, setShowPreflightModal] = useState(false);
   const [preflightStatus, setPreflightStatus] = useState<"idle" | "running" | "complete">("idle");
   const riskReviewRef = useRef<HTMLDivElement>(null);
 
@@ -2183,12 +2182,11 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
     });
   };
 
-  useEffect(() => {
-    if (!showPreflightModal || preflightStatus === "complete") return;
+  const runPreflight = useCallback(() => {
+    if (preflightStatus === "running") return;
     setPreflightStatus("running");
-    const timer = setTimeout(() => setPreflightStatus("complete"), 3000);
-    return () => clearTimeout(timer);
-  }, [showPreflightModal]);
+    setTimeout(() => setPreflightStatus("complete"), 3000);
+  }, [preflightStatus]);
 
   useEffect(() => {
     setPreflightStatus("idle");
@@ -2319,96 +2317,6 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
             </button>
           )}
 
-          {/* Pre-check from target release modal */}
-          {showPreflightModal && createPortal(
-            <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40" onClick={() => { if (preflightStatus !== "running") setShowPreflightModal(false); }}>
-              <div className="bg-white dark:bg-[#1a1a1a] rounded-[16px] shadow-[0_10px_20px_rgba(41,41,41,0.15)] max-w-[560px] w-full mx-[16px] max-h-[80vh] flex flex-col" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
-                <div className="flex items-center justify-between px-[24px] py-[16px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
-                  <div className="flex items-center gap-[10px]">
-                    <Shield className="size-[18px] text-[#0066cc] dark:text-[#4dabf7]" />
-                    <h3 className="font-['Red_Hat_Display',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px] m-0">Pre-check from target release</h3>
-                  </div>
-                  <button onClick={() => { if (preflightStatus !== "running") setShowPreflightModal(false); }} disabled={preflightStatus === "running"}
-                    className="bg-transparent border-0 cursor-pointer p-[4px] text-[#6a6e73] hover:text-[#151515] dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed">
-                    <X className="size-[18px]" />
-                  </button>
-                </div>
-                <div className="px-[24px] py-[20px] overflow-y-auto flex-1">
-                  <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[16px]">
-                    Deploys <strong>{selectedVersion}</strong>'s CVO in preflight mode to validate your cluster state against the target version's requirements.
-                  </p>
-                  <div className="rounded-[8px] bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] px-[12px] py-[8px] mb-[16px]">
-                    <p className="text-[11px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Mono:Regular',sans-serif]">
-                      spec.desiredUpdate.mode: Preflight
-                    </p>
-                  </div>
-
-                  {preflightStatus === "running" && (
-                    <div className="flex flex-col items-center py-[24px] gap-[12px]">
-                      <Loader2 className="size-[28px] text-[#0066cc] animate-spin" />
-                      <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium">Target CVO deployment running</p>
-                      <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Monitoring cluster state against {selectedVersion} requirements...</p>
-                    </div>
-                  )}
-
-                  {preflightStatus === "complete" && (
-                    <div>
-                      {preflightRisks.length === 0 ? (
-                        <div className="flex items-center gap-[10px] rounded-[12px] border border-[#3d7317] bg-[rgba(61,115,23,0.04)] p-[16px]">
-                          <CheckCircle className="size-[18px] text-[#3d7317] shrink-0" />
-                          <div>
-                            <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium">No additional concerns found</p>
-                            <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">The target CVO validated your cluster state successfully.</p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div>
-                          <div className="flex items-center gap-[8px] mb-[12px]">
-                            <AlertTriangle className="size-[16px] text-[#dca614]" />
-                            <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-                              {preflightRisks.length} concern{preflightRisks.length !== 1 ? "s" : ""} found
-                            </p>
-                          </div>
-                          <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[12px]">
-                            These concerns have been merged into the risk review for {selectedVersion}. Address or accept each risk before updating.
-                          </p>
-                          <div className="space-y-[8px]">
-                            {preflightRisks.map((risk) => (
-                              <div key={risk.slug} className="rounded-[8px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[12px]">
-                                <div className="flex items-center gap-[6px] mb-[4px]">
-                                  <span className="text-[13px] text-[#151515] dark:text-white font-semibold font-['Red_Hat_Mono:Regular',sans-serif]">{risk.slug}</span>
-                                  <span className={`text-[11px] px-[6px] py-[1px] rounded-[4px] font-semibold ${risk.severity === "critical" ? "bg-[rgba(177,56,11,0.1)] text-[#b1380b]" : "bg-[rgba(220,166,20,0.1)] text-[#795600]"}`}>
-                                    {risk.severity}
-                                  </span>
-                                </div>
-                                <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif]">{risk.message}</p>
-                                {risk.url && (
-                                  <a href={risk.url} target="_blank" rel="noopener noreferrer"
-                                    className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[12px] no-underline hover:underline font-['Red_Hat_Text',sans-serif] mt-[6px]">
-                                    View impact statement <ExternalLink className="size-[11px]" />
-                                  </a>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-                {preflightStatus === "complete" && (
-                  <div className="flex justify-end gap-[8px] px-[24px] py-[14px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
-                    <button onClick={() => { setShowPreflightModal(false); if (preflightRisks.length > 0) { setTimeout(() => riskReviewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100); } }}
-                      className="text-[14px] px-[20px] py-[9px] rounded-[999px] bg-[#0066cc] hover:bg-[#004080] text-white border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-                      {preflightRisks.length > 0 ? "Review risks" : "Close"}
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>,
-            document.body
-          )}
-
           {/* Inline Risk Review Panel */}
           {selectedVersion && selectedVer && (
             <div ref={riskReviewRef}>
@@ -2430,14 +2338,17 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                       Update to {selectedVersion}
                     </button>
                     <button
-                      onClick={() => setShowPreflightModal(true)}
-                      className="text-[14px] px-[20px] py-[9px] rounded-[999px] border border-[#0066cc] dark:border-[#4dabf7] bg-transparent text-[#0066cc] dark:text-[#4dabf7] cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium hover:bg-[#0066cc]/5 flex items-center gap-[6px]">
-                      <Shield className="size-[14px]" /> Run preflight
-                      {preflightStatus === "complete" && preflightRisks.length > 0 && (
-                        <span className="bg-[#dca614] text-white text-[10px] font-bold rounded-full size-[18px] flex items-center justify-center -mr-[4px]">{preflightRisks.length}</span>
-                      )}
-                      {preflightStatus === "complete" && preflightRisks.length === 0 && (
-                        <CheckCircle className="size-[14px] text-[#3d7317]" />
+                      onClick={runPreflight}
+                      disabled={preflightStatus === "running"}
+                      className={`text-[14px] px-[20px] py-[9px] rounded-[999px] border cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium flex items-center gap-[6px] ${preflightStatus === "running" ? "border-[#d2d2d2] bg-transparent text-[#6a6e73] cursor-wait" : preflightStatus === "complete" && preflightRisks.length === 0 ? "border-[#3d7317] bg-[rgba(61,115,23,0.04)] text-[#3d7317]" : preflightStatus === "complete" && preflightRisks.length > 0 ? "border-[#dca614] bg-[rgba(220,166,20,0.04)] text-[#795600]" : "border-[#0066cc] dark:border-[#4dabf7] bg-transparent text-[#0066cc] dark:text-[#4dabf7] hover:bg-[#0066cc]/5"}`}>
+                      {preflightStatus === "running" ? (
+                        <><Loader2 className="size-[14px] animate-spin" /> Running preflight…</>
+                      ) : preflightStatus === "complete" && preflightRisks.length === 0 ? (
+                        <><CheckCircle className="size-[14px]" /> Preflight passed</>
+                      ) : preflightStatus === "complete" && preflightRisks.length > 0 ? (
+                        <><Shield className="size-[14px]" /> {preflightRisks.length} concern{preflightRisks.length !== 1 ? "s" : ""} found</>
+                      ) : (
+                        <><Shield className="size-[14px]" /> Run preflight</>
                       )}
                     </button>
                   </div>
@@ -2491,16 +2402,6 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                             <span className={`text-[11px] px-[6px] py-[1px] rounded-[4px] font-semibold ${statusColor}`}>
                               {statusLabel}
                             </span>
-                            {risk.source === "preflight" && (
-                              <span className="text-[10px] px-[5px] py-[1px] rounded-[4px] bg-[rgba(0,102,204,0.08)] text-[#0066cc] dark:bg-[rgba(77,171,247,0.12)] dark:text-[#4dabf7] font-semibold font-['Red_Hat_Text:Regular',sans-serif] flex items-center gap-[3px]">
-                                <Shield className="size-[9px]" /> preflight
-                              </span>
-                            )}
-                            {(risk.source === "cincinnati" || !risk.source) && (
-                              <span className="text-[10px] px-[5px] py-[1px] rounded-[4px] bg-[rgba(0,0,0,0.04)] text-[#6a6e73] dark:bg-[rgba(255,255,255,0.06)] dark:text-[#8a8d90] font-semibold font-['Red_Hat_Text:Regular',sans-serif]">
-                                cincinnati
-                              </span>
-                            )}
                             <span className="flex-1" />
                             {(isResolved || isAccepted) && <CheckCircle className="size-[14px] text-[#3d7317] shrink-0" />}
                           </button>
@@ -2572,14 +2473,17 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                       Update to {selectedVersion}
                     </button>
                     <button
-                      onClick={() => setShowPreflightModal(true)}
-                      className="text-[14px] px-[20px] py-[9px] rounded-[999px] border border-[#0066cc] dark:border-[#4dabf7] bg-transparent text-[#0066cc] dark:text-[#4dabf7] cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium hover:bg-[#0066cc]/5 flex items-center gap-[6px]">
-                      <Shield className="size-[14px]" /> Run preflight
-                      {preflightStatus === "complete" && preflightRisks.length > 0 && (
-                        <span className="bg-[#dca614] text-white text-[10px] font-bold rounded-full size-[18px] flex items-center justify-center -mr-[4px]">{preflightRisks.length}</span>
-                      )}
-                      {preflightStatus === "complete" && preflightRisks.length === 0 && (
-                        <CheckCircle className="size-[14px] text-[#3d7317]" />
+                      onClick={runPreflight}
+                      disabled={preflightStatus === "running"}
+                      className={`text-[14px] px-[20px] py-[9px] rounded-[999px] border cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium flex items-center gap-[6px] ${preflightStatus === "running" ? "border-[#d2d2d2] bg-transparent text-[#6a6e73] cursor-wait" : preflightStatus === "complete" && preflightRisks.length === 0 ? "border-[#3d7317] bg-[rgba(61,115,23,0.04)] text-[#3d7317]" : preflightStatus === "complete" && preflightRisks.length > 0 ? "border-[#dca614] bg-[rgba(220,166,20,0.04)] text-[#795600]" : "border-[#0066cc] dark:border-[#4dabf7] bg-transparent text-[#0066cc] dark:text-[#4dabf7] hover:bg-[#0066cc]/5"}`}>
+                      {preflightStatus === "running" ? (
+                        <><Loader2 className="size-[14px] animate-spin" /> Running preflight…</>
+                      ) : preflightStatus === "complete" && preflightRisks.length === 0 ? (
+                        <><CheckCircle className="size-[14px]" /> Preflight passed</>
+                      ) : preflightStatus === "complete" && preflightRisks.length > 0 ? (
+                        <><Shield className="size-[14px]" /> {preflightRisks.length} concern{preflightRisks.length !== 1 ? "s" : ""} found</>
+                      ) : (
+                        <><Shield className="size-[14px]" /> Run preflight</>
                       )}
                     </button>
                     {!canUpdate && (
