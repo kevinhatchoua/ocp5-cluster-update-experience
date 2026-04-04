@@ -1,14 +1,8 @@
-import { useState, useCallback, useEffect } from "react";
-import { useNavigate } from "react-router";
-import { CheckCircle, AlertCircle, Clock, ExternalLink, ChevronDown, ChevronRight, Settings, Bot } from "lucide-react";
+import { useState, useEffect } from "react";
+import { CheckCircle, AlertCircle, Clock, ExternalLink, ChevronDown, ChevronRight, Loader2 } from "lucide-react";
+import { Link } from "react-router";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import FavoriteButton from "../../components/FavoriteButton";
-import {
-  AiAssessmentSection,
-  AvailableUpdatesSection,
-  OlsChatbot,
-  channelVersions,
-} from "./ClusterUpdatePlanPage";
 
 type SettingsTab = "details" | "cluster-operators" | "configuration";
 
@@ -226,204 +220,104 @@ function ConfigurationTab() {
 }
 
 export default function ClusterSettingsPage() {
-  const navigate = useNavigate();
-
   const [activeTab, setActiveTab] = useState<SettingsTab>("details");
-  const [updateMode, setUpdateMode] = useState<"manual" | "agent">("manual");
-  const [selectedChannel, setSelectedChannel] = useState("fast-5.1");
-  const [showZStreamOnly, setShowZStreamOnly] = useState(false);
-  const [selectedVersion, setSelectedVersion] = useState<string>("5.1.10");
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({ "5.1": true });
-
-  const [chatbotOpen, setChatbotOpen] = useState(false);
-  const [chatbotContext, setChatbotContext] = useState("");
+  const [isUpdateInProgress, setIsUpdateInProgress] = useState(false);
+  const [updateVersion, setUpdateVersion] = useState("5.1.10");
 
   useEffect(() => {
-    if (updateMode === "agent") {
-      setChatbotContext("agent-monitor");
-      setChatbotOpen(true);
-    }
-  }, [updateMode]);
-
-  const channelData = channelVersions[selectedChannel] ?? channelVersions["fast-5.1"];
-
-  const handleChannelChange = (channel: string) => {
-    setSelectedChannel(channel);
-    const data = channelVersions[channel];
-    if (data) {
-      const firstGroup = data.groups[0];
-      const newExpanded: Record<string, boolean> = {};
-      if (firstGroup) {
-        newExpanded[firstGroup.label] = true;
-        const rec = firstGroup.versions.find((v) => v.recommended);
-        setSelectedVersion(rec ? rec.version : firstGroup.versions[0]?.version ?? "");
+    const check = () => {
+      const stored = localStorage.getItem("clusterUpdateInProgress");
+      if (stored) {
+        try {
+          const data = JSON.parse(stored);
+          setIsUpdateInProgress(true);
+          setUpdateVersion(data.version || "5.1.10");
+        } catch { setIsUpdateInProgress(false); }
+      } else {
+        setIsUpdateInProgress(false);
       }
-      setExpandedGroups(newExpanded);
-    }
-  };
-
-  const openChatbot = useCallback((context: string) => {
-    setChatbotContext(context);
-    setChatbotOpen(true);
+    };
+    check();
+    const interval = setInterval(check, 2000);
+    return () => clearInterval(interval);
   }, []);
 
-  const handleChatAction = useCallback((_actionId: string) => {}, []);
-
   return (
-    <div className="flex h-full relative min-w-0">
-      <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-[24px] pb-[48px]">
-        <Breadcrumbs
-          items={[
-            { label: "Home", path: "/" },
-            { label: "Cluster Settings" },
-          ]}
-        />
+    <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-[24px] pb-[48px]">
+      <Breadcrumbs
+        items={[
+          { label: "Home", path: "/" },
+          { label: "Cluster Settings" },
+        ]}
+      />
 
-        <div className="mb-[24px]">
-          <div className="flex items-center justify-between mb-[16px]">
-            <h1 className="font-['Red_Hat_Display_VF:Medium',sans-serif] font-medium leading-[36.4px] text-[#151515] dark:text-white text-[28px]">
-              Cluster Settings
-            </h1>
-            <FavoriteButton name="Cluster Settings" path="/administration/cluster-settings" />
-          </div>
-          <div className="flex gap-[24px] text-[14px] border-b border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)]">
-            {([["details", "Details"], ["cluster-operators", "ClusterOperators"], ["configuration", "Configuration"]] as const).map(([key, label]) => (
-              <button key={key} onClick={() => setActiveTab(key)}
-                className={`pb-[12px] bg-transparent border-0 cursor-pointer font-['Red_Hat_Text:Regular',sans-serif] text-[14px] -mb-[1px] transition-colors ${activeTab === key ? "border-b-2 border-[#0066cc] dark:border-[#4dabf7] font-semibold text-[#151515] dark:text-white" : "text-[#4d4d4d] dark:text-[#b0b0b0] hover:text-[#151515] dark:hover:text-white"}`}>
-                {label}
-              </button>
-            ))}
-          </div>
+      <div className="mb-[24px]">
+        <div className="flex items-center justify-between mb-[16px]">
+          <h1 className="font-['Red_Hat_Display_VF:Medium',sans-serif] font-medium leading-[36.4px] text-[#151515] dark:text-white text-[28px]">
+            Cluster Settings
+          </h1>
+          <FavoriteButton name="Cluster Settings" path="/administration/cluster-settings" />
         </div>
-
-        {activeTab === "details" && (
-          <>
-            {/* Update Method Selector */}
-            <div className="bg-[rgba(255,255,255,0.5)] dark:bg-[rgba(255,255,255,0.05)] rounded-[16px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.06)] p-[24px] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)] mb-[24px]">
-              <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px] mb-[4px]">Update Method</h2>
-              <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[16px]">Choose how cluster updates are managed.</p>
-              <div className="grid grid-cols-2 gap-[12px]">
-                <button
-                  onClick={() => setUpdateMode("manual")}
-                  className={`flex items-start gap-[12px] p-[16px] rounded-[12px] border-2 text-left cursor-pointer transition-all bg-transparent ${
-                    updateMode === "manual"
-                      ? "border-[#0066cc] dark:border-[#4dabf7] bg-[rgba(0,102,204,0.03)] dark:bg-[rgba(77,171,247,0.05)]"
-                      : "border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90]"
-                  }`}
-                >
-                  <div className={`mt-[2px] size-[36px] rounded-[8px] flex items-center justify-center shrink-0 ${
-                    updateMode === "manual" ? "bg-[#0066cc] text-white" : "bg-[#f0f0f0] dark:bg-[rgba(255,255,255,0.08)] text-[#6a6e73]"
-                  }`}>
-                    <Settings className="size-[18px]" />
-                  </div>
-                  <div>
-                    <p className={`text-[14px] font-semibold font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] ${updateMode === "manual" ? "text-[#0066cc] dark:text-[#4dabf7]" : "text-[#151515] dark:text-white"}`}>
-                      Manual
-                    </p>
-                    <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
-                      Review available updates, assess risks, and initiate updates yourself. Full control over timing and version selection.
-                    </p>
-                  </div>
-                </button>
-                <button
-                  onClick={() => setUpdateMode("agent")}
-                  className={`flex items-start gap-[12px] p-[16px] rounded-[12px] border-2 text-left cursor-pointer transition-all bg-transparent ${
-                    updateMode === "agent"
-                      ? "border-[#6753ac] dark:border-[#b2a3e0] bg-[rgba(103,83,172,0.03)] dark:bg-[rgba(178,163,224,0.05)]"
-                      : "border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90]"
-                  }`}
-                >
-                  <div className={`mt-[2px] size-[36px] rounded-[8px] flex items-center justify-center shrink-0 ${
-                    updateMode === "agent" ? "bg-[#6753ac] text-white" : "bg-[#f0f0f0] dark:bg-[rgba(255,255,255,0.08)] text-[#6a6e73]"
-                  }`}>
-                    <Bot className="size-[18px]" />
-                  </div>
-                  <div>
-                    <p className={`text-[14px] font-semibold font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] ${updateMode === "agent" ? "text-[#6753ac] dark:text-[#b2a3e0]" : "text-[#151515] dark:text-white"}`}>
-                      Agent-based
-                    </p>
-                    <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
-                      An AI agent handles pre-flight checks, scheduling, operator updates, and rollback automatically. You approve plans before execution.
-                    </p>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            <AiAssessmentSection openChatbot={openChatbot} selectedVersion={selectedVersion} />
-
-            <AvailableUpdatesSection
-              channelData={channelData}
-              showZStreamOnly={showZStreamOnly}
-              setShowZStreamOnly={setShowZStreamOnly}
-              expandedGroups={expandedGroups}
-              setExpandedGroups={setExpandedGroups}
-              selectedVersion={selectedVersion}
-              setSelectedVersion={setSelectedVersion}
-              navigate={navigate}
-              setActiveTab={() => {}}
-              openChatbot={openChatbot}
-              selectedChannel={selectedChannel}
-              handleChannelChange={handleChannelChange}
-            />
-
-            <div className="bg-[rgba(255,255,255,0.5)] dark:bg-[rgba(255,255,255,0.05)] rounded-[16px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.06)] p-[24px] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)] mb-[24px]">
-              <div className="space-y-[20px]">
-                <div>
-                  <h3 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px] mb-[8px]">Subscription</h3>
-                  <a href="https://console.redhat.com/openshift" target="_blank" rel="noopener noreferrer" className="text-[14px] text-[#0066cc] dark:text-[#4dabf7] hover:underline">OpenShift Cluster Manager</a>
-                </div>
-                <div>
-                  <h3 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px] mb-[8px]">Service Level Agreement (SLA)</h3>
-                  <p className="text-[14px] text-[#4d4d4d] dark:text-[#b0b0b0]">Self-support, 60 day trial</p>
-                  <p className="text-[14px] text-[#4d4d4d] dark:text-[#b0b0b0]">59 days remaining</p>
-                  <a href="https://console.redhat.com/openshift/subscriptions" target="_blank" rel="noopener noreferrer" className="text-[14px] text-[#0066cc] dark:text-[#4dabf7] hover:underline">Manage subscription settings</a>
-                </div>
-                <div>
-                  <h3 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px] mb-[8px]">Cluster ID</h3>
-                  <p className="text-[14px] text-[#4d4d4d] dark:text-[#b0b0b0] font-mono">b86faa3-b06c-4a82-8fa7-54b80a92d4b2</p>
-                </div>
-                <div>
-                  <h3 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px] mb-[8px]">Desired release image</h3>
-                  <p className="text-[14px] text-[#4d4d4d] dark:text-[#b0b0b0] font-mono break-all">registry.ci.openshift.org/ocp/release@sha256:6dbbd6b0fa89c1c0223ae79b32fb3ff1a4fc2f3a96b352bf7fd487cd2023cd0c3ae499bfdd6b6c74297bf93f9bc2ea6b8c5b6dfda8e74297bf93</p>
-                </div>
-                <div>
-                  <h3 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px] mb-[8px]">Upstream configuration</h3>
-                  <a href="https://docs.openshift.com/container-platform/latest/updating/understanding_updates/understanding-update-channels-releases.html" target="_blank" rel="noopener noreferrer" className="text-[14px] text-[#0066cc] dark:text-[#4dabf7] hover:underline">https://apenshift-release.apps.ci.ci24.p1.openshiftapps.com/graph</a>
-                </div>
-                <div>
-                  <h3 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px] mb-[8px]">Cluster autoscaler</h3>
-                  <a href="https://docs.openshift.com/container-platform/latest/machine_management/applying-autoscaling.html" target="_blank" rel="noopener noreferrer" className="text-[14px] text-[#0066cc] dark:text-[#4dabf7] hover:underline">Create autoscaler</a>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-
-        {activeTab === "cluster-operators" && <ClusterOperatorsTab />}
-
-        {activeTab === "configuration" && <ConfigurationTab />}
+        <div className="flex gap-[24px] text-[14px] border-b border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)]">
+          {([["details", "Details"], ["cluster-operators", "ClusterOperators"], ["configuration", "Configuration"]] as const).map(([key, label]) => (
+            <button key={key} onClick={() => setActiveTab(key)}
+              className={`pb-[12px] bg-transparent border-0 cursor-pointer font-['Red_Hat_Text:Regular',sans-serif] text-[14px] -mb-[1px] transition-colors ${activeTab === key ? "border-b-2 border-[#0066cc] dark:border-[#4dabf7] font-semibold text-[#151515] dark:text-white" : "text-[#4d4d4d] dark:text-[#b0b0b0] hover:text-[#151515] dark:hover:text-white"}`}>
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* OLS Chatbot Panel */}
-      {chatbotOpen && (
-        <OlsChatbot
-          context={chatbotContext}
-          selectedVersion={selectedVersion}
-          selectedChannel={selectedChannel}
-          onClose={() => setChatbotOpen(false)}
-          onAction={handleChatAction}
-        />
+      {activeTab === "details" && (
+        <>
+          {isUpdateInProgress && (
+            <div className="flex items-center gap-[12px] bg-[#e7f1fa] dark:bg-[rgba(0,102,204,0.08)] px-[16px] py-[12px] mb-[16px] rounded-[8px] border border-[#0066cc] dark:border-[#4dabf7]">
+              <Loader2 className="size-[18px] text-[#0066cc] dark:text-[#4dabf7] shrink-0 animate-spin" />
+              <p className="text-[#151515] dark:text-white text-[14px] font-['Red_Hat_Text:Regular',sans-serif] flex-1">
+                <span className="font-medium">An update to {updateVersion} is in progress.</span> View the update status on the Cluster Update page.
+              </p>
+              <Link to="/administration/cluster-update/in-progress" state={{ version: updateVersion }} className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[13px] no-underline hover:underline whitespace-nowrap font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                Review update progress <ExternalLink className="size-[14px]" />
+              </Link>
+            </div>
+          )}
+
+          <div className="bg-[rgba(255,255,255,0.5)] dark:bg-[rgba(255,255,255,0.05)] rounded-[16px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.06)] p-[24px] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)] mb-[24px]">
+            <div className="space-y-[20px]">
+              <div>
+                <h3 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px] mb-[8px]">Subscription</h3>
+                <a href="https://console.redhat.com/openshift" target="_blank" rel="noopener noreferrer" className="text-[14px] text-[#0066cc] dark:text-[#4dabf7] hover:underline">OpenShift Cluster Manager</a>
+              </div>
+              <div>
+                <h3 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px] mb-[8px]">Service Level Agreement (SLA)</h3>
+                <p className="text-[14px] text-[#4d4d4d] dark:text-[#b0b0b0]">Self-support, 60 day trial</p>
+                <p className="text-[14px] text-[#4d4d4d] dark:text-[#b0b0b0]">59 days remaining</p>
+                <a href="https://console.redhat.com/openshift/subscriptions" target="_blank" rel="noopener noreferrer" className="text-[14px] text-[#0066cc] dark:text-[#4dabf7] hover:underline">Manage subscription settings</a>
+              </div>
+              <div>
+                <h3 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px] mb-[8px]">Cluster ID</h3>
+                <p className="text-[14px] text-[#4d4d4d] dark:text-[#b0b0b0] font-mono">b86faa3-b06c-4a82-8fa7-54b80a92d4b2</p>
+              </div>
+              <div>
+                <h3 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px] mb-[8px]">Desired release image</h3>
+                <p className="text-[14px] text-[#4d4d4d] dark:text-[#b0b0b0] font-mono break-all">registry.ci.openshift.org/ocp/release@sha256:6dbbd6b0fa89c1c0223ae79b32fb3ff1a4fc2f3a96b352bf7fd487cd2023cd0c3ae499bfdd6b6c74297bf93f9bc2ea6b8c5b6dfda8e74297bf93</p>
+              </div>
+              <div>
+                <h3 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px] mb-[8px]">Upstream configuration</h3>
+                <a href="https://docs.openshift.com/container-platform/latest/updating/understanding_updates/understanding-update-channels-releases.html" target="_blank" rel="noopener noreferrer" className="text-[14px] text-[#0066cc] dark:text-[#4dabf7] hover:underline">https://apenshift-release.apps.ci.ci24.p1.openshiftapps.com/graph</a>
+              </div>
+              <div>
+                <h3 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px] mb-[8px]">Cluster autoscaler</h3>
+                <a href="https://docs.openshift.com/container-platform/latest/machine_management/applying-autoscaling.html" target="_blank" rel="noopener noreferrer" className="text-[14px] text-[#0066cc] dark:text-[#4dabf7] hover:underline">Create autoscaler</a>
+              </div>
+            </div>
+          </div>
+        </>
       )}
 
-      {/* Floating chatbot toggle for agent mode */}
-      {updateMode === "agent" && !chatbotOpen && (
-        <button onClick={() => { setChatbotContext("agent-monitor"); setChatbotOpen(true); }}
-          className="absolute bottom-[24px] right-[24px] z-[30] size-[52px] rounded-full bg-[#6753ac] text-white shadow-[0_4px_16px_rgba(0,0,0,0.25)] flex items-center justify-center cursor-pointer hover:bg-[#5a4696] active:scale-95 transition-all border-0"
-          title="Open AI Assistant">
-          <Bot className="size-[24px]" />
-        </button>
-      )}
+      {activeTab === "cluster-operators" && <ClusterOperatorsTab />}
+
+      {activeTab === "configuration" && <ConfigurationTab />}
     </div>
   );
 }

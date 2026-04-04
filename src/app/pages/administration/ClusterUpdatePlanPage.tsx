@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, Link, useLocation } from "react-router";
-import { ChevronDown, ChevronRight, ExternalLink, Sparkles, ArrowRight, CheckCircle, AlertTriangle, AlertCircle, HelpCircle, Info, X, Send, Loader2, Shield, Bot, Settings, RotateCcw, Play, Pause, Calendar, Bell, Clock, FileText, User, Zap, Eye, RefreshCw, MoreVertical } from "lucide-react";
+import { ChevronDown, ChevronRight, ExternalLink, Sparkles, ArrowRight, CheckCircle, AlertTriangle, AlertCircle, HelpCircle, Info, X, Send, Loader2, Shield, Bot, Settings, RotateCcw, Play, Pause, Calendar, Bell, Clock, FileText, User, Zap, Eye, RefreshCw, MoreVertical, Check } from "lucide-react";
 import Breadcrumbs from "../../components/Breadcrumbs";
 
 type TabKey = "update-plan" | "update-history";
@@ -52,6 +52,21 @@ type ChatMessage = {
   text: string;
   actions?: ChatAction[];
 };
+
+/* ─── Collapsible Section Wrapper ─── */
+function CollapsibleSection({ title, children, defaultExpanded = true }: { title: string; children: React.ReactNode; defaultExpanded?: boolean }) {
+  const [expanded, setExpanded] = useState(defaultExpanded);
+  return (
+    <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
+      <button onClick={() => setExpanded(!expanded)}
+        className="flex items-center gap-[8px] bg-transparent border-0 cursor-pointer p-0 hover:opacity-80 transition-opacity w-full text-left">
+        {expanded ? <ChevronDown className="size-[16px] text-[#151515] dark:text-white" /> : <ChevronRight className="size-[16px] text-[#151515] dark:text-white" />}
+        <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">{title}</h2>
+      </button>
+      {expanded && <div className="mt-[16px]">{children}</div>}
+    </div>
+  );
+}
 
 /* ─── Channel-specific version data ─── */
 export const channelVersions: Record<string, { groups: VersionGroup[]; banner?: { title: string; description: string; link: string } }> = {
@@ -251,12 +266,24 @@ const updateHistory: UpdateHistoryEntry[] = [
 export default function ClusterUpdatePlanPage() {
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    const stored = localStorage.getItem("clusterUpdateInProgress");
+    if (stored) {
+      try {
+        const data = JSON.parse(stored);
+        navigate("/administration/cluster-update/in-progress", { state: { version: data.version }, replace: true });
+      } catch { /* ignore */ }
+    }
+  }, [navigate]);
+
   const [selectedChannel, setSelectedChannel] = useState("fast-5.1");
   const [showZStreamOnly, setShowZStreamOnly] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>("update-plan");
   const [selectedVersion, setSelectedVersion] = useState<string>("5.1.10");
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({ "5.1": true });
   
+  const [updateMode, setUpdateMode] = useState<"manual" | "agent">("manual");
   const [chatbotOpen, setChatbotOpen] = useState(false);
   const [chatbotContext, setChatbotContext] = useState("");
 
@@ -323,7 +350,7 @@ export default function ClusterUpdatePlanPage() {
   }, []);
 
   const tabs: { key: TabKey; label: string }[] = [
-    { key: "update-plan", label: "Update" },
+    { key: "update-plan", label: "Update plan" },
     { key: "update-history", label: "Update history" },
   ];
 
@@ -331,12 +358,12 @@ export default function ClusterUpdatePlanPage() {
     <div className="flex h-full relative min-w-0">
       <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-[24px] pb-[48px]">
       <Breadcrumbs items={[
-        { label: "Administration", path: "/administration/cluster-settings" },
-        { label: "Cluster Settings" },
+        { label: "Administration", path: "/administration/cluster-update" },
+        { label: "Cluster Update" },
       ]} />
 
       <h1 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[28px] mb-[16px]">
-        Cluster Settings
+        Cluster Update
       </h1>
 
       <div className="border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)] mb-[24px] flex gap-[0px]">
@@ -376,43 +403,81 @@ export default function ClusterUpdatePlanPage() {
           {/* AI Assessment */}
           <AiAssessmentSection openChatbot={openChatbot} selectedVersion={selectedVersion} />
 
-          {/* Cluster Details */}
-          <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
-            <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px] mb-[16px]">Cluster Details</h2>
-            <div className="grid grid-cols-2 gap-x-[48px] gap-y-[16px]">
-              <div>
-                <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Current version</p>
-                <p className="text-[#151515] dark:text-white text-[14px] font-['Red_Hat_Mono:Regular',sans-serif]">5.0.0</p>
-              </div>
-              <div>
-                <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Upstream update service</p>
-                <a href="https://docs.openshift.com/container-platform/latest/updating/understanding_updates/understanding-update-channels-releases.html#update-service-about_understanding-update-channels-releases" target="_blank" rel="noopener noreferrer" className="text-[#0066cc] dark:text-[#4dabf7] text-[14px] no-underline hover:underline flex items-center gap-[4px] font-['Red_Hat_Text:Regular',sans-serif]">
-                  Default update service <ExternalLink className="size-[12px]" />
-                </a>
-              </div>
-              <div>
-                <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Cluster ID</p>
-                <p className="text-[#151515] dark:text-white text-[14px] font-['Red_Hat_Mono:Regular',sans-serif]">1c182077-5663-426d-92a3-5d26df31f146</p>
-              </div>
+          {/* Update Method Selector */}
+          <CollapsibleSection title="Update Method" defaultExpanded>
+            <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[16px]">Choose how cluster updates are managed.</p>
+            <div className="grid grid-cols-2 gap-[12px]">
+              <button
+                onClick={() => setUpdateMode("manual")}
+                className={`flex items-start gap-[12px] p-[16px] rounded-[12px] border-2 text-left cursor-pointer transition-all bg-transparent ${
+                  updateMode === "manual"
+                    ? "border-[#0066cc] dark:border-[#4dabf7] bg-[rgba(0,102,204,0.03)] dark:bg-[rgba(77,171,247,0.05)]"
+                    : "border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90]"
+                }`}
+              >
+                <div className={`mt-[2px] size-[36px] rounded-[8px] flex items-center justify-center shrink-0 ${
+                  updateMode === "manual" ? "bg-[#0066cc] text-white" : "bg-[#f0f0f0] dark:bg-[rgba(255,255,255,0.08)] text-[#6a6e73]"
+                }`}>
+                  <Settings className="size-[18px]" />
+                </div>
+                <div>
+                  <p className={`text-[14px] font-semibold font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] ${updateMode === "manual" ? "text-[#0066cc] dark:text-[#4dabf7]" : "text-[#151515] dark:text-white"}`}>
+                    Manual
+                  </p>
+                  <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
+                    Review available updates, assess risks, and initiate updates yourself. Full control over timing and version selection.
+                  </p>
+                </div>
+              </button>
+              <button
+                onClick={() => setUpdateMode("agent")}
+                className={`flex items-start gap-[12px] p-[16px] rounded-[12px] border-2 text-left cursor-pointer transition-all bg-transparent ${
+                  updateMode === "agent"
+                    ? "border-[#6753ac] dark:border-[#b2a3e0] bg-[rgba(103,83,172,0.03)] dark:bg-[rgba(178,163,224,0.05)]"
+                    : "border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90]"
+                }`}
+              >
+                <div className={`mt-[2px] size-[36px] rounded-[8px] flex items-center justify-center shrink-0 ${
+                  updateMode === "agent" ? "bg-[#6753ac] text-white" : "bg-[#f0f0f0] dark:bg-[rgba(255,255,255,0.08)] text-[#6a6e73]"
+                }`}>
+                  <Bot className="size-[18px]" />
+                </div>
+                <div>
+                  <p className={`text-[14px] font-semibold font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] ${updateMode === "agent" ? "text-[#6753ac] dark:text-[#b2a3e0]" : "text-[#151515] dark:text-white"}`}>
+                    Agent-based
+                  </p>
+                  <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
+                    An AI agent handles pre-flight checks, scheduling, operator updates, and rollback automatically. You approve plans before execution.
+                  </p>
+                </div>
+              </button>
             </div>
-          </div>
+          </CollapsibleSection>
 
-          <AvailableUpdatesSection
-            channelData={channelData}
-            showZStreamOnly={showZStreamOnly}
-            setShowZStreamOnly={setShowZStreamOnly}
-            expandedGroups={expandedGroups}
-            setExpandedGroups={setExpandedGroups}
-            selectedVersion={selectedVersion}
-            setSelectedVersion={setSelectedVersion}
-            navigate={navigate}
-            setActiveTab={setActiveTab}
-            openChatbot={openChatbot}
-            selectedChannel={selectedChannel}
-            handleChannelChange={handleChannelChange}
-          />
+          {updateMode === "manual" ? (
+            <>
+              <AvailableUpdatesSection
+                channelData={channelData}
+                showZStreamOnly={showZStreamOnly}
+                setShowZStreamOnly={setShowZStreamOnly}
+                expandedGroups={expandedGroups}
+                setExpandedGroups={setExpandedGroups}
+                selectedVersion={selectedVersion}
+                setSelectedVersion={setSelectedVersion}
+                navigate={navigate}
+                setActiveTab={setActiveTab}
+                openChatbot={openChatbot}
+                selectedChannel={selectedChannel}
+                handleChannelChange={handleChannelChange}
+              />
 
-          <InstalledOperatorsSection selectedVersion={selectedVersion} operators={operators} navigate={navigate} />
+              <InstalledOperatorsSection selectedVersion={selectedVersion} operators={operators} navigate={navigate} />
+
+              <WorkerNodesSection />
+            </>
+          ) : (
+            <UpdateAgentTab />
+          )}
         </>
       )}
 
@@ -703,9 +768,8 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
   }, [agentStatus]);
 
   const startUpdate = () => {
-    setAgentStatus("updating");
-    setUpdateProgress(0);
-    openChatbot("update-executing");
+    localStorage.setItem("clusterUpdateInProgress", JSON.stringify({ version: "5.1.10", startedAt: Date.now() }));
+    navigate("/administration/cluster-update/in-progress", { state: { version: "5.1.10" } });
   };
 
   const simulateComplete = () => {
@@ -1828,6 +1892,456 @@ function ChannelTooltip() {
   );
 }
 
+/* ─── Agent Plan Data & Components ─── */
+interface AgentOperator {
+  name: string;
+  current: string;
+  required: string | null;
+  compatible: boolean;
+  incompatibleAt?: string;
+  action: "required" | "optional" | "up-to-date";
+}
+
+const AGENT_OPERATORS: AgentOperator[] = [
+  { name: "Abot Operator", current: "3.0.0", required: "3.1.0", compatible: false, incompatibleAt: "3.0.0", action: "required" },
+  { name: "Airflow Helm Operator", current: "5.7.2", required: "5.7.3", compatible: false, incompatibleAt: "5.7.2", action: "required" },
+  { name: "Ansible Automation Platform", current: "1.5.0", required: "1.6.0", compatible: true, action: "optional" },
+  { name: "Bare Metal Event Relay", current: "1.1.1", required: "1.2.0", compatible: true, action: "optional" },
+  { name: "Camel K Operator", current: "2.1.0", required: null, compatible: true, action: "up-to-date" },
+];
+
+type PlanStepStatus = "done" | "warning" | "pending";
+interface PlanStep {
+  label: string;
+  status: PlanStepStatus;
+  badge?: string;
+  badgeColor?: string;
+  detail: string;
+}
+
+function StepIcon({ status }: { status: PlanStepStatus }) {
+  if (status === "done") return <CheckCircle className="size-[20px] text-[#3e8635] shrink-0" />;
+  if (status === "warning") return <AlertTriangle className="size-[20px] text-[#f0ab00] shrink-0" />;
+  return <Clock className="size-[20px] text-[#6a6e73] shrink-0" />;
+}
+
+function BadgeLabel({ text, color }: { text: string; color: string }) {
+  return (
+    <span className="text-[11px] font-semibold px-[8px] py-[2px] rounded-[4px] text-white" style={{ backgroundColor: color }}>
+      {text}
+    </span>
+  );
+}
+
+function UpdateAgentTab() {
+  const [planDecision, setPlanDecision] = useState<"pending" | "approved" | "scheduled" | "rejected">("pending");
+  const [expandedSteps, setExpandedSteps] = useState<Set<number>>(new Set([1, 2]));
+
+  const toggleStep = (i: number) => {
+    setExpandedSteps(prev => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+  };
+
+  const stats = [
+    { label: "Plans Created", value: "12" },
+    { label: "Updates Executed", value: "12" },
+    { label: "Success Rate", value: "91.7%" },
+    { label: "Avg Duration", value: "78 min" },
+  ];
+
+  const steps: PlanStep[] = [
+    { label: "Version Detection", status: "done", badge: "FOUND", badgeColor: "#3e8635", detail: "New version 4.22.0 detected on fast-4.22 channel" },
+    { label: "Pre-flight Checks Complete", status: "done", badge: "PASSED", badgeColor: "#3e8635", detail: "All cluster health checks completed successfully" },
+    { label: "Compatibility Analysis", status: "warning", badge: "ACTION NEEDED", badgeColor: "#f0ab00", detail: "3 of 5 operators compatible with 4.22.0 · 2 operators must be updated first" },
+    { label: "API Deprecations", status: "done", detail: "No deprecated APIs in use" },
+    { label: "Custom Resources", status: "done", detail: "All CRDs compatible with new version" },
+    { label: "Risk Assessment", status: "done", badge: "LOW", badgeColor: "#3e8635", detail: "AI risk score: 2/10 · No PDB violations or blocking conditions detected" },
+    { label: "Maintenance Window", status: "done", badge: "IDENTIFIED", badgeColor: "#3e8635", detail: "Optimal window: Apr 15, 2026 · 2:00 AM EST (minimal cluster traffic)" },
+    { label: "Awaiting Decision", status: "pending", badge: "PENDING", badgeColor: "#f0ab00", detail: "Plan ready — approve, schedule for later, or reject below" },
+  ];
+
+  const healthChecks = [
+    { label: "Cluster Health", detail: "All operators available", ok: true },
+    { label: "Node Status", detail: "6/6 nodes ready", ok: true },
+    { label: "Storage", detail: "Sufficient capacity (68% used)", ok: true },
+    { label: "Network", detail: "All pods reachable", ok: true },
+  ];
+
+  const compatibleCount = AGENT_OPERATORS.filter(o => o.compatible).length;
+  const requiredCount = AGENT_OPERATORS.filter(o => o.action === "required").length;
+
+  return (
+    <div className="space-y-[24px]">
+      <div className="bg-[rgba(255,255,255,0.5)] dark:bg-[rgba(255,255,255,0.05)] rounded-[16px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.06)] p-[24px] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)]">
+        <div className="flex items-center justify-between mb-[20px]">
+          <div className="flex items-center gap-[12px]">
+            <div className="size-[40px] rounded-[10px] bg-[#f0f0f0] dark:bg-[rgba(255,255,255,0.08)] flex items-center justify-center">
+              <Bot className="size-[22px] text-[#151515] dark:text-white" />
+            </div>
+            <div>
+              <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">AI Update Agent</h2>
+              <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Intelligent automation for cluster updates · Monitoring fast-4.22 channel</p>
+            </div>
+          </div>
+          <span className="inline-flex items-center gap-[6px] text-[12px] font-medium text-[#3e8635] border border-[#3e8635] rounded-[999px] px-[10px] py-[4px]">
+            <span className="size-[6px] rounded-full bg-[#3e8635] animate-pulse" /> Analyzing
+          </span>
+        </div>
+        <div className="grid grid-cols-4 gap-[12px]">
+          {stats.map(s => (
+            <div key={s.label} className="rounded-[8px] bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] px-[16px] py-[14px]">
+              <p className="text-[12px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px]">{s.label}</p>
+              <p className="text-[22px] font-semibold text-[#151515] dark:text-white font-['Red_Hat_Display:SemiBold',sans-serif]">{s.value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-[rgba(255,255,255,0.5)] dark:bg-[rgba(255,255,255,0.05)] rounded-[16px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.06)] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)] overflow-hidden">
+        <div className="px-[24px] py-[16px] border-b border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)] flex items-center justify-between">
+          <div>
+            <p className="text-[12px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px]">PLAN #13 · Generated 2 hours ago</p>
+            <p className="text-[16px] font-semibold text-[#151515] dark:text-white font-['Red_Hat_Display:SemiBold',sans-serif]">Proposed Update: 4.21.0 → 4.22.0</p>
+            <div className="flex gap-[6px] mt-[8px]">
+              {["Security patches", "Bug fixes", "Performance"].map(tag => (
+                <span key={tag} className="text-[11px] px-[8px] py-[3px] rounded-[999px] bg-[rgba(0,102,204,0.08)] text-[#0066cc] dark:bg-[rgba(77,171,247,0.12)] dark:text-[#4dabf7] font-['Red_Hat_Text:Regular',sans-serif] font-medium flex items-center gap-[4px]">
+                  <Shield className="size-[10px]" /> {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+          <span className={`text-[12px] font-semibold px-[12px] py-[5px] rounded-[999px] border ${
+            planDecision === "approved" ? "border-[#3e8635] text-[#3e8635] bg-[rgba(62,134,53,0.05)]" :
+            planDecision === "rejected" ? "border-[#c9190b] text-[#c9190b] bg-[rgba(201,25,11,0.05)]" :
+            planDecision === "scheduled" ? "border-[#0066cc] text-[#0066cc] bg-[rgba(0,102,204,0.05)]" :
+            "border-[#f0ab00] text-[#795600] bg-[rgba(240,171,0,0.08)]"
+          }`}>
+            {planDecision === "approved" ? "Approved" : planDecision === "rejected" ? "Rejected" : planDecision === "scheduled" ? "Scheduled" : "Ready for Review"}
+          </span>
+        </div>
+
+        <div className="px-[24px] py-[20px] space-y-[0px]">
+          {steps.map((step, i) => (
+            <div key={i}>
+              <button
+                onClick={() => toggleStep(i)}
+                className="flex items-center gap-[10px] w-full text-left bg-transparent border-0 cursor-pointer py-[12px] px-0 hover:opacity-80 transition-opacity"
+              >
+                <StepIcon status={step.status} />
+                <span className="text-[14px] font-medium text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">{step.label}</span>
+                {step.badge && <BadgeLabel text={step.badge} color={step.badgeColor!} />}
+                <span className="flex-1" />
+                {expandedSteps.has(i)
+                  ? <ChevronDown className="size-[14px] text-[#6a6e73]" />
+                  : <ChevronRight className="size-[14px] text-[#6a6e73]" />}
+              </button>
+              <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] ml-[30px] -mt-[6px] mb-[8px]">{step.detail}</p>
+
+              {expandedSteps.has(i) && i === 1 && (
+                <div className="ml-[30px] mb-[12px] grid grid-cols-2 gap-[10px]">
+                  {healthChecks.map(h => (
+                    <div key={h.label} className="flex items-center gap-[8px] rounded-[8px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] px-[14px] py-[10px]">
+                      <CheckCircle className="size-[16px] text-[#3e8635] shrink-0" />
+                      <div>
+                        <p className="text-[13px] font-medium text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">{h.label}</p>
+                        <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{h.detail}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {expandedSteps.has(i) && i === 2 && (
+                <div className="ml-[30px] mb-[12px]">
+                  <div className="rounded-[8px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] overflow-hidden">
+                    <div className="flex items-center justify-between px-[16px] py-[10px] border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]">
+                      <div className="flex items-center gap-[6px]">
+                        <AlertTriangle className="size-[14px] text-[#f0ab00]" />
+                        <span className="text-[13px] font-medium text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">Operator Compatibility</span>
+                      </div>
+                      <div className="flex gap-[6px]">
+                        <span className="text-[11px] px-[8px] py-[2px] rounded-[999px] bg-[rgba(62,134,53,0.1)] text-[#3e8635] font-semibold">{compatibleCount} compatible</span>
+                        <span className="text-[11px] px-[8px] py-[2px] rounded-[999px] bg-[rgba(240,171,0,0.1)] text-[#795600] font-semibold">{requiredCount} require update</span>
+                      </div>
+                    </div>
+                    <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] px-[16px] py-[8px] border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]">
+                      {requiredCount} operators must be updated before upgrading to 4.22.0
+                    </p>
+                    <table className="w-full text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">
+                      <thead>
+                        <tr className="border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] text-[11px] text-[#6a6e73] uppercase tracking-wide text-left">
+                          <th className="px-[16px] py-[8px] font-medium">Operator</th>
+                          <th className="px-[16px] py-[8px] font-medium">Current</th>
+                          <th className="px-[16px] py-[8px] font-medium">Required version</th>
+                          <th className="px-[16px] py-[8px] font-medium">OCP 4.22.0 compat.</th>
+                          <th className="px-[16px] py-[8px] font-medium">Action needed</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {AGENT_OPERATORS.map(op => (
+                          <tr key={op.name} className="border-b border-[rgba(0,0,0,0.04)] dark:border-[rgba(255,255,255,0.04)] last:border-0">
+                            <td className="px-[16px] py-[10px]">
+                              <span className={`font-medium ${!op.compatible ? "text-[#c9190b]" : "text-[#151515] dark:text-white"}`}>
+                                {!op.compatible && <span className="mr-[4px]">●</span>}{op.name}
+                              </span>
+                            </td>
+                            <td className="px-[16px] py-[10px] font-mono text-[#4d4d4d] dark:text-[#b0b0b0]">{op.current}</td>
+                            <td className="px-[16px] py-[10px]">
+                              {op.required ? (
+                                <span className={`font-mono font-semibold ${!op.compatible ? "text-[#c9190b]" : "text-[#151515] dark:text-white"}`}>{op.required}</span>
+                              ) : (
+                                <span className="text-[#6a6e73]">–</span>
+                              )}
+                            </td>
+                            <td className="px-[16px] py-[10px]">
+                              {op.compatible ? (
+                                <span className="inline-flex items-center gap-[4px] text-[12px] text-[#3e8635]"><CheckCircle className="size-[12px]" /> Compatible</span>
+                              ) : (
+                                <span className="inline-flex items-center gap-[4px] text-[12px] text-[#f0ab00]"><AlertTriangle className="size-[12px]" /> Incompatible at {op.incompatibleAt}</span>
+                              )}
+                            </td>
+                            <td className="px-[16px] py-[10px]">
+                              {op.action === "required" ? (
+                                <span className="text-[11px] font-semibold px-[10px] py-[3px] rounded-[999px] bg-[#f0ab00] text-white">Update required before OCP upgrade</span>
+                              ) : op.action === "optional" ? (
+                                <span className="text-[11px] font-semibold px-[10px] py-[3px] rounded-[999px] border border-[#3e8635] text-[#3e8635]">Update available (optional)</span>
+                              ) : (
+                                <span className="text-[12px] text-[#6a6e73]">Up to date</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {i < steps.length - 1 && <div className="ml-[10px] w-[1px] h-[8px] bg-[#d2d2d2] dark:bg-[rgba(255,255,255,0.1)]" />}
+            </div>
+          ))}
+        </div>
+
+        <div className="border-t border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)] px-[24px] py-[16px]">
+          <div className="grid grid-cols-3 gap-[24px] mb-[16px]">
+            <div>
+              <p className="text-[12px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Maintenance Window</p>
+              <p className="text-[14px] font-medium text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">Apr 15, 2026 · 2:00 AM EST</p>
+            </div>
+            <div>
+              <p className="text-[12px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Estimated Duration</p>
+              <p className="text-[14px] font-medium text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">45–60 minutes</p>
+            </div>
+            <div>
+              <p className="text-[12px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Rolling Strategy</p>
+              <p className="text-[14px] font-medium text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">Rolling (2 nodes at a time)</p>
+            </div>
+          </div>
+
+          <div className="mb-[20px]">
+            <p className="text-[12px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif] mb-[6px]">AI Risk Score</p>
+            <div className="flex items-center gap-[12px]">
+              <div className="flex-1 h-[8px] bg-[#e0e0e0] dark:bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden">
+                <div className="h-full bg-[#3e8635] rounded-full" style={{ width: "20%" }} />
+              </div>
+              <span className="text-[13px] font-medium text-[#3e8635] font-['Red_Hat_Text:Regular',sans-serif] whitespace-nowrap">2 / 10 — Low</span>
+            </div>
+          </div>
+
+          {planDecision === "pending" && (
+            <div className="flex items-center gap-[10px]">
+              <button onClick={() => setPlanDecision("approved")}
+                className="flex items-center gap-[6px] bg-[#3e8635] hover:bg-[#2e6b27] text-white text-[14px] px-[20px] py-[9px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                <Check className="size-[14px]" /> Approve Plan
+              </button>
+              <button onClick={() => setPlanDecision("scheduled")}
+                className="flex items-center gap-[6px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[14px] px-[20px] py-[9px] rounded-[999px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[rgba(0,102,204,0.05)] transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                <Calendar className="size-[14px]" /> Schedule for Later
+              </button>
+              <button onClick={() => setPlanDecision("rejected")}
+                className="flex items-center gap-[6px] bg-transparent text-[#c9190b] text-[14px] px-[20px] py-[9px] rounded-[999px] border border-[#c9190b] cursor-pointer hover:bg-[rgba(201,25,11,0.05)] transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                <X className="size-[14px]" /> Reject Plan
+              </button>
+            </div>
+          )}
+          {planDecision === "approved" && (
+            <div className="flex items-center gap-[10px] rounded-[8px] bg-[rgba(62,134,53,0.06)] border border-[#3e8635] p-[14px]">
+              <CheckCircle className="size-[18px] text-[#3e8635] shrink-0" />
+              <div>
+                <p className="text-[14px] font-medium text-[#3e8635] font-['Red_Hat_Text:Regular',sans-serif]">Plan approved</p>
+                <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">The agent will execute the update during the maintenance window (Apr 15, 2026 · 2:00 AM EST).</p>
+              </div>
+              <button onClick={() => setPlanDecision("pending")} className="ml-auto text-[12px] text-[#0066cc] dark:text-[#4dabf7] bg-transparent border-0 cursor-pointer hover:underline font-['Red_Hat_Text:Regular',sans-serif]">Undo</button>
+            </div>
+          )}
+          {planDecision === "scheduled" && (
+            <div className="flex items-center gap-[10px] rounded-[8px] bg-[rgba(0,102,204,0.05)] border border-[#0066cc] p-[14px]">
+              <Calendar className="size-[18px] text-[#0066cc] shrink-0" />
+              <div>
+                <p className="text-[14px] font-medium text-[#0066cc] font-['Red_Hat_Text:Regular',sans-serif]">Scheduled for later</p>
+                <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">The agent will re-analyze closer to the maintenance window and present an updated plan.</p>
+              </div>
+              <button onClick={() => setPlanDecision("pending")} className="ml-auto text-[12px] text-[#0066cc] dark:text-[#4dabf7] bg-transparent border-0 cursor-pointer hover:underline font-['Red_Hat_Text:Regular',sans-serif]">Undo</button>
+            </div>
+          )}
+          {planDecision === "rejected" && (
+            <div className="flex items-center gap-[10px] rounded-[8px] bg-[rgba(201,25,11,0.05)] border border-[#c9190b] p-[14px]">
+              <X className="size-[18px] text-[#c9190b] shrink-0" />
+              <div>
+                <p className="text-[14px] font-medium text-[#c9190b] font-['Red_Hat_Text:Regular',sans-serif]">Plan rejected</p>
+                <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">The agent will continue monitoring. A new plan will be generated when the next version is detected.</p>
+              </div>
+              <button onClick={() => setPlanDecision("pending")} className="ml-auto text-[12px] text-[#0066cc] dark:text-[#4dabf7] bg-transparent border-0 cursor-pointer hover:underline font-['Red_Hat_Text:Regular',sans-serif]">Undo</button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Operators on this cluster ─── */
+function OperatorsOnClusterSection({ selectedVersion, operators, navigate }: { selectedVersion: string; operators: InstalledOperator[]; navigate: ReturnType<typeof useNavigate> }) {
+  const [updateAll, setUpdateAll] = useState(false);
+
+  return (
+    <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
+      <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px] mb-[16px]">Operators on this cluster</h2>
+
+      <div className="rounded-[8px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] overflow-hidden">
+        <table className="w-full text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">
+          <thead>
+            <tr className="border-b border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)] text-left text-[11px] text-[#6a6e73] dark:text-[#8a8d90] uppercase tracking-wide">
+              <th className="px-[16px] py-[10px] font-medium">Name</th>
+              <th className="px-[16px] py-[10px] font-medium">Status</th>
+              <th className="px-[16px] py-[10px] font-medium">Version</th>
+              <th className="px-[16px] py-[10px] font-medium">Cluster compatibility</th>
+              <th className="px-[16px] py-[10px] font-medium">Last updated</th>
+            </tr>
+          </thead>
+          <tbody>
+            {operators.slice(0, 8).map((op) => {
+              const compat = getOperatorCompatibility(op, selectedVersion);
+              return (
+                <tr key={op.name} className="border-b border-[rgba(0,0,0,0.05)] dark:border-[rgba(255,255,255,0.05)] hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)] transition-colors">
+                  <td className="px-[16px] py-[10px]">
+                    <button onClick={() => navigate(`/ecosystem/installed-operators/${encodeURIComponent(op.name)}`)} className="text-[#0066cc] dark:text-[#4dabf7] bg-transparent border-0 cursor-pointer p-0 hover:underline font-medium text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">
+                      {op.name}
+                    </button>
+                  </td>
+                  <td className="px-[16px] py-[10px]">
+                    <span className={`inline-flex items-center gap-[4px] text-[12px] ${op.updateAvailable ? "text-[#0066cc]" : "text-[#3e8635]"}`}>
+                      {op.updateAvailable ? <><ArrowRight className="size-[12px]" /> Update available</> : <><CheckCircle className="size-[12px]" /> Up to date</>}
+                    </span>
+                  </td>
+                  <td className="px-[16px] py-[10px] font-mono text-[#4d4d4d] dark:text-[#b0b0b0]">{op.version}</td>
+                  <td className="px-[16px] py-[10px]">
+                    <span className={`text-[12px] ${compat.compatibility === "Compatible" ? "text-[#3e8635]" : compat.compatibility === "Incompatible" ? "text-[#c9190b]" : "text-[#795600]"}`}>
+                      {compat.compatibility}
+                    </span>
+                  </td>
+                  <td className="px-[16px] py-[10px] text-[#4d4d4d] dark:text-[#b0b0b0]">{op.lastUpdated || "—"}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {operators.length > 8 && (
+        <button onClick={() => navigate("/ecosystem/installed-operators")}
+          className="mt-[12px] text-[13px] text-[#0066cc] dark:text-[#4dabf7] bg-transparent border-0 cursor-pointer hover:underline font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+          View all {operators.length} operators →
+        </button>
+      )}
+
+      <div className="flex items-center gap-[8px] mt-[16px] pt-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
+        <button onClick={() => setUpdateAll(!updateAll)}
+          className={`relative w-[36px] h-[20px] rounded-full border-0 cursor-pointer transition-colors ${updateAll ? "bg-[#0066cc]" : "bg-[#8a8d90]"}`}>
+          <div className={`absolute top-[2px] size-[16px] rounded-full bg-white transition-transform ${updateAll ? "left-[18px]" : "left-[2px]"}`} />
+        </button>
+        <span className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">Update all operators</span>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Worker Nodes on this cluster ─── */
+const WORKER_NODE_POOLS = [
+  { pool: "worker", status: "Update required", version: "5.0.0", targetVersion: "5.1.10", compatibility: "compatible" as const, nodes: 4, readyNodes: 4 },
+  { pool: "infra", status: "Up to date", version: "5.0.0", targetVersion: null, compatibility: "compatible" as const, nodes: 2, readyNodes: 2 },
+];
+
+function WorkerNodesSection() {
+  const [sectionExpanded, setSectionExpanded] = useState(true);
+  const [updateAll, setUpdateAll] = useState(false);
+  const poolsNeedingUpdate = WORKER_NODE_POOLS.filter(p => p.status === "Update required").length;
+
+  return (
+    <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
+      <button onClick={() => setSectionExpanded(!sectionExpanded)}
+        className="flex items-center gap-[8px] bg-transparent border-0 cursor-pointer p-0 hover:opacity-80 transition-opacity w-full text-left">
+        {sectionExpanded ? <ChevronDown className="size-[16px] text-[#151515] dark:text-white" /> : <ChevronRight className="size-[16px] text-[#151515] dark:text-white" />}
+        <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Worker nodes on this cluster</h2>
+      </button>
+
+      {sectionExpanded && <div className="mt-[16px]">
+      {poolsNeedingUpdate > 0 && (
+        <div className="flex items-center gap-[8px] bg-[#fdf7e7] dark:bg-[rgba(240,171,0,0.06)] border border-[#f0ab00] rounded-[8px] px-[14px] py-[10px] mb-[16px]">
+          <AlertTriangle className="size-[16px] text-[#f0ab00] shrink-0" />
+          <p className="text-[13px] text-[#795600] dark:text-[#dca614] font-['Red_Hat_Text:Regular',sans-serif]">
+            {poolsNeedingUpdate} node pool{poolsNeedingUpdate !== 1 ? "s" : ""} require{poolsNeedingUpdate === 1 ? "s" : ""} an update
+          </p>
+        </div>
+      )}
+
+      <div className="rounded-[8px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] overflow-hidden">
+        <table className="w-full text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">
+          <thead>
+            <tr className="border-b border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)] text-left text-[11px] text-[#6a6e73] dark:text-[#8a8d90] uppercase tracking-wide">
+              <th className="px-[16px] py-[10px] font-medium">Pool</th>
+              <th className="px-[16px] py-[10px] font-medium">Status</th>
+              <th className="px-[16px] py-[10px] font-medium">Version</th>
+              <th className="px-[16px] py-[10px] font-medium">Nodes</th>
+              <th className="px-[16px] py-[10px] font-medium">Cluster compatibility</th>
+            </tr>
+          </thead>
+          <tbody>
+            {WORKER_NODE_POOLS.map((pool) => (
+              <tr key={pool.pool} className="border-b border-[rgba(0,0,0,0.05)] dark:border-[rgba(255,255,255,0.05)] last:border-0 hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)] transition-colors">
+                <td className="px-[16px] py-[10px] font-medium text-[#151515] dark:text-white">{pool.pool}</td>
+                <td className="px-[16px] py-[10px]">
+                  <span className={`inline-flex items-center gap-[4px] text-[12px] ${pool.status === "Update required" ? "text-[#f0ab00]" : "text-[#3e8635]"}`}>
+                    {pool.status === "Update required" ? <><AlertTriangle className="size-[12px]" /> {pool.status}</> : <><CheckCircle className="size-[12px]" /> {pool.status}</>}
+                  </span>
+                </td>
+                <td className="px-[16px] py-[10px] font-mono text-[#4d4d4d] dark:text-[#b0b0b0]">{pool.version}</td>
+                <td className="px-[16px] py-[10px] text-[#4d4d4d] dark:text-[#b0b0b0]">{pool.readyNodes}/{pool.nodes} ready</td>
+                <td className="px-[16px] py-[10px]">
+                  <span className="text-[12px] text-[#3e8635]">Compatible</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="flex items-center gap-[8px] mt-[16px] pt-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
+        <button onClick={() => setUpdateAll(!updateAll)}
+          className={`relative w-[36px] h-[20px] rounded-full border-0 cursor-pointer transition-colors ${updateAll ? "bg-[#0066cc]" : "bg-[#8a8d90]"}`}>
+          <div className={`absolute top-[2px] size-[16px] rounded-full bg-white transition-transform ${updateAll ? "left-[18px]" : "left-[2px]"}`} />
+        </button>
+        <span className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">Update all worker nodes</span>
+      </div>
+      </div>}
+    </div>
+  );
+}
+
 /* ─── AI Assessment Section (OCPSTRAT-2701) ─── */
 export function AiAssessmentSection({ openChatbot, selectedVersion }: { openChatbot: (ctx: string) => void; selectedVersion: string }) {
   const [expanded, setExpanded] = useState(true);
@@ -1853,7 +2367,7 @@ export function AiAssessmentSection({ openChatbot, selectedVersion }: { openChat
 
           <div className="flex items-center gap-[8px]">
             <button onClick={() => openChatbot("ai-precheck")}
-              className="flex items-center gap-[8px] bg-[#0066cc] hover:bg-[#004080] text-white text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+              className="flex items-center gap-[8px] bg-transparent hover:bg-[rgba(0,102,204,0.05)] text-[#0066cc] dark:text-[#4dabf7] text-[14px] px-[16px] py-[8px] rounded-[999px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
               Pre-check with AI
               <Sparkles className="size-[14px]" />
             </button>
@@ -1872,17 +2386,21 @@ export function AvailableUpdatesSection({
   selectedVersion, setSelectedVersion, navigate, setActiveTab, openChatbot,
   selectedChannel, handleChannelChange,
 }: any) {
+  const [sectionExpanded, setSectionExpanded] = useState(true);
   const filteredGroups: VersionGroup[] = showZStreamOnly
     ? channelData.groups
     : channelData.groups.filter((g: VersionGroup) => g.label === "5.1");
 
   return (
     <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
-      <div className="flex items-center gap-[6px] mb-[16px]">
+      <button onClick={() => setSectionExpanded(!sectionExpanded)}
+        className="flex items-center gap-[8px] bg-transparent border-0 cursor-pointer p-0 hover:opacity-80 transition-opacity w-full text-left">
+        {sectionExpanded ? <ChevronDown className="size-[16px] text-[#151515] dark:text-white" /> : <ChevronRight className="size-[16px] text-[#151515] dark:text-white" />}
         <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Available Updates</h2>
         <InfoTooltip />
-      </div>
+      </button>
 
+      {sectionExpanded && <div className="mt-[16px]">
       {/* Channel selector */}
       <div className="flex items-center gap-[12px] mb-[16px] pb-[16px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
         <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] font-medium">Channel</p>
@@ -1915,6 +2433,7 @@ export function AvailableUpdatesSection({
         </button>
         <span className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">Show all versions</span>
       </div>
+      </div>}
     </div>
   );
 }
@@ -1968,9 +2487,11 @@ function KebabMenu({ isOpen, onToggle, onClose, items }: { isOpen: boolean; onTo
 
 /* ─── Installed Operators Section (OLM-integrated widget) ─── */
 function InstalledOperatorsSection({ selectedVersion, operators, navigate }: { selectedVersion: string; operators: InstalledOperator[]; navigate: ReturnType<typeof useNavigate> }) {
+  const [sectionExpanded, setSectionExpanded] = useState(true);
   const [search, setSearch] = useState("");
   const [filterCompat, setFilterCompat] = useState<"all" | "incompatible" | "update-available">("all");
   const [openKebabIndex, setOpenKebabIndex] = useState<number | null>(null);
+  const [updateAll, setUpdateAll] = useState(false);
 
   const operatorsWithCompat = operators.map((op) => {
     const { compatibility, message } = getOperatorCompatibility(op, selectedVersion);
@@ -1990,17 +2511,22 @@ function InstalledOperatorsSection({ selectedVersion, operators, navigate }: { s
 
   const navigateToUpdate = (op: typeof operatorsWithCompat[0]) => {
     navigate(`/ecosystem/installed-operators/${encodeURIComponent(op.name)}/update`, {
-      state: { returnTo: '/administration/cluster-settings', operatorName: op.name, operatorData: op }
+      state: { returnTo: '/administration/cluster-update', operatorName: op.name, operatorData: op }
     });
   };
 
   return (
     <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]" id="operators-section">
+      <button onClick={() => setSectionExpanded(!sectionExpanded)}
+        className="flex items-center gap-[8px] bg-transparent border-0 cursor-pointer p-0 hover:opacity-80 transition-opacity w-full text-left">
+        {sectionExpanded ? <ChevronDown className="size-[16px] text-[#151515] dark:text-white" /> : <ChevronRight className="size-[16px] text-[#151515] dark:text-white" />}
+        <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Operators on this cluster</h2>
+        <InfoTooltip />
+      </button>
+
+      {sectionExpanded && <div className="mt-[16px]">
       <div className="flex items-center justify-between mb-[12px]">
-        <div className="flex items-center gap-[6px]">
-          <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Operators on this cluster</h2>
-          <InfoTooltip />
-        </div>
+        <div />
         <div className="relative">
           <input
             type="text"
@@ -2149,6 +2675,14 @@ function InstalledOperatorsSection({ selectedVersion, operators, navigate }: { s
         </div>
       </div>
 
+      <div className="flex items-center gap-[8px] mt-[16px] pt-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
+        <button onClick={() => setUpdateAll(!updateAll)}
+          className={`relative w-[36px] h-[20px] rounded-full border-0 cursor-pointer transition-colors ${updateAll ? "bg-[#0066cc]" : "bg-[#8a8d90]"}`}>
+          <div className={`absolute top-[2px] size-[16px] rounded-full bg-white transition-transform ${updateAll ? "left-[18px]" : "left-[2px]"}`} />
+        </button>
+        <span className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">Update all operators</span>
+      </div>
+      </div>}
     </div>
   );
 }
@@ -2170,8 +2704,20 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
   const [expandedRiskSlug, setExpandedRiskSlug] = useState<string | null>(null);
   const [expandedRiskDetail, setExpandedRiskDetail] = useState<string | null>(null);
   const [showOlderReleases, setShowOlderReleases] = useState(false);
-  const [preflightStatus, setPreflightStatus] = useState<"idle" | "running" | "complete">("idle");
+  type PreflightStatus = "idle" | "checking-health" | "checking-operators" | "checking-apis" | "checking-nodes" | "complete";
+  const [preflightStatus, setPreflightStatus] = useState<PreflightStatus>("idle");
   const riskReviewRef = useRef<HTMLDivElement>(null);
+
+  const isPreflightRunning = preflightStatus !== "idle" && preflightStatus !== "complete";
+
+  const preflightStepLabel: Record<PreflightStatus, string> = {
+    "idle": "",
+    "checking-health": "Checking cluster health…",
+    "checking-operators": "Checking operator compatibility…",
+    "checking-apis": "Checking API deprecations…",
+    "checking-nodes": "Checking worker nodes…",
+    "complete": "",
+  };
 
   const toggleAccept = (slug: string) => {
     setAcceptedSlugs((prev) => {
@@ -2183,13 +2729,19 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
   };
 
   const runPreflight = useCallback(() => {
-    if (preflightStatus === "running") return;
-    setPreflightStatus("running");
-    setTimeout(() => setPreflightStatus("complete"), 3000);
-  }, [preflightStatus]);
+    if (isPreflightRunning) return;
+    const steps: PreflightStatus[] = ["checking-health", "checking-operators", "checking-apis", "checking-nodes", "complete"];
+    let i = 0;
+    const advance = () => {
+      setPreflightStatus(steps[i]);
+      i++;
+      if (i < steps.length) setTimeout(advance, 1000);
+    };
+    advance();
+  }, [isPreflightRunning]);
 
   useEffect(() => {
-    setPreflightStatus("idle");
+    setPreflightStatus("idle" as PreflightStatus);
   }, [selectedVersion]);
 
   const selectedVer = versions.find((v: VersionEntry) => v.version === selectedVersion);
@@ -2333,22 +2885,23 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                   </div>
                   <div className="flex items-center gap-[10px]">
                     <button
-                      onClick={() => navigate(`/administration/cluster-update/version/${selectedVersion}`, { state: { version: selectedVersion } })}
-                      className="bg-[#0066cc] hover:bg-[#004080] text-white text-[14px] px-[20px] py-[9px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-                      Update to {selectedVersion}
+                      disabled={isPreflightRunning}
+                      onClick={() => { if (isPreflightRunning) return; localStorage.setItem("clusterUpdateInProgress", JSON.stringify({ version: selectedVersion, startedAt: Date.now() })); navigate("/administration/cluster-update/in-progress", { state: { version: selectedVersion } }); }}
+                      className={`text-[14px] px-[20px] py-[9px] rounded-[999px] border-0 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${isPreflightRunning ? "bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed" : "bg-[#0066cc] hover:bg-[#004080] text-white cursor-pointer"}`}>
+                      {isPreflightRunning ? "Update requested" : `Update to ${selectedVersion}`}
                     </button>
                     <button
                       onClick={runPreflight}
-                      disabled={preflightStatus === "running"}
-                      className={`text-[14px] px-[20px] py-[9px] rounded-[999px] border cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium flex items-center gap-[6px] ${preflightStatus === "running" ? "border-[#d2d2d2] bg-transparent text-[#6a6e73] cursor-wait" : preflightStatus === "complete" && preflightRisks.length === 0 ? "border-[#3d7317] bg-[rgba(61,115,23,0.04)] text-[#3d7317]" : preflightStatus === "complete" && preflightRisks.length > 0 ? "border-[#dca614] bg-[rgba(220,166,20,0.04)] text-[#795600]" : "border-[#0066cc] dark:border-[#4dabf7] bg-transparent text-[#0066cc] dark:text-[#4dabf7] hover:bg-[#0066cc]/5"}`}>
-                      {preflightStatus === "running" ? (
-                        <><Loader2 className="size-[14px] animate-spin" /> Running preflight…</>
+                      disabled={isPreflightRunning}
+                      className={`text-[14px] px-[20px] py-[9px] rounded-[999px] border cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium flex items-center gap-[6px] ${isPreflightRunning ? "border-[#d2d2d2] bg-transparent text-[#6a6e73] cursor-wait" : preflightStatus === "complete" && preflightRisks.length === 0 ? "border-[#3d7317] bg-[rgba(61,115,23,0.04)] text-[#3d7317]" : preflightStatus === "complete" && preflightRisks.length > 0 ? "border-[#dca614] bg-[rgba(220,166,20,0.04)] text-[#795600]" : "border-[#0066cc] dark:border-[#4dabf7] bg-transparent text-[#0066cc] dark:text-[#4dabf7] hover:bg-[#0066cc]/5"}`}>
+                      {isPreflightRunning ? (
+                        <><Loader2 className="size-[14px] animate-spin" /> {preflightStepLabel[preflightStatus]}</>
                       ) : preflightStatus === "complete" && preflightRisks.length === 0 ? (
-                        <><CheckCircle className="size-[14px]" /> Preflight passed</>
+                        <><CheckCircle className="size-[14px]" /> Pre-flight passed for {selectedVersion}</>
                       ) : preflightStatus === "complete" && preflightRisks.length > 0 ? (
-                        <><Shield className="size-[14px]" /> {preflightRisks.length} concern{preflightRisks.length !== 1 ? "s" : ""} found</>
+                        <><Shield className="size-[14px]" /> {preflightRisks.length} concern{preflightRisks.length !== 1 ? "s" : ""} found for {selectedVersion}</>
                       ) : (
-                        <><Shield className="size-[14px]" /> Run preflight</>
+                        <><Shield className="size-[14px]" /> Run pre-flight for {selectedVersion} release</>
                       )}
                     </button>
                   </div>
@@ -2463,30 +3016,32 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
 
                   <div className="flex items-center gap-[10px] pt-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
                     <button
-                      disabled={!canUpdate}
-                      onClick={() => navigate(`/administration/cluster-update/version/${selectedVersion}`, { state: { version: selectedVersion, acceptedRisks: [...acceptedSlugs] } })}
+                      disabled={!canUpdate || isPreflightRunning}
+                      onClick={() => { if (isPreflightRunning || !canUpdate) return; localStorage.setItem("clusterUpdateInProgress", JSON.stringify({ version: selectedVersion, startedAt: Date.now() })); navigate("/administration/cluster-update/in-progress", { state: { version: selectedVersion } }); }}
                       className={`text-[14px] px-[20px] py-[9px] rounded-[999px] border-0 transition-colors font-['Red_Hat_Text',sans-serif] font-medium ${
-                        canUpdate
-                          ? "bg-[#0066cc] hover:bg-[#004080] text-white cursor-pointer"
-                          : "bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed"
+                        isPreflightRunning
+                          ? "bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed"
+                          : canUpdate
+                            ? "bg-[#0066cc] hover:bg-[#004080] text-white cursor-pointer"
+                            : "bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed"
                       }`}>
-                      Update to {selectedVersion}
+                      {isPreflightRunning ? "Update requested" : `Update to ${selectedVersion}`}
                     </button>
                     <button
                       onClick={runPreflight}
-                      disabled={preflightStatus === "running"}
-                      className={`text-[14px] px-[20px] py-[9px] rounded-[999px] border cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium flex items-center gap-[6px] ${preflightStatus === "running" ? "border-[#d2d2d2] bg-transparent text-[#6a6e73] cursor-wait" : preflightStatus === "complete" && preflightRisks.length === 0 ? "border-[#3d7317] bg-[rgba(61,115,23,0.04)] text-[#3d7317]" : preflightStatus === "complete" && preflightRisks.length > 0 ? "border-[#dca614] bg-[rgba(220,166,20,0.04)] text-[#795600]" : "border-[#0066cc] dark:border-[#4dabf7] bg-transparent text-[#0066cc] dark:text-[#4dabf7] hover:bg-[#0066cc]/5"}`}>
-                      {preflightStatus === "running" ? (
-                        <><Loader2 className="size-[14px] animate-spin" /> Running preflight…</>
+                      disabled={isPreflightRunning}
+                      className={`text-[14px] px-[20px] py-[9px] rounded-[999px] border cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium flex items-center gap-[6px] ${isPreflightRunning ? "border-[#d2d2d2] bg-transparent text-[#6a6e73] cursor-wait" : preflightStatus === "complete" && preflightRisks.length === 0 ? "border-[#3d7317] bg-[rgba(61,115,23,0.04)] text-[#3d7317]" : preflightStatus === "complete" && preflightRisks.length > 0 ? "border-[#dca614] bg-[rgba(220,166,20,0.04)] text-[#795600]" : "border-[#0066cc] dark:border-[#4dabf7] bg-transparent text-[#0066cc] dark:text-[#4dabf7] hover:bg-[#0066cc]/5"}`}>
+                      {isPreflightRunning ? (
+                        <><Loader2 className="size-[14px] animate-spin" /> {preflightStepLabel[preflightStatus]}</>
                       ) : preflightStatus === "complete" && preflightRisks.length === 0 ? (
-                        <><CheckCircle className="size-[14px]" /> Preflight passed</>
+                        <><CheckCircle className="size-[14px]" /> Pre-flight passed for {selectedVersion}</>
                       ) : preflightStatus === "complete" && preflightRisks.length > 0 ? (
-                        <><Shield className="size-[14px]" /> {preflightRisks.length} concern{preflightRisks.length !== 1 ? "s" : ""} found</>
+                        <><Shield className="size-[14px]" /> {preflightRisks.length} concern{preflightRisks.length !== 1 ? "s" : ""} found for {selectedVersion}</>
                       ) : (
-                        <><Shield className="size-[14px]" /> Run preflight</>
+                        <><Shield className="size-[14px]" /> Run pre-flight for {selectedVersion} release</>
                       )}
                     </button>
-                    {!canUpdate && (
+                    {!canUpdate && !isPreflightRunning && (
                       <span className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif]">
                         Address all risks to proceed
                       </span>

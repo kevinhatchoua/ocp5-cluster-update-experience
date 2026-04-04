@@ -1,4 +1,4 @@
-import { createBrowserRouter, redirect } from "react-router";
+import { createBrowserRouter } from "react-router";
 import RootLayout from "./components/RootLayout";
 import Layout from "./components/Layout";
 import HomePage from "./pages/HomePage";
@@ -23,6 +23,7 @@ import AlertsPage from "./pages/AlertsPage";
 import ActivityDetailsPage from "./pages/ActivityDetailsPage";
 import ClusterInventoryPage from "./pages/ClusterInventoryPage";
 import ClusterSettingsPage from "./pages/administration/ClusterSettingsPage";
+import ClusterUpdatePlanPage from "./pages/administration/ClusterUpdatePlanPage";
 
 import ClusterUpdateInProgressPage from "./pages/administration/ClusterUpdateInProgressPage";
 import OperatorsLifecyclePage from "./pages/administration/OperatorsLifecyclePage";
@@ -90,7 +91,7 @@ export const router = createBrowserRouter([
           { path: "compute", Component: ComputePage },
           { path: "compute/nodes/:nodeName", Component: NodeDetailPage },
           { path: "user-management", Component: UserManagementPage },
-          { path: "administration/cluster-update", loader: () => redirect("/administration/cluster-settings") },
+          { path: "administration/cluster-update", Component: ClusterUpdatePlanPage },
           { path: "administration/cluster-update/version/:version", Component: VersionDetailPage },
           { path: "administration/cluster-update/in-progress", Component: ClusterUpdateInProgressPage },
           { path: "administration/cluster-update/operators", Component: OperatorsLifecyclePage },
