@@ -24,6 +24,7 @@ import ActivityDetailsPage from "./pages/ActivityDetailsPage";
 import ClusterInventoryPage from "./pages/ClusterInventoryPage";
 import ClusterSettingsPage from "./pages/administration/ClusterSettingsPage";
 import ClusterUpdatePlanPage from "./pages/administration/ClusterUpdatePlanPage";
+
 import ClusterUpdateInProgressPage from "./pages/administration/ClusterUpdateInProgressPage";
 import OperatorsLifecyclePage from "./pages/administration/OperatorsLifecyclePage";
 import UpdateCompletePage from "./pages/administration/UpdateCompletePage";

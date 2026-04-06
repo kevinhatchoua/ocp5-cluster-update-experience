@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { XCircle, Sparkles } from "lucide-react";
 
@@ -5,6 +6,10 @@ export default function UpdateFailedPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const version = (location.state as any)?.version || "5.1.10";
+
+  useEffect(() => {
+    localStorage.removeItem("clusterUpdateInProgress");
+  }, []);
 
   return (
     <div className="p-[24px] pb-[48px]">
@@ -48,7 +53,7 @@ export default function UpdateFailedPage() {
           </div>
           <div className="flex items-center gap-[12px] ml-[44px]">
             <button
-              onClick={() => navigate("/administration/cluster-update/in-progress", { state: { version } })}
+              onClick={() => { localStorage.setItem("clusterUpdateInProgress", JSON.stringify({ version, startedAt: Date.now() })); navigate("/administration/cluster-update/in-progress", { state: { version } }); }}
               className="bg-[#0066cc] hover:bg-[#004080] text-white border-0 px-[20px] py-[10px] rounded-[8px] cursor-pointer text-[14px] font-['Red_Hat_Text:Regular',sans-serif] font-semibold transition-colors"
             >
               Apply fix & retry

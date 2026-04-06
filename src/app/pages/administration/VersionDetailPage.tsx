@@ -67,7 +67,7 @@ export default function VersionDetailPage() {
   return (
     <div className="p-[24px] pb-[48px]">
       <Link to="/administration/cluster-update" className="flex items-center gap-[6px] text-[#0066cc] dark:text-[#4dabf7] text-[14px] no-underline hover:underline mb-[16px] font-['Red_Hat_Text:Regular',sans-serif]">
-        <ArrowLeft className="size-[16px]" /> Back to Cluster Updates
+        <ArrowLeft className="size-[16px]" /> Back to Cluster Update
       </Link>
 
       {/* Header */}
@@ -76,7 +76,10 @@ export default function VersionDetailPage() {
           OpenShift {version}
         </h1>
         <button
-          onClick={() => navigate("/administration/cluster-update/in-progress", { state: { version } })}
+          onClick={() => {
+            localStorage.setItem("clusterUpdateInProgress", JSON.stringify({ version, startedAt: Date.now() }));
+            navigate("/administration/cluster-update/in-progress", { state: { version } });
+          }}
           className="bg-[#0066cc] hover:bg-[#004080] text-white border-0 px-[20px] py-[10px] rounded-[8px] cursor-pointer text-[14px] font-['Red_Hat_Text:Regular',sans-serif] font-semibold transition-colors"
         >
           Update to this version

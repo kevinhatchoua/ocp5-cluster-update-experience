@@ -1,155 +1,267 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router";
-import { CheckCircle, Loader2 } from "lucide-react";
+import { useNavigate, useLocation, Link } from "react-router";
+import { CheckCircle, Loader2, Info, MoreVertical, AlertTriangle } from "lucide-react";
+import Breadcrumbs from "../../components/Breadcrumbs";
 
-const controlNodes = ["control-0", "control-1", "control-2"];
-const workerNodes = ["worker-0", "worker-1", "worker-2", "worker-3", "worker-4", "worker-5", "worker-6", "worker-7", "worker-8", "worker-9", "worker-10", "worker-11"];
+type TabKey = "update-plan" | "update-history";
+
+interface UpdatingOperator {
+  name: string;
+  version: string;
+  status: "Updating" | "Updated" | "Pending";
+  compatibility: "compatible" | "incompatible";
+  lastUpdated: string;
+}
+
+interface WorkerPool {
+  pool: string;
+  status: "Updating" | "Updated" | "Pending";
+  version: string;
+  compatibility: "compatible" | "incompatible";
+}
+
+const UPDATING_OPERATORS: UpdatingOperator[] = [
+  { name: "Abot Operator-v3.0.0", version: "3.2.5", status: "Updating", compatibility: "compatible", lastUpdated: "Feb 13, 2026, 10:28 AM" },
+  { name: "Airflow Helm Operator", version: "3.5", status: "Updating", compatibility: "compatible", lastUpdated: "Feb 13, 2026, 10:28 AM" },
+  { name: "Ansible Automation Platform", version: "3.25", status: "Updating", compatibility: "compatible", lastUpdated: "Feb 13, 2026, 10:28 AM" },
+  { name: "Bare Metal Event Relay", version: "1.2.0", status: "Pending", compatibility: "compatible", lastUpdated: "Feb 13, 2026, 10:28 AM" },
+  { name: "Camel K Operator", version: "2.1.0", status: "Pending", compatibility: "compatible", lastUpdated: "Feb 13, 2026, 10:28 AM" },
+];
+
+const WORKER_POOLS: WorkerPool[] = [
+  { pool: "worker-east", status: "Updating", version: "4.18.16", compatibility: "compatible" },
+  { pool: "worker-west", status: "Pending", version: "4.18.15", compatibility: "compatible" },
+];
 
 export default function ClusterUpdateInProgressPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const version = (location.state as any)?.version || "5.1.10";
+  const [activeTab, setActiveTab] = useState<TabKey>("update-plan");
 
-  const [progress, setProgress] = useState(0);
-  const [updatedWorkers, setUpdatedWorkers] = useState(0);
-  const [controlDone, setControlDone] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const [operatorProgress, setOperatorProgress] = useState(0);
+  const [controlProgress, setControlProgress] = useState(0);
+  const [workerProgress, setWorkerProgress] = useState(0);
 
-  // Simulate the update progress
+  useEffect(() => {
+    localStorage.setItem("clusterUpdateInProgress", JSON.stringify({ version, startedAt: Date.now() }));
+  }, [version]);
+
   useEffect(() => {
     const timer = setInterval(() => {
-      setProgress((p) => {
-        if (p >= 100) {
-          clearInterval(timer);
-          return 100;
-        }
-        return p + 2;
+      setControlProgress(p => Math.min(100, p + 1.5));
+      setOperatorProgress(p => Math.min(100, p + 0.8));
+      setWorkerProgress(p => {
+        if (controlProgress > 40) return Math.min(100, p + 0.3);
+        return p;
       });
-    }, 400);
+    }, 300);
     return () => clearInterval(timer);
-  }, []);
+  }, [controlProgress]);
 
   useEffect(() => {
-    if (progress >= 20) setControlDone(true);
-    const workersDone = Math.min(12, Math.floor((progress - 20) / 6.5));
-    if (progress >= 20) setUpdatedWorkers(Math.max(0, workersDone));
-
-    // Simulate failure at worker-7 (optional: remove to always succeed)
-    // Comment out the next 2 lines for success path
-    // if (progress >= 65) { setFailed(true); }
-
-    if (progress >= 100) {
-      setTimeout(() => navigate("/administration/cluster-update/complete", { state: { version } }), 800);
+    if (operatorProgress >= 100 && controlProgress >= 100 && workerProgress >= 100) {
+      localStorage.removeItem("clusterUpdateInProgress");
+      setTimeout(() => navigate("/administration/cluster-update/complete", { state: { version } }), 1200);
     }
-  }, [progress, navigate, version]);
+  }, [operatorProgress, controlProgress, workerProgress, navigate, version]);
 
-  const estimatedMinutes = Math.max(0, Math.round((100 - progress) * 0.72));
-  const circumference = 2 * Math.PI * 52;
-  const dashOffset = circumference - (progress / 100) * circumference;
+  const opPct = Math.round(operatorProgress);
+  const cpPct = Math.round(controlProgress);
+  const wnPct = Math.round(workerProgress);
 
-  const getNodeStatus = (node: string, isControl: boolean) => {
-    if (isControl) return controlDone ? "updated" : progress >= 5 ? "in-progress" : "pending";
-    const idx = workerNodes.indexOf(node);
-    if (idx < updatedWorkers) return "updated";
-    if (idx === updatedWorkers && controlDone) return "in-progress";
-    return "pending";
-  };
-
-  if (failed) {
-    navigate("/administration/cluster-update/failed", { state: { version } });
-    return null;
-  }
+  const tabs: { key: TabKey; label: string }[] = [
+    { key: "update-plan", label: "Update plan" },
+    { key: "update-history", label: "Update history" },
+  ];
 
   return (
-    <div className="p-[24px] pb-[48px]">
-      <div className="flex items-center justify-between mb-[24px]">
-        <h1 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[28px]">
-          Updating to {version}
-        </h1>
-        <button className="bg-transparent border border-[#c9190b] text-[#c9190b] px-[16px] py-[8px] rounded-[8px] cursor-pointer text-[14px] font-['Red_Hat_Text:Regular',sans-serif] font-semibold hover:bg-[rgba(201,25,11,0.05)] transition-colors">
-          Pause update
-        </button>
+    <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-[24px] pb-[48px]">
+      <Breadcrumbs items={[
+        { label: "Administration", path: "/administration/cluster-update" },
+        { label: "Cluster Update" },
+      ]} />
+
+      <h1 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[28px] mb-[16px]">
+        Cluster Update
+      </h1>
+
+      <div className="border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)] mb-[24px] flex gap-[0px]">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => {
+              setActiveTab(tab.key);
+              if (tab.key === "update-plan") return;
+              navigate("/administration/cluster-update", { state: { tab: tab.key } });
+            }}
+            className={`px-[20px] py-[12px] text-[14px] font-['Red_Hat_Text:Regular',sans-serif] border-0 bg-transparent cursor-pointer transition-colors relative ${
+              activeTab === tab.key
+                ? "text-[#151515] dark:text-white font-medium"
+                : "text-[#4d4d4d] dark:text-[#b0b0b0] hover:text-[#151515] dark:hover:text-white"
+            }`}
+          >
+            {tab.label}
+            {activeTab === tab.key && (
+              <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#0066cc] dark:bg-[#4dabf7] rounded-t-[2px]" />
+            )}
+          </button>
+        ))}
       </div>
 
-      {/* Progress Card */}
-      <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[32px] mb-[24px]">
-        <div className="flex items-center gap-[40px]">
-          {/* Circular progress */}
-          <div className="relative shrink-0">
-            <svg width="120" height="120" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(0,0,0,0.08)" className="dark:stroke-[rgba(255,255,255,0.1)]" strokeWidth="8" />
-              <circle cx="60" cy="60" r="52" fill="none" stroke="#0066cc" strokeWidth="8" strokeLinecap="round"
-                strokeDasharray={circumference} strokeDashoffset={dashOffset}
-                transform="rotate(-90 60 60)" className="transition-all duration-300" />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[24px]">{progress}%</span>
-            </div>
-          </div>
-
-          {/* Status details */}
-          <div className="flex flex-col gap-[16px]">
-            <div className="flex items-center gap-[10px]">
-              {controlDone ? (
-                <CheckCircle className="size-[18px] text-[#3e8635]" />
-              ) : (
-                <Loader2 className="size-[18px] text-[#0066cc] animate-spin" />
-              )}
-              <span className="text-[#151515] dark:text-white text-[14px] font-['Red_Hat_Text:Regular',sans-serif]">
-                Control plane: {controlDone ? "Updated" : "Updating..."}
-              </span>
-            </div>
-            <div className="flex items-center gap-[10px]">
-              {updatedWorkers >= 12 ? (
-                <CheckCircle className="size-[18px] text-[#3e8635]" />
-              ) : (
-                <Loader2 className="size-[18px] text-[#0066cc] animate-spin" />
-              )}
-              <span className="text-[#151515] dark:text-white text-[14px] font-['Red_Hat_Text:Regular',sans-serif]">
-                Worker nodes: {updatedWorkers} of 12 updated
-              </span>
-            </div>
-            <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">
-              Estimated time remaining: ~{estimatedMinutes} minutes
+      {/* Estimated Update Time Banner */}
+      <div className="rounded-[12px] border-2 border-[#0066cc] dark:border-[#4dabf7] bg-[#e7f1fa] dark:bg-[rgba(0,102,204,0.08)] px-[20px] py-[16px] mb-[24px]">
+        <div className="flex items-start gap-[12px]">
+          <Info className="size-[20px] text-[#0066cc] dark:text-[#4dabf7] shrink-0 mt-[2px]" />
+          <div className="flex-1">
+            <p className="text-[#151515] dark:text-white text-[16px] font-semibold font-['Red_Hat_Display:SemiBold',sans-serif] mb-[4px]">
+              Estimated update time 2 hours 12 minutes
             </p>
+            <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] mb-[14px]">
+              This is a rough estimate and will vary based on resource availability and usage.
+            </p>
+            <div className="flex items-center gap-[10px]">
+              <button className="bg-[#0066cc] hover:bg-[#004080] text-white text-[13px] px-[16px] py-[7px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                Pause update
+              </button>
+              <button className="bg-transparent text-[#c9190b] text-[13px] px-[16px] py-[7px] rounded-[999px] border border-[#c9190b] cursor-pointer hover:bg-[rgba(201,25,11,0.05)] transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+                Abort update
+              </button>
+              <Link to="#" className="text-[#0066cc] dark:text-[#4dabf7] text-[13px] no-underline hover:underline font-['Red_Hat_Text:Regular',sans-serif] font-medium ml-[4px]">
+                View logs
+              </Link>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Node Rollout Card */}
-      <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px]">
-        <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px] mb-[16px]">Node Rollout</h2>
-        <div className="flex flex-wrap gap-[10px]">
-          {controlNodes.map((node) => {
-            const status = getNodeStatus(node, true);
-            return (
-              <NodeChip key={node} name={node} status={status} />
-            );
-          })}
-          {workerNodes.map((node) => {
-            const status = getNodeStatus(node, false);
-            return (
-              <NodeChip key={node} name={node} status={status} />
-            );
-          })}
-        </div>
+      {/* Cluster ID */}
+      <div className="mb-[24px]">
+        <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Cluster ID</p>
+        <p className="text-[#151515] dark:text-white text-[14px] font-['Red_Hat_Mono:Regular',sans-serif]">b86leae3-b06c-4ab2-8fa7-54b89a2bf4b2</p>
       </div>
+
+      {/* Progress Bars */}
+      <div className="grid grid-cols-3 gap-[24px] mb-[32px]">
+        <ProgressSection label="Operators" percentage={opPct} />
+        <ProgressSection label="Control Plane" percentage={cpPct} />
+        <ProgressSection label="Worker Nodes" percentage={wnPct} />
+      </div>
+
+      {/* Operators on this cluster */}
+      <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] mb-[24px] overflow-hidden">
+        <div className="px-[24px] py-[16px] border-b border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)]">
+          <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Operators on this cluster</h2>
+        </div>
+        <table className="w-full text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">
+          <thead>
+            <tr className="border-b border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)] text-left text-[11px] text-[#6a6e73] dark:text-[#8a8d90] uppercase tracking-wide">
+              <th className="px-[24px] py-[10px] font-medium">Name</th>
+              <th className="px-[16px] py-[10px] font-medium">Status</th>
+              <th className="px-[16px] py-[10px] font-medium">Version</th>
+              <th className="px-[16px] py-[10px] font-medium">Cluster compatibility</th>
+              <th className="px-[16px] py-[10px] font-medium">Last updated</th>
+              <th className="px-[16px] py-[10px] font-medium w-[48px]">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {UPDATING_OPERATORS.map((op) => (
+              <tr key={op.name} className="border-b border-[rgba(0,0,0,0.05)] dark:border-[rgba(255,255,255,0.05)] last:border-0 hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)] transition-colors">
+                <td className="px-[24px] py-[12px] font-medium text-[#151515] dark:text-white">{op.name}</td>
+                <td className="px-[16px] py-[12px]">
+                  <span className={`inline-flex items-center gap-[6px] text-[13px] ${op.status === "Updating" ? "text-[#0066cc] dark:text-[#4dabf7]" : op.status === "Updated" ? "text-[#3e8635]" : "text-[#6a6e73]"}`}>
+                    {op.status === "Updating" && <Loader2 className="size-[14px] animate-spin" />}
+                    {op.status === "Updated" && <CheckCircle className="size-[14px]" />}
+                    {op.status}
+                  </span>
+                </td>
+                <td className="px-[16px] py-[12px] font-mono text-[#4d4d4d] dark:text-[#b0b0b0]">{op.version}</td>
+                <td className="px-[16px] py-[12px]">
+                  <span className="inline-flex items-center gap-[4px] text-[12px] text-[#3e8635] border border-[#3e8635] rounded-[999px] px-[10px] py-[3px] bg-[rgba(62,134,53,0.04)]">
+                    <CheckCircle className="size-[13px]" /> compatible
+                  </span>
+                </td>
+                <td className="px-[16px] py-[12px] text-[#4d4d4d] dark:text-[#b0b0b0]">{op.lastUpdated}</td>
+                <td className="px-[16px] py-[12px] text-center">
+                  <button className="p-[4px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[4px] transition-colors bg-transparent border-0 cursor-pointer">
+                    <MoreVertical className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Worker nodes on this cluster */}
+      <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] mb-[32px] overflow-hidden">
+        <div className="px-[24px] py-[16px] border-b border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)]">
+          <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Worker nodes on this cluster</h2>
+        </div>
+        <table className="w-full text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">
+          <thead>
+            <tr className="border-b border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)] text-left text-[11px] text-[#6a6e73] dark:text-[#8a8d90] uppercase tracking-wide">
+              <th className="px-[24px] py-[10px] font-medium">Pool</th>
+              <th className="px-[16px] py-[10px] font-medium">Status</th>
+              <th className="px-[16px] py-[10px] font-medium">Version</th>
+              <th className="px-[16px] py-[10px] font-medium">Cluster compatibility</th>
+              <th className="px-[16px] py-[10px] font-medium w-[48px]">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {WORKER_POOLS.map((pool) => (
+              <tr key={pool.pool} className="border-b border-[rgba(0,0,0,0.05)] dark:border-[rgba(255,255,255,0.05)] last:border-0 hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)] transition-colors">
+                <td className="px-[24px] py-[12px] font-medium text-[#151515] dark:text-white">{pool.pool}</td>
+                <td className="px-[16px] py-[12px]">
+                  <span className={`inline-flex items-center gap-[6px] text-[13px] ${pool.status === "Updating" ? "text-[#0066cc] dark:text-[#4dabf7]" : pool.status === "Updated" ? "text-[#3e8635]" : "text-[#6a6e73]"}`}>
+                    {pool.status === "Updating" && <Loader2 className="size-[14px] animate-spin" />}
+                    {pool.status === "Updated" && <CheckCircle className="size-[14px]" />}
+                    {pool.status}
+                  </span>
+                </td>
+                <td className="px-[16px] py-[12px] font-mono text-[#4d4d4d] dark:text-[#b0b0b0]">{pool.version}</td>
+                <td className="px-[16px] py-[12px]">
+                  <span className="inline-flex items-center gap-[4px] text-[12px] text-[#3e8635] border border-[#3e8635] rounded-[999px] px-[10px] py-[3px] bg-[rgba(62,134,53,0.04)]">
+                    <CheckCircle className="size-[13px]" /> compatible
+                  </span>
+                </td>
+                <td className="px-[16px] py-[12px] text-center">
+                  <button className="p-[4px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[4px] transition-colors bg-transparent border-0 cursor-pointer">
+                    <MoreVertical className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Abort cluster update */}
+      <button
+        onClick={() => { localStorage.removeItem("clusterUpdateInProgress"); navigate("/administration/cluster-update/failed", { state: { version } }); }}
+        className="bg-[#c9190b] hover:bg-[#a11309] text-white text-[14px] px-[20px] py-[9px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium"
+      >
+        Abort cluster update
+      </button>
     </div>
   );
 }
 
-function NodeChip({ name, status }: { name: string; status: "updated" | "in-progress" | "pending" }) {
-  const styles: Record<string, string> = {
-    "updated": "bg-[rgba(62,134,53,0.1)] border-[rgba(62,134,53,0.3)] text-[#3e8635]",
-    "in-progress": "bg-[rgba(0,102,204,0.1)] border-[rgba(0,102,204,0.3)] text-[#0066cc] dark:text-[#4dabf7]",
-    "pending": "bg-[rgba(0,0,0,0.03)] dark:bg-[rgba(255,255,255,0.03)] border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)] text-[#8a8d90]",
-  };
-
+function ProgressSection({ label, percentage }: { label: string; percentage: number }) {
   return (
-    <div className={`flex items-center gap-[6px] px-[12px] py-[6px] rounded-[8px] border text-[13px] font-['Red_Hat_Mono:Regular',sans-serif] ${styles[status]}`}>
-      {status === "in-progress" && <Loader2 className="size-[12px] animate-spin" />}
-      {status === "updated" && <CheckCircle className="size-[12px]" />}
-      {name}
+    <div>
+      <div className="flex items-center justify-between mb-[8px]">
+        <a href="#" className="text-[#0066cc] dark:text-[#4dabf7] text-[14px] no-underline hover:underline font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+          {label}
+        </a>
+        <span className="text-[#151515] dark:text-white text-[14px] font-['Red_Hat_Text:Regular',sans-serif] font-medium">{percentage}%</span>
+      </div>
+      <div className="h-[8px] bg-[#e0e0e0] dark:bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden">
+        <div
+          className="h-full bg-[#0066cc] rounded-full transition-all duration-500"
+          style={{ width: `${Math.max(percentage, percentage > 0 ? 2 : 0)}%` }}
+        />
+      </div>
     </div>
   );
 }

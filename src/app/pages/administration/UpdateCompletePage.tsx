@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { CheckCircle } from "lucide-react";
 
@@ -5,6 +6,10 @@ export default function UpdateCompletePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const version = (location.state as any)?.version || "5.1.10";
+
+  useEffect(() => {
+    localStorage.removeItem("clusterUpdateInProgress");
+  }, []);
 
   return (
     <div className="p-[24px] pb-[48px]">
@@ -39,7 +44,7 @@ export default function UpdateCompletePage() {
           onClick={() => navigate("/administration/cluster-update")}
           className="bg-[#0066cc] hover:bg-[#004080] text-white border-0 px-[24px] py-[10px] rounded-[8px] cursor-pointer text-[14px] font-['Red_Hat_Text:Regular',sans-serif] font-semibold transition-colors"
         >
-          Return to Updates
+          Return to Cluster Update
         </button>
       </div>
     </div>
