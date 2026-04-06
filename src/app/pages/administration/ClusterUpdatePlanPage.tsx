@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, Link, useLocation } from "react-router";
-import { ChevronDown, ChevronRight, ExternalLink, Sparkles, ArrowRight, CheckCircle, AlertTriangle, AlertCircle, HelpCircle, Info, X, Send, Loader2, Shield, Bot, Settings, RotateCcw, Play, Pause, Calendar, Bell, Clock, FileText, User, Zap, Eye, RefreshCw, MoreVertical, Check } from "lucide-react";
+import { ChevronDown, ChevronRight, ExternalLink, Sparkles, ArrowRight, CheckCircle, AlertTriangle, AlertCircle, HelpCircle, Info, X, Send, Loader2, Shield, Bot, Settings, RotateCcw, Play, Pause, Calendar, Bell, Clock, FileText, User, Zap, Eye, RefreshCw, MoreVertical, Check, ThumbsUp, ThumbsDown, Copy, Bookmark, Volume2, Paperclip } from "lucide-react";
 import Breadcrumbs from "../../components/Breadcrumbs";
 
 type TabKey = "update-plan" | "update-history";
@@ -613,72 +613,97 @@ export function OlsChatbot({ context, selectedVersion, selectedChannel, onClose,
   };
 
   return (
-    <div className="w-[380px] shrink-0 bg-white dark:bg-[#1a1a1a] flex flex-col border-l border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
+    <div className="w-[400px] shrink-0 flex flex-col bg-white border-l border-[#e0e0e0] rounded-l-[16px] shadow-[-4px_0_16px_rgba(0,0,0,0.08)]">
       {/* Header */}
-      <div className="flex items-center justify-between px-[20px] py-[14px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] bg-[#151515] text-white">
+      <div className="flex items-center justify-between px-[20px] py-[14px] border-b border-[#e0e0e0]">
         <div className="flex items-center gap-[10px]">
-          <div className="size-[32px] rounded-[8px] bg-[#ee0000] flex items-center justify-center">
-            <Bot className="size-[18px] text-white" />
+          <div className="size-[36px] rounded-full bg-[#f5f5f5] flex items-center justify-center shrink-0">
+            <Sparkles className="size-[18px] text-[#ee0000]" />
           </div>
-          <div>
-            <p className="text-[14px] font-semibold font-['Red_Hat_Display:SemiBold',sans-serif]">OpenShift Lightspeed</p>
-            <p className="text-[11px] text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">AI-powered cluster assistant</p>
-          </div>
+          <span className="text-[15px] font-semibold text-[#151515] font-['Red_Hat_Display:SemiBold',sans-serif]">OpenShift LightSpeed</span>
         </div>
-        <button onClick={onClose} className="bg-transparent border-0 cursor-pointer text-[#b0b0b0] hover:text-white p-[4px]">
-          <X className="size-[18px]" />
+        <button onClick={onClose} className="p-[6px] hover:bg-[#f0f0f0] rounded-[6px] bg-transparent border-0 cursor-pointer transition-colors">
+          <X className="size-[18px] text-[#6a6e73]" />
         </button>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-[16px] space-y-[16px]">
+      <div className="flex-1 overflow-y-auto px-[20px] py-[16px]" role="log" aria-live="polite">
         {messages.map((msg, i) => (
-          <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-[90%] rounded-[12px] px-[14px] py-[10px] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] leading-[1.5] whitespace-pre-wrap ${
-              msg.role === "user"
-                ? "bg-[#0066cc] text-white rounded-br-[4px]"
-                : "bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.05)] text-[#151515] dark:text-white rounded-bl-[4px]"
-            }`}>
-              {msg.text.split("**").map((part, j) => j % 2 === 1 ? <strong key={j}>{part}</strong> : part)}
-              {msg.actions && msg.actions.length > 0 && (
-                <div className="flex flex-wrap gap-[6px] mt-[10px] pt-[10px] border-t border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.1)]">
-                  {msg.actions.map((action, k) => (
-                    <button key={k} onClick={(e) => { e.stopPropagation(); onAction(action.actionId); }}
-                      className={`text-[12px] px-[10px] py-[5px] rounded-[999px] cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${
-                        action.variant === "primary" ? "bg-[#0066cc] hover:bg-[#004080] text-white border-0" :
-                        action.variant === "secondary" ? "bg-white dark:bg-[rgba(255,255,255,0.1)] hover:bg-[#f0f0f0] dark:hover:bg-[rgba(255,255,255,0.15)] text-[#0066cc] dark:text-[#4dabf7] border border-[#0066cc] dark:border-[#4dabf7]" :
-                        "bg-transparent text-[#0066cc] dark:text-[#4dabf7] hover:underline border-0 px-0"
-                      }`}>
-                      {action.label}
-                    </button>
-                  ))}
+          <div key={i} className="mb-[20px]">
+            {msg.role === "user" ? (
+              <div>
+                <div className="flex items-center gap-[8px] mb-[6px]">
+                  <div className="size-[28px] rounded-full bg-[#e0e0e0] flex items-center justify-center shrink-0">
+                    <span className="text-[12px] text-[#6a6e73] font-semibold">K</span>
+                  </div>
+                  <span className="text-[13px] text-[#151515] font-['Red_Hat_Text:Regular',sans-serif] font-medium">User</span>
+                  <span className="text-[13px] text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif]">{new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
                 </div>
-              )}
-            </div>
+                <div className="ml-[36px]">
+                  <div className="inline-block bg-[#0066cc] text-white rounded-[20px] px-[16px] py-[10px] max-w-[90%]">
+                    <p className="text-[14px] leading-[20px] font-['Red_Hat_Text:Regular',sans-serif]">{msg.text}</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-center gap-[6px] mb-[6px]">
+                  <span className="text-[13px] text-[#151515] font-['Red_Hat_Text:Regular',sans-serif] font-medium">OpenShift LightSpeed</span>
+                  <span className="text-[11px] font-semibold text-[#6a6e73] bg-[#f0f0f0] rounded-[4px] px-[6px] py-[1px] uppercase tracking-wider font-['Red_Hat_Text:Regular',sans-serif]">AI</span>
+                  <span className="text-[13px] text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif]">{new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
+                </div>
+                <div className="text-[14px] text-[#333] leading-[22px] font-['Red_Hat_Text:Regular',sans-serif] whitespace-pre-wrap">
+                  {msg.text.split("**").map((part, j) => j % 2 === 1 ? <strong key={j} className="font-semibold text-[#151515]">{part}</strong> : part)}
+                </div>
+                {msg.actions && msg.actions.length > 0 && (
+                  <div className="flex flex-wrap gap-[8px] mt-[12px]">
+                    {msg.actions.map((action, k) => (
+                      <button key={k} onClick={(e) => { e.stopPropagation(); onAction(action.actionId); }}
+                        className={`text-[13px] px-[16px] py-[8px] rounded-[20px] cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${
+                          action.variant === "primary" ? "bg-[#0066cc] hover:bg-[#004d99] text-white border-0" :
+                          action.variant === "secondary" ? "bg-white text-[#0066cc] border border-[#0066cc] hover:bg-[#e7f1fa]" :
+                          "bg-transparent text-[#0066cc] hover:underline border-0 px-0"
+                        }`}>
+                        {action.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {/* Message actions */}
+                <div className="flex items-center gap-[4px] mt-[12px]">
+                  <button className="p-[6px] hover:bg-[#f0f0f0] rounded-[6px] bg-transparent border-0 cursor-pointer transition-colors"><ThumbsUp className="size-[16px] text-[#b0b0b0]" /></button>
+                  <button className="p-[6px] hover:bg-[#f0f0f0] rounded-[6px] bg-transparent border-0 cursor-pointer transition-colors"><ThumbsDown className="size-[16px] text-[#b0b0b0]" /></button>
+                  <button className="p-[6px] hover:bg-[#f0f0f0] rounded-[6px] bg-transparent border-0 cursor-pointer transition-colors"><Copy className="size-[16px] text-[#b0b0b0]" /></button>
+                  <button className="p-[6px] hover:bg-[#f0f0f0] rounded-[6px] bg-transparent border-0 cursor-pointer transition-colors"><Bookmark className="size-[16px] text-[#b0b0b0]" /></button>
+                  <button className="p-[6px] hover:bg-[#f0f0f0] rounded-[6px] bg-transparent border-0 cursor-pointer transition-colors"><Volume2 className="size-[16px] text-[#b0b0b0]" /></button>
+                </div>
+              </div>
+            )}
           </div>
         ))}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
-      <div className="px-[16px] py-[12px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
-        <div className="flex items-center gap-[8px] bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.05)] rounded-[8px] px-[12px] py-[8px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)] focus-within:border-[#0066cc] dark:focus-within:border-[#4dabf7] transition-colors">
+      {/* Footer */}
+      <div className="border-t border-[#e0e0e0] bg-white px-[16px] py-[12px]">
+        <div className="flex items-center gap-[8px]">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-            placeholder="Ask about your cluster update..."
-            className="flex-1 bg-transparent border-0 outline-none text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] placeholder:text-[#8a8d90]"
+            placeholder="Send a message..."
+            className="flex-1 bg-transparent border-0 outline-none text-[14px] text-[#151515] font-['Red_Hat_Text:Regular',sans-serif] placeholder:text-[#b0b0b0] py-[4px]"
           />
+          <button className="p-[6px] hover:bg-[#f0f0f0] rounded-[6px] bg-transparent border-0 cursor-pointer transition-colors" title="Attach file">
+            <Paperclip className="size-[18px] text-[#6a6e73]" />
+          </button>
           <button onClick={sendMessage} disabled={!input.trim()}
-            className={`bg-transparent border-0 p-[4px] cursor-pointer transition-colors ${input.trim() ? "text-[#0066cc] dark:text-[#4dabf7]" : "text-[#d2d2d2]"}`}>
-            <Send className="size-[16px]" />
+            className="p-[6px] bg-transparent border-0 cursor-pointer transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Send">
+            <Send className="size-[18px] text-[#0066cc]" />
           </button>
         </div>
-        <p className="text-[11px] text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif] mt-[6px] text-center">
-          Powered by OpenShift Lightspeed (OLS)
-        </p>
       </div>
     </div>
   );
