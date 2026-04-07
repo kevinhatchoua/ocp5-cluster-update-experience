@@ -9,6 +9,7 @@ import {
   Layers,
   AlertTriangle,
   Clock,
+  Columns2,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import Breadcrumbs from "../../components/Breadcrumbs";
@@ -20,6 +21,26 @@ import { OlsChatbot } from "../../components/OlsChatbot";
 
 const CLUSTER_TARGET_VERSION = "5.1.10";
 const CLUSTER_CHANNEL = "fast-5.1";
+
+/** Data columns that can be hidden (Operator, selection, and Actions stay visible). */
+type TableColumnKey =
+  | "version"
+  | "clusterCompatibility"
+  | "updatePlan"
+  | "support"
+  | "status"
+  | "lastUpdated"
+  | "managedNamespaces";
+
+const TABLE_COLUMN_OPTIONS: { key: TableColumnKey; label: string }[] = [
+  { key: "version", label: "Version" },
+  { key: "clusterCompatibility", label: "Cluster compatibility" },
+  { key: "updatePlan", label: "Update plan" },
+  { key: "support", label: "Support" },
+  { key: "status", label: "Status" },
+  { key: "lastUpdated", label: "Last updated" },
+  { key: "managedNamespaces", label: "Managed namespaces" },
+];
 
 type InstalledOperator = {
   name: string;
@@ -420,6 +441,17 @@ export default function InstalledOperatorsPage() {
   const [chatbotOpen, setChatbotOpen] = useState(false);
   const [chatbotContext, setChatbotContext] = useState("");
   const [olsMountKey, setOlsMountKey] = useState(0);
+  const [columnMenuOpen, setColumnMenuOpen] = useState(false);
+  const [visibleColumns, setVisibleColumns] = useState<Record<TableColumnKey, boolean>>({
+    version: true,
+    clusterCompatibility: true,
+    updatePlan: true,
+    support: true,
+    status: true,
+    lastUpdated: true,
+    managedNamespaces: true,
+  });
+  const columnMenuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { setCurrentPage } = useChat();
 
@@ -441,6 +473,24 @@ export default function InstalledOperatorsPage() {
   useEffect(() => {
     setCurrentPage("/ecosystem/installed-operators");
   }, [setCurrentPage]);
+
+  useEffect(() => {
+    if (!columnMenuOpen) return;
+    const onDocMouseDown = (e: MouseEvent) => {
+      if (columnMenuRef.current && !columnMenuRef.current.contains(e.target as Node)) {
+        setColumnMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, [columnMenuOpen]);
+
+  const visibleDataColumnCount = useMemo(
+    () => TABLE_COLUMN_OPTIONS.filter(({ key }) => visibleColumns[key]).length,
+    [visibleColumns]
+  );
+
+  const tableColSpan = 3 + visibleDataColumnCount;
 
   const operatorsWithCompat = useMemo(() => {
     return operators.map((op) => {
@@ -647,6 +697,45 @@ export default function InstalledOperatorsPage() {
               Browse Software Catalog
               <ExternalLink className="size-[14px]" />
             </Link>
+            <div className="relative" ref={columnMenuRef}>
+              <button
+                type="button"
+                onClick={() => setColumnMenuOpen((o) => !o)}
+                aria-expanded={columnMenuOpen}
+                aria-haspopup="true"
+                className="inline-flex items-center gap-[6px] px-[12px] py-[8px] rounded-[8px] border border-[#0066cc] dark:border-[#4dabf7] text-[#0066cc] dark:text-[#4dabf7] text-[13px] font-semibold font-['Red_Hat_Text:Regular',sans-serif] hover:bg-[rgba(0,102,204,0.06)] dark:hover:bg-[rgba(77,171,247,0.1)] transition-colors bg-white dark:bg-[rgba(255,255,255,0.05)]"
+              >
+                <Columns2 className="size-[16px] shrink-0" aria-hidden />
+                Manage columns
+              </button>
+              {columnMenuOpen && (
+                <div
+                  className="absolute left-0 mt-[6px] z-[100] w-[min(100vw-32px,280px)] rounded-[8px] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.12)] bg-white dark:bg-[#1f1f1f] shadow-[0px_4px_16px_0px_rgba(0,0,0,0.12)] py-[8px]"
+                  role="menu"
+                  aria-label="Table column visibility"
+                >
+                  <p className="px-[14px] pb-[6px] text-[11px] font-semibold uppercase tracking-wide text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif]">
+                    Visible columns
+                  </p>
+                  {TABLE_COLUMN_OPTIONS.map(({ key, label }) => (
+                    <label
+                      key={key}
+                      className="flex items-center gap-[10px] px-[14px] py-[8px] cursor-pointer hover:bg-[rgba(0,0,0,0.04)] dark:hover:bg-[rgba(255,255,255,0.06)] mx-[4px] rounded-[4px]"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={visibleColumns[key]}
+                        onChange={() => setVisibleColumns((v) => ({ ...v, [key]: !v[key] }))}
+                        className="size-[14px] rounded border-[#8a8d90] cursor-pointer accent-[#0066cc]"
+                      />
+                      <span className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">
+                        {label}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="bg-[rgba(255,255,255,0.5)] dark:bg-[rgba(255,255,255,0.05)] rounded-[16px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.04)] overflow-hidden border border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]">
@@ -678,27 +767,41 @@ export default function InstalledOperatorsPage() {
                     <th className="text-left py-[12px] px-[16px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
                       Operator
                     </th>
-                    <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
-                      Version
-                    </th>
-                    <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
-                      Cluster compatibility
-                    </th>
-                    <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
-                      Update plan
-                    </th>
-                    <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
-                      Support
-                    </th>
-                    <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
-                      Status
-                    </th>
-                    <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
-                      Last updated
-                    </th>
-                    <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
-                      Managed namespaces
-                    </th>
+                    {visibleColumns.version && (
+                      <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
+                        Version
+                      </th>
+                    )}
+                    {visibleColumns.clusterCompatibility && (
+                      <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
+                        Cluster compatibility
+                      </th>
+                    )}
+                    {visibleColumns.updatePlan && (
+                      <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
+                        Update plan
+                      </th>
+                    )}
+                    {visibleColumns.support && (
+                      <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
+                        Support
+                      </th>
+                    )}
+                    {visibleColumns.status && (
+                      <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
+                        Status
+                      </th>
+                    )}
+                    {visibleColumns.lastUpdated && (
+                      <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
+                        Last updated
+                      </th>
+                    )}
+                    {visibleColumns.managedNamespaces && (
+                      <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
+                        Managed namespaces
+                      </th>
+                    )}
                     <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px] w-[60px]">
                       Actions
                     </th>
@@ -708,7 +811,7 @@ export default function InstalledOperatorsPage() {
                   {filteredOperators.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={10}
+                        colSpan={tableColSpan}
                         className="px-[16px] py-[24px] text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]"
                       >
                         No operators match your search.
@@ -750,79 +853,93 @@ export default function InstalledOperatorsPage() {
                             </p>
                           </div>
                         </td>
-                        <td className="py-[14px] px-[12px]">
-                          <span className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">
-                            {op.version}
-                          </span>
-                        </td>
-                        <td className="py-[14px] px-[12px]">
-                          {op.clusterCompatibility === "Compatible" ? (
-                            <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]">
-                              <CheckCircle className="size-[14px] text-[#3d7317]" /> Compatible
+                        {visibleColumns.version && (
+                          <td className="py-[14px] px-[12px]">
+                            <span className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">
+                              {op.version}
                             </span>
-                          ) : op.clusterCompatibility === "Incompatible" ? (
-                            <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]">
-                              <AlertCircle className="size-[14px] text-[#b1380b]" /> Incompatible
-                            </span>
-                          ) : (
-                            <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]">
-                              <AlertTriangle className="size-[14px] text-[#dca614]" /> Unknown
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-[14px] px-[12px] text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0]">
-                          {op.autoUpdate ? "Automatic" : "Manual"}
-                        </td>
-                        <td className="py-[14px] px-[12px]">
-                          <div>
-                            <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0]">
-                              {op.supportEndDate || "—"}
-                            </p>
-                            {op.supportBadge && (
-                              <span
-                                className={`text-[12px] ${
-                                  op.supportBadgeType === "danger"
-                                    ? "text-[#f0ab00] dark:text-[#f4c145]"
-                                    : op.supportBadgeType === "warning"
-                                      ? "text-[#f0ab00] dark:text-[#f4c145]"
-                                      : "text-[#3e8635] dark:text-[#5ba352]"
-                                }`}
-                              >
-                                {op.supportBadge}
+                          </td>
+                        )}
+                        {visibleColumns.clusterCompatibility && (
+                          <td className="py-[14px] px-[12px]">
+                            {op.clusterCompatibility === "Compatible" ? (
+                              <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]">
+                                <CheckCircle className="size-[14px] text-[#3d7317]" /> Compatible
+                              </span>
+                            ) : op.clusterCompatibility === "Incompatible" ? (
+                              <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]">
+                                <AlertCircle className="size-[14px] text-[#b1380b]" /> Incompatible
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]">
+                                <AlertTriangle className="size-[14px] text-[#dca614]" /> Unknown
                               </span>
                             )}
-                          </div>
-                        </td>
-                        <td className="py-[14px] px-[12px]">
-                          {op.status === "Running" ? (
-                            <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]">
-                              <CheckCircle className="size-[14px] text-[#3d7317]" /> Running
-                            </span>
-                          ) : op.status === "Degraded" ? (
-                            <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]">
-                              <AlertCircle className="size-[14px] text-[#b1380b]" /> Degraded
-                            </span>
-                          ) : (
-                            <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]">
-                              <Clock className="size-[14px] text-[#dca614]" /> Pending
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-[14px] px-[12px] text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] whitespace-nowrap">
-                          {op.lastUpdated || "—"}
-                        </td>
-                        <td className="py-[14px] px-[12px]">
-                          <div className="flex flex-wrap gap-[4px]">
-                            {(op.managedNamespaces || []).map((ns, idx) => (
-                              <span
-                                key={idx}
-                                className="text-[11px] px-[6px] py-[1px] rounded-[4px] bg-[rgba(0,0,0,0.04)] dark:bg-[rgba(255,255,255,0.06)] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Mono:Regular',sans-serif]"
-                              >
-                                {ns}
+                          </td>
+                        )}
+                        {visibleColumns.updatePlan && (
+                          <td className="py-[14px] px-[12px] text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0]">
+                            {op.autoUpdate ? "Automatic" : "Manual"}
+                          </td>
+                        )}
+                        {visibleColumns.support && (
+                          <td className="py-[14px] px-[12px]">
+                            <div>
+                              <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0]">
+                                {op.supportEndDate || "—"}
+                              </p>
+                              {op.supportBadge && (
+                                <span
+                                  className={`text-[12px] ${
+                                    op.supportBadgeType === "danger"
+                                      ? "text-[#f0ab00] dark:text-[#f4c145]"
+                                      : op.supportBadgeType === "warning"
+                                        ? "text-[#f0ab00] dark:text-[#f4c145]"
+                                        : "text-[#3e8635] dark:text-[#5ba352]"
+                                  }`}
+                                >
+                                  {op.supportBadge}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                        )}
+                        {visibleColumns.status && (
+                          <td className="py-[14px] px-[12px]">
+                            {op.status === "Running" ? (
+                              <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]">
+                                <CheckCircle className="size-[14px] text-[#3d7317]" /> Running
                               </span>
-                            ))}
-                          </div>
-                        </td>
+                            ) : op.status === "Degraded" ? (
+                              <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]">
+                                <AlertCircle className="size-[14px] text-[#b1380b]" /> Degraded
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]">
+                                <Clock className="size-[14px] text-[#dca614]" /> Pending
+                              </span>
+                            )}
+                          </td>
+                        )}
+                        {visibleColumns.lastUpdated && (
+                          <td className="py-[14px] px-[12px] text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] whitespace-nowrap">
+                            {op.lastUpdated || "—"}
+                          </td>
+                        )}
+                        {visibleColumns.managedNamespaces && (
+                          <td className="py-[14px] px-[12px]">
+                            <div className="flex flex-wrap gap-[4px]">
+                              {(op.managedNamespaces || []).map((ns, idx) => (
+                                <span
+                                  key={idx}
+                                  className="text-[11px] px-[6px] py-[1px] rounded-[4px] bg-[rgba(0,0,0,0.04)] dark:bg-[rgba(255,255,255,0.06)] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Mono:Regular',sans-serif]"
+                                >
+                                  {ns}
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                        )}
                         <td className="py-[14px] px-[12px]">
                           <KebabMenu
                             isOpen={openKebabIndex === i}
