@@ -58,7 +58,7 @@ export default function EcosystemPage() {
           <div className="bg-[rgba(255,255,255,0.5)] dark:bg-[rgba(255,255,255,0.05)] rounded-[24px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.06)] p-[24px] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)] hover:shadow-[0px_8px_24px_0px_rgba(0,0,0,0.12)] transition-shadow cursor-pointer">
             <ListChecks className="size-[24px] text-[#0066cc] dark:text-[#4dabf7] mb-[16px]" />
             <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[16px] text-[#151515] dark:text-white mb-[8px]">
-              Installed Software
+              Installed Operators
             </h2>
             <p className="text-[14px] text-[#4d4d4d] dark:text-[#b0b0b0]">
               Manage installed operators and schedule updates. <span className="text-[#0066cc] dark:text-[#4dabf7] font-semibold">4 updates available</span>

@@ -118,7 +118,7 @@ To use the guided installer to provision an environment, open the Installer link
         <Breadcrumbs
           items={[
             { label: "Ecosystem", path: "/ecosystem" },
-            { label: "Installed Software", path: "/ecosystem/installed-operators" },
+            { label: "Installed Operators", path: "/ecosystem/installed-operators" },
             { label: operator.name },
           ]}
         />

@@ -86,7 +86,7 @@ export default function OperatorUpdatePage() {
             { label: `Update ${operator.name}` },
           ] : [
             { label: "Ecosystem", path: "/ecosystem" },
-            { label: "Installed Software", path: "/ecosystem/installed-operators" },
+            { label: "Installed Operators", path: "/ecosystem/installed-operators" },
             { label: operator.name, path: `/ecosystem/software-catalog/${operator.id}` },
           ]}
         />

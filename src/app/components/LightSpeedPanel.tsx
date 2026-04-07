@@ -97,8 +97,8 @@ export default function LightSpeedPanel({
         contextMessage = "**Pre-checks found issues that need attention.**\n\nI've analyzed the failures and can guide you through fixing each one.";
         suggestions = ["Show me step-by-step remediation", "Help me fix the storage issue", "What's causing the failures?", "Can I proceed despite the warnings?"];
       } else if (location.pathname.includes('/ecosystem/installed-operators') || location.pathname.includes('/administration/installed-operators')) {
-        contextMessage = "I can see you're managing your **Installed Software**. You have several operators installed with a few updates available!\n\n**Current Status:**\n• **5 operators** installed and healthy\n• **4 updates** available\n• **2 operators** require updates before cluster update\n\n**What would you like to know?**";
-        suggestions = ["Show operator compatibility status", "Which operators need updates?", "How do I update all operators?"];
+        contextMessage = "I can see you're on **Installed Operators** (catalog / OLM operators). This aligns with the **consolidated AI** direction: catalog readiness is judged together with **platform operators** on Cluster Update—one holistic pre-check and status story.\n\n**Current Status:**\n• **5 operators** installed and healthy\n• **4 updates** available\n• **2 operators** require updates before cluster update\n\n**What would you like to know?**";
+        suggestions = ["Holistic pre-check from AI Assessment", "Which operators need updates?", "How do I update all operators?"];
       } else if (location.pathname.includes('/cluster-update/in-progress')) {
         contextMessage = "**Cluster update in progress!**\n\nYour cluster is currently updating to OpenShift 4.22.0. I'm monitoring the progress.\n\n**Current Status:**\n• Control plane nodes: Updating (1 of 3 complete)\n• Worker nodes: Waiting\n• Estimated time remaining: ~1 hour 45 minutes";
         suggestions = ["What's happening right now?", "How long will this take?", "What if something goes wrong?"];
@@ -106,8 +106,8 @@ export default function LightSpeedPanel({
         contextMessage = "**Congratulations!** Your cluster update to OpenShift 4.22.0 completed successfully!\n\n**Update Summary:**\n• All nodes updated without issues\n• Control plane is healthy\n• All workloads are running\n• No operator conflicts detected";
         suggestions = ["Show me what changed", "Which operators still need updates?", "How do I verify everything works?"];
       } else if (location.pathname.includes('/cluster-update')) {
-        contextMessage = "I can see you're planning a **cluster update**. I'll help you every step of the way!\n\n**I can help with:**\n• Running pre-checks\n• Explaining risks and compatibility\n• Guiding through the update process\n• Troubleshooting any issues\n\nWhat would you like to know?";
-        suggestions = ['Assess readiness with Lightspeed', 'What are the risks?', 'How long will it take?'];
+        contextMessage = "I can see you're planning a **cluster update**. The consolidated AI experience treats **platform operators** and **Software Catalog (OLM) operators** as one readiness story—pre-checks and status updates cover both.\n\n**I can help with:**\n• Holistic pre-checks (cluster + catalog)\n• Explaining risks and compatibility across both layers\n• Guiding through the update process\n• Troubleshooting any issues\n\nWhat would you like to know?";
+        suggestions = ['Assess readiness with Lightspeed', 'Platform vs catalog blockers?', 'How long will it take?'];
       } else if (location.pathname.includes('/administration')) {
         contextMessage = "I can help with **cluster administration** tasks like namespaces, resources, settings, and more. What do you need help with?";
         suggestions = ['Show cluster settings', 'Check for updates', 'Manage operators'];
@@ -145,8 +145,8 @@ export default function LightSpeedPanel({
         pageContext = "You're now on the **Cluster Update** page. Ready to help!";
         suggestions = ['Assess readiness', 'What are the risks?'];
       } else if (location.pathname.includes('/ecosystem/installed-operators')) {
-        pageContext = "Now viewing **Installed Software**. I can help you manage operator updates!";
-        suggestions = ['Which operators need updates?', 'Update operators now'];
+        pageContext = "Now viewing **Installed Operators**. Pre-checks here tie back to **platform + catalog** readiness on Cluster Update.";
+        suggestions = ['Which operators need updates?', 'Open holistic pre-check'];
       } else if (location.pathname.includes('/administration')) {
         pageContext = "You're in **Administration**. How can I help?";
         suggestions = ['Show cluster settings', 'Check for updates'];

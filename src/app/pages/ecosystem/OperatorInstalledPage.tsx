@@ -108,7 +108,7 @@ export default function OperatorInstalledPage() {
                 to="/ecosystem/installed-operators"
                 className="px-[16px] py-[10px] text-[#0066cc] dark:text-[#4dabf7] hover:underline font-semibold text-[14px] flex items-center"
               >
-                Manage Installed Software
+                Manage Installed Operators
               </Link>
               <Link
                 to="/ecosystem/software-catalog"

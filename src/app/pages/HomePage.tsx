@@ -314,7 +314,7 @@ function StatusCard() {
               Update plan
             </Link>
             <Link to="/ecosystem/installed-operators" className="font-['Red_Hat_Text_VF:Regular',sans-serif] text-[13px] text-[#0066cc] dark:text-[#4dabf7] no-underline hover:underline whitespace-nowrap">
-              Installed Software
+              Installed Operators
             </Link>
           </div>
         </div>

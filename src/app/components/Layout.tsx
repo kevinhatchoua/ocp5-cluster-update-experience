@@ -604,7 +604,7 @@ export default function Layout() {
       ),
       subItems: [
         { path: "/ecosystem/software-catalog", label: "Software Catalog" },
-        { path: "/ecosystem/installed-operators", label: "Installed Software" },
+        { path: "/ecosystem/installed-operators", label: "Installed Operators" },
         { path: "/ecosystem/helm", label: "Helm" },
       ],
     },
@@ -741,26 +741,29 @@ export default function Layout() {
   const contentTop = impersonatedUser ? 'top-[126px]' : 'top-[66px]'; // Adjust for banner height
 
   return (
-    <div className="bg-[#f8f8f8] dark:bg-[#0f0f0f] overflow-clip relative size-full transition-colors" data-name="Home">
-      {/* Glass Effect Background - WITH gradient overlay */}
+    <div
+      className="bg-[#e0e0e0] dark:bg-[#1c1c1c] no-glass:bg-[#f8f8f8] no-glass:dark:bg-[#0f0f0f] overflow-clip relative size-full transition-colors"
+      data-name="Home"
+    >
+      {/* Glass Effect Background - WITH gradient overlay (stronger contrast so blur reads clearly) */}
       <div className="absolute inset-0 no-glass:hidden">
         {/* Light mode background with gradient */}
         <div className="absolute inset-0 dark:hidden">
           <img 
             src="figma:asset/0063c8b2c924b83b2301cb4476c9f3da3f438e88.png" 
             alt="" 
-            className="absolute inset-0 w-full h-full object-cover opacity-20"
+            className="absolute inset-0 w-full h-full object-cover opacity-[0.32]"
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-[#e0f2fe]/30 via-[#f8f8f8]/50 to-[#fce7f3]/30" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#bae6fd]/45 via-[#d8d8d8]/70 to-[#fbcfe8]/45" />
         </div>
         {/* Dark mode background with gradient */}
         <div className="absolute inset-0 hidden dark:block">
           <img 
             src="figma:asset/36e6362e0985ed0b78c1c2e915d3ed8df2963824.png" 
             alt="" 
-            className="absolute inset-0 w-full h-full object-cover opacity-20"
+            className="absolute inset-0 w-full h-full object-cover opacity-[0.32]"
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-[#1e3a8a]/20 via-[#0f0f0f]/50 to-[#7c2d12]/20" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#1e40af]/28 via-[#2a2a2a]/65 to-[#9a3412]/28" />
         </div>
       </div>
 
