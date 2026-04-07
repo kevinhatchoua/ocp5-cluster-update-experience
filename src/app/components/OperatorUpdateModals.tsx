@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X, AlertTriangle, Loader2, CheckCircle2, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useChat } from "../contexts/ChatContext";
@@ -333,66 +333,99 @@ interface BulkUpdateModalProps {
 export function BulkUpdateModal({ isOpen, onClose, selectedOperators, operators, onBulkComplete }: BulkUpdateModalProps) {
   const [updateStage, setUpdateStage] = useState<'confirmation' | 'ai-analysis' | 'updating' | 'complete'>('confirmation');
   const [currentProgress, setCurrentProgress] = useState(0);
+  /** Snapshot of operators being updated — parent clears `newVersion` after completion, so we must not rely on live `operators` for the success screen. */
+  const [bulkRun, setBulkRun] = useState<Operator[]>([]);
+  const bulkRunRef = useRef<Operator[]>([]);
+  const analysisTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const navigate = useNavigate();
   const { setIsOpen: setIsAIOpen, addMessage } = useChat();
 
   const selectedOps = operators.filter(op => selectedOperators.includes(op.name) && op.newVersion);
 
+  /** Rows to show in the modal after a run has started (confirmation still uses live selectedOps). */
+  const activeRunOps = bulkRun.length > 0 ? bulkRun : selectedOps;
+
+  const clearBulkTimers = () => {
+    if (analysisTimeoutRef.current !== null) {
+      clearTimeout(analysisTimeoutRef.current);
+      analysisTimeoutRef.current = null;
+    }
+    if (progressIntervalRef.current !== null) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+  };
+
   const handleStartUpdate = () => {
     if (selectedOps.length === 0) return;
+    const snapshot = selectedOps.map((o) => ({ ...o }));
+    bulkRunRef.current = snapshot;
+    setBulkRun(snapshot);
+
     setUpdateStage('ai-analysis');
-    
-    // Add AI message
+
     addMessage({
       type: 'ai',
-      content: `🤖 **Analyzing Bulk Operator Updates**\n\nI'm analyzing ${selectedOps.length} operator(s) for compatibility and dependencies:\n\n${selectedOps.map(op => `• ${op.name} (${op.version} → ${op.newVersion})`).join('\n')}\n\nThis will take about 10-15 seconds...`,
+      content: `🤖 **Analyzing Bulk Operator Updates**\n\nI'm analyzing ${snapshot.length} operator(s) for compatibility and dependencies:\n\n${snapshot.map(op => `• ${op.name} (${op.version} → ${op.newVersion})`).join('\n')}\n\nThis will take about 10-15 seconds...`,
     });
     setIsAIOpen(true);
 
-    // Simulate AI analysis
-    setTimeout(() => {
+    analysisTimeoutRef.current = setTimeout(() => {
+      analysisTimeoutRef.current = null;
+      const runOps = bulkRunRef.current;
+      if (runOps.length === 0) return;
+
       addMessage({
         type: 'ai',
-        content: `✅ **Bulk Update Analysis Complete**\n\n**Compatibility Check:** All selected operators are compatible\n\n**Update Order:** ${selectedOps.map((op, i) => `\n${i + 1}. ${op.name} → ${op.newVersion}`).join('')}\n\n**Estimated Time:** ${selectedOps.length * 4}-${selectedOps.length * 6} minutes\n\n**Impact Assessment:**\n• No conflicts detected\n• Rolling updates will be used\n• Minimal service disruption\n\n**Recommendation:** ✅ Safe to proceed`,
+        content: `✅ **Bulk Update Analysis Complete**\n\n**Compatibility Check:** All selected operators are compatible\n\n**Update Order:** ${runOps.map((op, i) => `\n${i + 1}. ${op.name} → ${op.newVersion}`).join('')}\n\n**Estimated Time:** ${runOps.length * 4}-${runOps.length * 6} minutes\n\n**Impact Assessment:**\n• No conflicts detected\n• Rolling updates will be used\n• Minimal service disruption\n\n**Recommendation:** ✅ Safe to proceed`,
       });
-      
+
       setUpdateStage('updating');
-      
-      // Simulate update progress
+
       let progress = 0;
-      const progressPerOperator = 100 / selectedOps.length;
-      
-      const interval = setInterval(() => {
+      const progressPerOperator = 100 / runOps.length;
+
+      progressIntervalRef.current = setInterval(() => {
         progress += 2;
         setCurrentProgress(Math.min(progress, 100));
-        
+
         const completedOps = Math.floor(progress / progressPerOperator);
-        
+
         if (completedOps > 0 && progress % progressPerOperator < 2) {
+          const op = runOps[completedOps - 1];
           addMessage({
             type: 'ai',
-            content: `✅ **${selectedOps[completedOps - 1].name}** updated successfully (${selectedOps[completedOps - 1].version} → ${selectedOps[completedOps - 1].newVersion})`,
+            content: `✅ **${op.name}** updated successfully (${op.version} → ${op.newVersion})`,
           });
         }
-        
+
         if (progress >= 100) {
-          clearInterval(interval);
-          onBulkComplete?.(selectedOps.map((o) => o.name));
+          if (progressIntervalRef.current !== null) {
+            clearInterval(progressIntervalRef.current);
+            progressIntervalRef.current = null;
+          }
+          onBulkComplete?.(runOps.map((o) => o.name));
           setUpdateStage('complete');
           addMessage({
             type: 'ai',
-            content: `🎉 **All ${selectedOps.length} Operators Updated Successfully!**\n\n${selectedOps.map(op => `✅ ${op.name} → ${op.newVersion}`).join('\n')}\n\n**Next Steps:**\n1. Monitor operator health for the next 24 hours\n2. Review update logs for any warnings\n3. Test affected workloads\n\nAll systems are running normally!`,
+            content: `🎉 **All ${runOps.length} Operators Updated Successfully!**\n\n${runOps.map(op => `✅ ${op.name} → ${op.newVersion}`).join('\n')}\n\n**Next Steps:**\n1. Monitor operator health for the next 24 hours\n2. Review update logs for any warnings\n3. Test affected workloads\n\nAll systems are running normally!`,
           });
         }
       }, 150);
     }, 3000);
   };
 
-  // Reset state when modal opens
+  // Reset state when modal opens; clear timers when it closes
   useEffect(() => {
     if (isOpen) {
       setUpdateStage('confirmation');
       setCurrentProgress(0);
+      setBulkRun([]);
+      bulkRunRef.current = [];
+      clearBulkTimers();
+    } else {
+      clearBulkTimers();
     }
   }, [isOpen]);
 
@@ -410,7 +443,7 @@ export function BulkUpdateModal({ isOpen, onClose, selectedOperators, operators,
           <div className="flex items-center justify-between px-[24px] py-[20px] border-b border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)]">
             <div className="flex items-center gap-[12px]">
               <div className="size-[24px] bg-[#0066cc] dark:bg-[#4dabf7] rounded-full flex items-center justify-center text-white text-[12px] font-bold">
-                {selectedOps.length}
+                {activeRunOps.length}
               </div>
               <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[20px] text-[#151515] dark:text-white">
                 {updateStage === 'complete' ? 'Update Complete' : 'Approve Operator Updates'}
@@ -433,8 +466,8 @@ export function BulkUpdateModal({ isOpen, onClose, selectedOperators, operators,
                 <div className="mb-[20px]">
                   <p className="text-[14px] text-[#151515] dark:text-[#b0b0b0] mb-[8px]">
                     You selected <strong>{selectedOperators.length} operator(s)</strong> in the table.
-                    {selectedOps.length > 0 ? (
-                      <> The following <strong>{selectedOps.length}</strong> have an <strong>update available</strong> and will be approved in this run:</>
+                    {activeRunOps.length > 0 ? (
+                      <> The following <strong>{activeRunOps.length}</strong> have an <strong>update available</strong> and will be approved in this run:</>
                     ) : (
                       <> None of the selected operators currently have an update available in the catalog—choose rows that show <strong>Update available</strong>, or use the row actions menu.</>
                     )}
@@ -442,7 +475,7 @@ export function BulkUpdateModal({ isOpen, onClose, selectedOperators, operators,
                 </div>
 
                 {/* Operators Table */}
-                {selectedOps.length > 0 ? (
+                {activeRunOps.length > 0 ? (
                 <div className="bg-[#f8f8f8] dark:bg-[rgba(255,255,255,0.03)] rounded-[12px] p-[16px] mb-[20px]">
                   <table className="w-full">
                     <thead>
@@ -462,8 +495,8 @@ export function BulkUpdateModal({ isOpen, onClose, selectedOperators, operators,
                       </tr>
                     </thead>
                     <tbody>
-                      {selectedOps.map((op, index) => (
-                        <tr key={op.name} className={index !== selectedOps.length - 1 ? "border-b border-[rgba(0,0,0,0.05)] dark:border-[rgba(255,255,255,0.05)]" : ""}>
+                      {activeRunOps.map((op, index) => (
+                        <tr key={op.name} className={index !== activeRunOps.length - 1 ? "border-b border-[rgba(0,0,0,0.05)] dark:border-[rgba(255,255,255,0.05)]" : ""}>
                           <td className="py-[12px] text-[14px] text-[#151515] dark:text-white">
                             {op.name}
                             {op.required && (
@@ -488,7 +521,7 @@ export function BulkUpdateModal({ isOpen, onClose, selectedOperators, operators,
                 </div>
                 ) : null}
 
-                {selectedOps.length > 0 ? (
+                {activeRunOps.length > 0 ? (
                 <div className="bg-[#e7f6fd] dark:bg-[rgba(43,154,243,0.1)] border border-[#2b9af3]/20 rounded-[12px] p-[16px] mb-[20px]">
                   <div className="flex items-start gap-[12px]">
                     <Sparkles className="size-[20px] text-[#2b9af3] dark:text-[#73bcf7] shrink-0 mt-[2px]" />
@@ -510,7 +543,7 @@ export function BulkUpdateModal({ isOpen, onClose, selectedOperators, operators,
               <div className="text-center py-[40px]">
                 <Loader2 className="size-[48px] text-[#0066cc] dark:text-[#4dabf7] animate-spin mx-auto mb-[20px]" />
                 <h3 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[18px] text-[#151515] dark:text-white mb-[8px]">
-                  Analyzing {selectedOps.length} Operator Updates with AI
+                  Analyzing {activeRunOps.length} Operator Updates with AI
                 </h3>
                 <p className="text-[14px] text-[#4d4d4d] dark:text-[#b0b0b0]">
                   Checking compatibility, update order, and potential conflicts...
@@ -523,7 +556,7 @@ export function BulkUpdateModal({ isOpen, onClose, selectedOperators, operators,
                 <div className="mb-[24px]">
                   <div className="flex items-center justify-between mb-[12px]">
                     <h3 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[16px] text-[#151515] dark:text-white">
-                      Updating {selectedOps.length} Operators
+                      Updating {activeRunOps.length} Operators
                     </h3>
                     <span className="text-[14px] text-[#0066cc] dark:text-[#4dabf7] font-semibold">
                       {currentProgress.toFixed(0)}%
@@ -538,8 +571,8 @@ export function BulkUpdateModal({ isOpen, onClose, selectedOperators, operators,
                 </div>
 
                 <div className="space-y-[12px]">
-                  {selectedOps.map((op, index) => {
-                    const progressPerOp = 100 / selectedOps.length;
+                  {activeRunOps.map((op, index) => {
+                    const progressPerOp = 100 / activeRunOps.length;
                     const isComplete = currentProgress > (index + 1) * progressPerOp;
                     const isInProgress = currentProgress > index * progressPerOp && !isComplete;
                     
@@ -581,7 +614,7 @@ export function BulkUpdateModal({ isOpen, onClose, selectedOperators, operators,
                   <CheckCircle2 className="size-[36px] text-[#3e8635] dark:text-[#5ba352]" />
                 </div>
                 <h3 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[20px] text-[#151515] dark:text-white mb-[12px]">
-                  {selectedOps.length} Operators Updated Successfully
+                  {activeRunOps.length} Operator{activeRunOps.length !== 1 ? "s" : ""} Updated Successfully
                 </h3>
                 <p className="text-[14px] text-[#4d4d4d] dark:text-[#b0b0b0] mb-[24px]">
                   All selected operators have been updated to their latest versions
@@ -592,7 +625,7 @@ export function BulkUpdateModal({ isOpen, onClose, selectedOperators, operators,
                     Updated Operators:
                   </p>
                   <ul className="space-y-[4px]">
-                    {selectedOps.map(op => (
+                    {activeRunOps.map(op => (
                       <li key={op.name} className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] flex items-center gap-[8px]">
                         <CheckCircle2 className="size-[14px] text-[#3e8635] dark:text-[#5ba352]" />
                         {op.name} → {op.newVersion}
@@ -639,7 +672,7 @@ export function BulkUpdateModal({ isOpen, onClose, selectedOperators, operators,
             {updateStage === 'updating' && (
               <div className="flex items-center gap-[8px] text-[14px] text-[#4d4d4d] dark:text-[#b0b0b0]">
                 <Loader2 className="size-[16px] animate-spin" />
-                Updating {selectedOps.length} operators...
+                Updating {activeRunOps.length} operators...
               </div>
             )}
 

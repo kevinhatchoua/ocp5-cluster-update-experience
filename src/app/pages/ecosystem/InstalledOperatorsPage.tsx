@@ -858,6 +858,11 @@ export default function InstalledOperatorsPage() {
                             <span className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">
                               {op.version}
                             </span>
+                            {op.updateAvailable ? (
+                              <span className="block text-[11px] text-[#0066cc] dark:text-[#4dabf7] mt-[4px] font-['Red_Hat_Text:Regular',sans-serif]">
+                                Update available: {op.updateAvailable}
+                              </span>
+                            ) : null}
                           </td>
                         )}
                         {visibleColumns.clusterCompatibility && (
@@ -951,10 +956,10 @@ export default function InstalledOperatorsPage() {
                                 onClick: () =>
                                   navigate(`/ecosystem/installed-operators/${encodeURIComponent(op.name)}`),
                               },
-                              ...(op.updateAvailable
+                              ...(typeof op.updateAvailable === "string" && op.updateAvailable.length > 0
                                 ? [
                                     {
-                                      label: `Update to ${op.updateAvailable}`,
+                                      label: "Update",
                                       onClick: () => navigateToUpdate(op),
                                     },
                                   ]
