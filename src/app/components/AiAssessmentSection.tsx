@@ -68,10 +68,10 @@ export function AiAssessmentSection({
           ) : (
             <>
               <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[16px] leading-[20px]">
-                Consolidated AI on the dashboard brings the cluster update experience and Software Catalog together:{" "}
-                <span className="text-[#151515] dark:text-white font-medium">platform operators</span> and{" "}
-                <span className="text-[#151515] dark:text-white font-medium">catalog operators</span> share the same pre-checks and
-                status updates, so readiness is one holistic view—not separate silos.
+                OpenShift LightSpeed can help you assess whether this <span className="text-[#151515] dark:text-white font-medium">cluster</span>{" "}
+                is ready to move to the target version and how your{" "}
+                <span className="text-[#151515] dark:text-white font-medium">operators</span>—both platform and catalog—may be affected.
+                Use a pre-check to surface compatibility risks, blocking work, and follow-up actions before you start the update.
               </p>
 
               <div className="rounded-[8px] border-2 border-[#5e40be] dark:border-[#b2a3e0] px-[16px] py-[12px] mb-[16px]">
