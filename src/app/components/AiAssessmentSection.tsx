@@ -1,15 +1,32 @@
 import { useState } from "react";
 import { ChevronDown, ChevronRight, Info, Sparkles } from "lucide-react";
 
+export type AiAssessmentVariant = "cluster-update" | "installed-operators";
+
+type InstalledSummary = {
+  totalOperators: number;
+  updatesAvailable: number;
+  clusterTargetVersion: string;
+  channelLabel: string;
+};
+
 /** Shared AI Assessment card (OCPSTRAT-2701) — Cluster Update and Installed Operators. */
 export function AiAssessmentSection({
   openChatbot,
   selectedVersion,
+  variant = "cluster-update",
+  installedSummary,
 }: {
   openChatbot: (ctx: string) => void;
   selectedVersion: string;
+  variant?: AiAssessmentVariant;
+  /** Required when variant is installed-operators — drives contextual copy and the info callout. */
+  installedSummary?: InstalledSummary;
 }) {
   const [expanded, setExpanded] = useState(true);
+
+  const precheckContext =
+    variant === "installed-operators" ? "installed-operators-precheck" : "ai-precheck";
 
   return (
     <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
@@ -27,25 +44,50 @@ export function AiAssessmentSection({
 
       {expanded && (
         <div className="mt-[16px]">
-          <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[16px] leading-[20px]">
-            Consolidated AI on the dashboard brings the cluster update experience and Software Catalog together:{" "}
-            <span className="text-[#151515] dark:text-white font-medium">platform operators</span> and{" "}
-            <span className="text-[#151515] dark:text-white font-medium">catalog operators</span> share the same pre-checks and
-            status updates, so readiness is one holistic view—not separate silos.
-          </p>
-
-          <div className="rounded-[8px] border-2 border-[#5e40be] dark:border-[#b2a3e0] px-[16px] py-[12px] mb-[16px]">
-            <div className="flex items-center gap-[10px]">
-              <Info className="size-[16px] text-[#0066cc] dark:text-[#4dabf7] shrink-0" />
-              <p className="text-[#151515] dark:text-white text-[14px] font-['Red_Hat_Text:Regular',sans-serif]">
-                Version {selectedVersion} Available
+          {variant === "installed-operators" && installedSummary ? (
+            <>
+              <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[16px] leading-[20px]">
+                OpenShift LightSpeed can review your <span className="text-[#151515] dark:text-white font-medium">installed catalog operators</span>{" "}
+                against the cluster&apos;s target OpenShift version. Use it to spot compatibility gaps, required updates, and OLM v0 vs cluster
+                extension (v1) differences before you approve installs or updates from this list.
               </p>
-            </div>
-          </div>
+
+              <div className="rounded-[8px] border-2 border-[#5e40be] dark:border-[#b2a3e0] px-[16px] py-[12px] mb-[16px]">
+                <div className="flex items-center gap-[10px]">
+                  <Info className="size-[16px] text-[#0066cc] dark:text-[#4dabf7] shrink-0" />
+                  <p className="text-[#151515] dark:text-white text-[14px] font-['Red_Hat_Text:Regular',sans-serif]">
+                    Cluster target <span className="font-mono font-semibold">{installedSummary.clusterTargetVersion}</span>
+                    <span className="text-[#6a6e73] dark:text-[#8a8d90] font-normal"> · {installedSummary.channelLabel}</span>
+                    <span className="block text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-normal mt-[4px]">
+                      {installedSummary.totalOperators} operators installed · {installedSummary.updatesAvailable} with updates available
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[16px] leading-[20px]">
+                Consolidated AI on the dashboard brings the cluster update experience and Software Catalog together:{" "}
+                <span className="text-[#151515] dark:text-white font-medium">platform operators</span> and{" "}
+                <span className="text-[#151515] dark:text-white font-medium">catalog operators</span> share the same pre-checks and
+                status updates, so readiness is one holistic view—not separate silos.
+              </p>
+
+              <div className="rounded-[8px] border-2 border-[#5e40be] dark:border-[#b2a3e0] px-[16px] py-[12px] mb-[16px]">
+                <div className="flex items-center gap-[10px]">
+                  <Info className="size-[16px] text-[#0066cc] dark:text-[#4dabf7] shrink-0" />
+                  <p className="text-[#151515] dark:text-white text-[14px] font-['Red_Hat_Text:Regular',sans-serif]">
+                    Version {selectedVersion} Available
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
 
           <div className="flex items-center gap-[8px]">
             <button
-              onClick={() => openChatbot("ai-precheck")}
+              onClick={() => openChatbot(precheckContext)}
               className="flex items-center gap-[8px] bg-transparent hover:bg-[rgba(0,102,204,0.05)] dark:hover:bg-[rgba(77,171,247,0.08)] text-[#0066cc] dark:text-[#4dabf7] text-[14px] px-[16px] py-[8px] rounded-[999px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium"
             >
               Pre-check with AI

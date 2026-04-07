@@ -33,7 +33,16 @@ export function OlsChatbot({
         text: `Hello! I'm OpenShift Lightspeed, your AI assistant for cluster operations.\n\nI can see your cluster is currently on version **5.0.0** using the **${selectedChannel}** channel, and you're considering an update to **${selectedVersion}**.\n\nPre-checks and status updates cover **platform operators** and **Software Catalog (OLM) operators** together—one holistic view as those experiences converge on the dashboard.`,
       },
     ];
-    if (context === "recommendations") {
+    if (context === "installed-operators-precheck") {
+      initial[0] = {
+        role: "assistant",
+        text: `Hello! I'm OpenShift Lightspeed. You're on **Installed Operators** — I'm focused on **catalog operators** (OLM Subscriptions and cluster extensions) on this cluster, using **${selectedVersion}** on **${selectedChannel}** as the compatibility target.`,
+      };
+      initial.push({
+        role: "assistant",
+        text: `**Pre-check: Installed Operators**\n\n**Cluster target:** ${selectedVersion} · **Channel:** ${selectedChannel}\n\n**OLM v0 (Subscriptions)**\n• **Update available** — Abot Operator-v3.0.0, Airflow Helm Operator, Ansible Automation Platform, Bare Metal Event Relay\n• **Required before some cluster updates** — Abot Operator-v3.0.0, Airflow Helm Operator\n• **Up to date** — Camel K Operator\n\n**OLM v1 (cluster extensions)**\n• **Healthy** — OpenShift GitOps (cluster extension)\n• **Conditions pending** — Sample observability bundle (discovery still settling)\n\n**Checks performed**\n• Subscription / extension status vs. target version\n• Support and end-of-life signals (as shown in the table)\n• Alignment with **Cluster Update** readiness for the same target\n\n**Next steps**\n1. Approve updates for operators that block your cluster plan (use row actions or select **two or more** operators and **Approve update** for bulk approval)\n2. Resolve **Unknown** compatibility before go-live\n3. Open **Cluster Update** when catalog and platform both look clear\n\nAsk about upgrade order, risk, or a specific operator in the list.`,
+      });
+    } else if (context === "recommendations") {
       initial.push({ role: "assistant", text: `Based on your cluster's workload profile and update history, here are my recommendations:\n\n• **Recommended version**: ${selectedVersion} — Low risk with strong community adoption\n• **Best update window**: Weekdays 2:00-4:00 AM UTC based on your traffic patterns\n• **Pre-update actions**: Update cluster-logging operator to v6.5+ before proceeding\n• **Estimated downtime**: ~2 minutes for API server restart` });
     } else if (context === "agent-config") {
       initial.push({ role: "assistant", text: "I can help you configure the agent-based update strategy. The agent will:\n\n• **Analyze workload patterns** to find optimal update windows\n• **Assess readiness** automatically before each update (platform + catalog operators)\n• **Coordinate operator updates** in the correct dependency order across cluster and OLM\n• **Monitor rollout health** and trigger automatic rollback if issues are detected\n\nWould you like to configure the update schedule, set rollback thresholds, or review the current agent policy?" });
@@ -69,6 +78,9 @@ export function OlsChatbot({
       const contextActions: Record<string, ChatAction[]> = {
         "agent-precheck": [],
         "ai-precheck": [],
+        "installed-operators-precheck": [
+          { label: "Open Cluster Update", variant: "primary", actionId: "view-plan" },
+        ],
         "agent-start": [
           { label: "Review update plan", variant: "primary", actionId: "view-plan" },
         ],

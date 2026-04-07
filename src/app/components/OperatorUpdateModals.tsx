@@ -326,9 +326,11 @@ interface BulkUpdateModalProps {
   onClose: () => void;
   selectedOperators: string[];
   operators: Operator[];
+  /** Called when the simulated bulk install completes — parent should update table rows. */
+  onBulkComplete?: (updatedOperatorNames: string[]) => void;
 }
 
-export function BulkUpdateModal({ isOpen, onClose, selectedOperators, operators }: BulkUpdateModalProps) {
+export function BulkUpdateModal({ isOpen, onClose, selectedOperators, operators, onBulkComplete }: BulkUpdateModalProps) {
   const [updateStage, setUpdateStage] = useState<'confirmation' | 'ai-analysis' | 'updating' | 'complete'>('confirmation');
   const [currentProgress, setCurrentProgress] = useState(0);
   const navigate = useNavigate();
@@ -337,6 +339,7 @@ export function BulkUpdateModal({ isOpen, onClose, selectedOperators, operators 
   const selectedOps = operators.filter(op => selectedOperators.includes(op.name) && op.newVersion);
 
   const handleStartUpdate = () => {
+    if (selectedOps.length === 0) return;
     setUpdateStage('ai-analysis');
     
     // Add AI message
@@ -374,6 +377,7 @@ export function BulkUpdateModal({ isOpen, onClose, selectedOperators, operators 
         
         if (progress >= 100) {
           clearInterval(interval);
+          onBulkComplete?.(selectedOps.map((o) => o.name));
           setUpdateStage('complete');
           addMessage({
             type: 'ai',
@@ -428,11 +432,17 @@ export function BulkUpdateModal({ isOpen, onClose, selectedOperators, operators 
               <>
                 <div className="mb-[20px]">
                   <p className="text-[14px] text-[#151515] dark:text-[#b0b0b0] mb-[8px]">
-                    You've selected <strong>{selectedOps.length} operator(s)</strong> to update:
+                    You selected <strong>{selectedOperators.length} operator(s)</strong> in the table.
+                    {selectedOps.length > 0 ? (
+                      <> The following <strong>{selectedOps.length}</strong> have an <strong>update available</strong> and will be approved in this run:</>
+                    ) : (
+                      <> None of the selected operators currently have an update available in the catalog—choose rows that show <strong>Update available</strong>, or use the row actions menu.</>
+                    )}
                   </p>
                 </div>
 
                 {/* Operators Table */}
+                {selectedOps.length > 0 ? (
                 <div className="bg-[#f8f8f8] dark:bg-[rgba(255,255,255,0.03)] rounded-[12px] p-[16px] mb-[20px]">
                   <table className="w-full">
                     <thead>
@@ -476,7 +486,9 @@ export function BulkUpdateModal({ isOpen, onClose, selectedOperators, operators 
                     </tbody>
                   </table>
                 </div>
+                ) : null}
 
+                {selectedOps.length > 0 ? (
                 <div className="bg-[#e7f6fd] dark:bg-[rgba(43,154,243,0.1)] border border-[#2b9af3]/20 rounded-[12px] p-[16px] mb-[20px]">
                   <div className="flex items-start gap-[12px]">
                     <Sparkles className="size-[20px] text-[#2b9af3] dark:text-[#73bcf7] shrink-0 mt-[2px]" />
@@ -490,6 +502,7 @@ export function BulkUpdateModal({ isOpen, onClose, selectedOperators, operators 
                     </div>
                   </div>
                 </div>
+                ) : null}
               </>
             )}
 
@@ -603,7 +616,12 @@ export function BulkUpdateModal({ isOpen, onClose, selectedOperators, operators 
                 </button>
                 <button
                   onClick={handleStartUpdate}
-                  className="px-[16px] py-[10px] bg-[#0066cc] hover:bg-[#004080] dark:bg-[#4dabf7] dark:hover:bg-[#339af0] text-white rounded-[8px] font-semibold text-[14px] transition-colors flex items-center gap-[8px]"
+                  disabled={selectedOps.length === 0}
+                  className={`px-[16px] py-[10px] rounded-[8px] font-semibold text-[14px] transition-colors flex items-center gap-[8px] ${
+                    selectedOps.length === 0
+                      ? "bg-[#d2d2d2] dark:bg-[#4d4d4d] text-[#8a8d90] cursor-not-allowed"
+                      : "bg-[#0066cc] hover:bg-[#004080] dark:bg-[#4dabf7] dark:hover:bg-[#339af0] text-white cursor-pointer"
+                  }`}
                 >
                   <Sparkles className="size-[16px]" />
                   Start AI-Assisted Update
