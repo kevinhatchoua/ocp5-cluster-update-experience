@@ -222,10 +222,10 @@ export default function LightSpeedPanel({
 
   return (
     <div className="fixed top-0 right-0 h-full w-[420px] z-50 flex flex-col transition-transform duration-300 ease-in-out translate-x-0">
-      <div className="flex flex-col h-full bg-white rounded-l-[16px] shadow-[-4px_0_24px_rgba(0,0,0,0.12)] overflow-hidden">
+      <div className="flex flex-col h-full app-glass-panel app-glass-panel--edge-right overflow-hidden">
 
         {/* ═══ HEADER ═══ */}
-        <div className="flex items-center justify-between px-[20px] py-[14px] border-b border-[#e0e0e0]">
+        <div className="flex items-center justify-between px-[20px] py-[14px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
           <div className="flex items-center gap-[10px]">
             <div className="size-[36px] rounded-full bg-[#f5f5f5] flex items-center justify-center shrink-0">
               <Sparkles className="size-[18px] text-[#ee0000]" />
@@ -334,7 +334,7 @@ export default function LightSpeedPanel({
         </div>
 
         {/* ═══ FOOTER ═══ */}
-        <div className="border-t border-[#e0e0e0] bg-white px-[16px] py-[12px]">
+        <div className="border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] bg-transparent px-[16px] py-[12px]">
           <div className="flex items-center gap-[8px]">
             <input
               ref={inputRef}

@@ -293,7 +293,7 @@ export default function OperatorsLifecyclePage() {
                               className="fixed inset-0 z-[9998]" 
                               onClick={() => setOpenKebabIndex(null)}
                             />
-                            <div className="absolute right-0 mt-[4px] w-[220px] bg-white dark:bg-[#1f1f1f] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)] rounded-[8px] shadow-[0px_4px_16px_0px_rgba(0,0,0,0.12)] z-[9999] py-[4px]">
+                            <div className="absolute right-0 mt-[4px] w-[220px] app-glass-panel app-glass-panel--radius-sm z-[9999] py-[4px]">
                               <button
                                 className="w-full text-left px-[16px] py-[8px] text-[14px] text-[#151515] dark:text-white hover:bg-[rgba(0,0,0,0.03)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors"
                                 onClick={() => {

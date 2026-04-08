@@ -1,31 +1,5 @@
 import { Link } from "react-router";
 import svgPaths from "../../imports/svg-929lpcd05l";
-import { imgGroup } from "../../imports/svg-0mrfg";
-
-function Frame1() {
-  return (
-    <div className="content-stretch flex items-center justify-center p-[16px] relative rounded-[16px] shrink-0 size-[48px]">
-      <div aria-hidden="true" className="absolute bg-[#f2f2f2] inset-0 mix-blend-luminosity pointer-events-none rounded-[16px]" />
-      <div aria-hidden="true" className="absolute border-2 border-[#f56e6e] border-solid inset-0 pointer-events-none rounded-[16px]" />
-      <div className="overflow-clip relative shrink-0 size-[24px]" data-name="rh-ui-icon-dark-mode">
-        <div className="absolute inset-[11.37%_11.38%_9.37%_9.38%]" data-name="Vector">
-          <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 19.02 19.0201">
-            <path d={svgPaths.p116ee100} fill="var(--fill-0, #1F1F1F)" id="Vector" />
-          </svg>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Greeting() {
-  return (
-    <div className="flex gap-[16px] items-center">
-      <Frame1 />
-      <p className="font-['Red_Hat_Display_VF:Medium',sans-serif] font-medium leading-[36.4px] relative shrink-0 text-[#151515] dark:text-white text-[28px] whitespace-nowrap">Good evening</p>
-    </div>
-  );
-}
 
 function Group1() {
   return (
@@ -473,8 +447,7 @@ function ClusterUtilizationCard() {
 export default function HomePage() {
   return (
     <div className="relative p-[24px] pb-[48px]">
-      <Greeting />
-      <div className="mt-[80px] grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)] gap-[24px]">
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)] gap-[24px]">
         <div className="flex flex-col gap-[24px]">
           <DetailsCard />
           <ClusterInventoryCard />

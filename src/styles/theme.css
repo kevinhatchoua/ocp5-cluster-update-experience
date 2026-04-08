@@ -3,6 +3,122 @@
 @custom-variant high-contrast (&:is(.high-contrast *));
 @custom-variant high-contrast-dark (&:is(.high-contrast-dark *));
 
+/*
+ * PatternFly 6 palette + app shell — Unified Theme / tokens-palette + tokens-default + tokens-dark
+ * Figma: https://www.figma.com/design/qRn3S225WwGHIdgGZX0LTC/Unified-Theme--Design-Tokens--Styles---Specs
+ * Code: https://github.com/patternfly/patternfly/tree/main/src/patternfly/base/tokens
+ */
+:root {
+  --pf-color-white: #ffffff;
+  --pf-color-gray-10: #f2f2f2;
+  --pf-color-gray-20: #e0e0e0;
+  --pf-color-gray-30: #c7c7c7;
+  --pf-color-gray-40: #a3a3a3;
+  --pf-color-gray-60: #4d4d4d;
+  --pf-color-gray-70: #383838;
+  --pf-color-gray-80: #292929;
+  --pf-color-gray-90: #1f1f1f;
+  --pf-color-gray-95: #151515;
+  --pf-color-blue-10: #e0f0ff;
+  --pf-color-blue-20: #b9dafc;
+  --pf-color-blue-30: #92c5f9;
+  --pf-color-blue-50: #0066cc;
+  --pf-color-blue-60: #004d99;
+  --pf-color-red-50: #ee0000;
+
+  /* Shell (behind chrome); solid fallback when glass canvas layers are off */
+  --app-page-canvas: var(--pf-color-gray-20);
+  --app-page-canvas-no-glass: var(--pf-color-gray-10);
+  --app-masthead-bg: var(--pf-color-white);
+  --app-masthead-border: var(--pf-color-gray-30);
+}
+
+.dark {
+  --app-page-canvas: var(--pf-color-gray-95);
+  --app-page-canvas-no-glass: #0f0f0f;
+  --app-masthead-bg: var(--pf-color-gray-90);
+  --app-masthead-border: var(--pf-color-gray-70);
+}
+
+/**
+ * PatternFly 6 glass theme tokens (light / dark).
+ * Aligned with patternfly/patternfly tokens-glass.scss & tokens-glass-dark.scss
+ * (Figma Unified Theme → CSS export). See:
+ * https://github.com/patternfly/patternfly/tree/main/src/patternfly/base/tokens
+ */
+:root {
+  --pf-t--global--background--color--glass--primary--default: rgba(255, 255, 255, 0.5);
+  --pf-t--global--background--filter--glass--blur--primary: blur(16px);
+  --pf-t--global--border--radius--glass--default: 16px;
+  --pf-t--global--border--width--glass--default: 1px;
+  /* Resolved: --border--color--glass--default → --border--color--alt → glass primary background */
+  --pf-t--global--border--color--glass--default: rgba(255, 255, 255, 0.6);
+  /* Elevation ≈ PF --box-shadow--md (Y 4px, blur 10px, color--100) */
+  --pf-t--app-glass-elevation: 0 4px 10px 0 rgba(41, 41, 41, 0.15);
+}
+
+.dark {
+  --pf-t--global--background--color--glass--primary--default: rgba(41, 41, 41, 0.5);
+  --pf-t--global--background--filter--glass--blur--primary: blur(16px);
+  --pf-t--global--border--color--glass--default: rgba(41, 41, 41, 0.5);
+  --pf-t--app-glass-elevation: 0 4px 10px 0 rgba(0, 0, 0, 0.5);
+}
+
+/**
+ * Primary glass surfaces (sidebar shell, main content, menus).
+ * html.no-glass: solid panels matching prior prototype (no blur).
+ */
+.app-glass-panel {
+  border-radius: var(--pf-t--global--border--radius--glass--default);
+  border-width: var(--pf-t--global--border--width--glass--default);
+  border-style: solid;
+  border-color: var(--pf-t--global--border--color--glass--default);
+  box-shadow: var(--pf-t--app-glass-elevation);
+}
+
+html:not(.no-glass) .app-glass-panel {
+  background-color: var(--pf-t--global--background--color--glass--primary--default);
+  -webkit-backdrop-filter: var(--pf-t--global--background--filter--glass--blur--primary);
+  backdrop-filter: var(--pf-t--global--background--filter--glass--blur--primary);
+}
+
+html.no-glass .app-glass-panel {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background-color: var(--pf-color-white);
+  border-color: var(--pf-color-gray-30);
+}
+
+html.no-glass.dark .app-glass-panel {
+  /* PF dark --background--color--primary--default → gray-80 */
+  background-color: var(--pf-color-gray-80);
+  border-color: var(--pf-color-gray-60);
+}
+
+/** Right-docked drawer: round inner edge only; shadow cast toward page content. */
+.app-glass-panel.app-glass-panel--edge-right {
+  border-radius: var(--pf-t--global--border--radius--glass--default) 0 0
+    var(--pf-t--global--border--radius--glass--default);
+  box-shadow: -4px 0 24px 0 rgba(41, 41, 41, 0.12);
+}
+
+html.dark:not(.no-glass) .app-glass-panel.app-glass-panel--edge-right {
+  box-shadow: -4px 0 24px 0 rgba(0, 0, 0, 0.4);
+}
+
+html.no-glass .app-glass-panel.app-glass-panel--edge-right {
+  box-shadow: -4px 0 24px 0 rgba(41, 41, 41, 0.12);
+}
+
+html.no-glass.dark .app-glass-panel.app-glass-panel--edge-right {
+  box-shadow: -4px 0 24px 0 rgba(0, 0, 0, 0.35);
+}
+
+/** Compact floating surfaces (menus): smaller radius than default glass token. */
+.app-glass-panel.app-glass-panel--radius-sm {
+  border-radius: 8px;
+}
+
 /* Custom Scrollbar Styling */
 * {
   scrollbar-width: thin;
@@ -41,82 +157,86 @@
   background-color: rgba(255, 255, 255, 0.5);
 }
 
+/*
+ * Tailwind / shadcn bridge — values mapped to PF6 semantic colors (text--regular/subtle, borders, brand).
+ */
 :root {
   --font-size: 16px;
-  --background: #ffffff;
-  --foreground: oklch(0.145 0 0);
-  --card: #ffffff;
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: #030213;
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: #030213;
-  --muted: #ececf0;
-  --muted-foreground: #717182;
-  --accent: #e9ebef;
-  --accent-foreground: #030213;
-  --destructive: #d4183d;
-  --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
+  --background: var(--pf-color-gray-10);
+  --foreground: var(--pf-color-gray-95);
+  --card: var(--pf-color-white);
+  --card-foreground: var(--pf-color-gray-95);
+  --popover: var(--pf-color-white);
+  --popover-foreground: var(--pf-color-gray-95);
+  --primary: var(--pf-color-blue-50);
+  --primary-foreground: var(--pf-color-white);
+  --secondary: var(--pf-color-gray-10);
+  --secondary-foreground: var(--pf-color-gray-95);
+  --muted: var(--pf-color-gray-10);
+  --muted-foreground: var(--pf-color-gray-60);
+  --accent: var(--pf-color-gray-20);
+  --accent-foreground: var(--pf-color-gray-95);
+  --destructive: var(--pf-color-red-50);
+  --destructive-foreground: var(--pf-color-white);
+  --border: var(--pf-color-gray-30);
   --input: transparent;
-  --input-background: #f3f3f5;
-  --switch-background: #cbced4;
+  --input-background: var(--pf-color-gray-10);
+  --switch-background: var(--pf-color-gray-30);
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: #030213;
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --ring: var(--pf-color-blue-50);
+  --chart-1: var(--pf-color-blue-50);
+  --chart-2: #009596;
+  --chart-3: #8476d1;
+  --chart-4: #f0ab00;
+  --chart-5: #3e8635;
+  /* PF --border--radius--medium */
+  --radius: 1rem;
+  --sidebar: var(--pf-color-gray-10);
+  --sidebar-foreground: var(--pf-color-gray-95);
+  --sidebar-primary: var(--pf-color-blue-50);
+  --sidebar-primary-foreground: var(--pf-color-white);
+  --sidebar-accent: var(--pf-color-gray-20);
+  --sidebar-accent-foreground: var(--pf-color-gray-95);
+  --sidebar-border: var(--pf-color-gray-30);
+  --sidebar-ring: var(--pf-color-blue-50);
 }
 
 .dark {
-  --background: #151515;
-  --foreground: #f0f0f0;
-  --card: #1f1f1f;
-  --card-foreground: #f0f0f0;
-  --popover: #1f1f1f;
-  --popover-foreground: #f0f0f0;
-  --primary: #f0f0f0;
-  --primary-foreground: #151515;
-  --secondary: #2e2e2e;
-  --secondary-foreground: #f0f0f0;
-  --muted: #2e2e2e;
-  --muted-foreground: #b0b0b0;
-  --accent: #2e2e2e;
-  --accent-foreground: #f0f0f0;
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: #3c3c3c;
-  --input: #2e2e2e;
-  --ring: #666666;
+  --background: var(--pf-color-gray-95);
+  --foreground: var(--pf-color-white);
+  --card: var(--pf-color-gray-80);
+  --card-foreground: var(--pf-color-white);
+  --popover: var(--pf-color-gray-80);
+  --popover-foreground: var(--pf-color-white);
+  --primary: var(--pf-color-blue-50);
+  --primary-foreground: var(--pf-color-white);
+  --secondary: var(--pf-color-gray-80);
+  --secondary-foreground: var(--pf-color-white);
+  --muted: var(--pf-color-gray-80);
+  --muted-foreground: var(--pf-color-gray-30);
+  --accent: var(--pf-color-gray-70);
+  --accent-foreground: var(--pf-color-white);
+  --destructive: #f56e6e;
+  --destructive-foreground: var(--pf-color-white);
+  --border: var(--pf-color-gray-60);
+  --input: var(--pf-color-gray-70);
+  --ring: var(--pf-color-blue-20);
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: #1a1a1a;
-  --sidebar-foreground: #f0f0f0;
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: #f0f0f0;
-  --sidebar-accent: #2e2e2e;
-  --sidebar-accent-foreground: #f0f0f0;
-  --sidebar-border: #3c3c3c;
-  --sidebar-ring: #666666;
+  --chart-1: var(--pf-color-blue-20);
+  --chart-2: #63c5ce;
+  --chart-3: #b2a3e0;
+  --chart-4: #fbbf24;
+  --chart-5: #7cc674;
+  --sidebar: var(--pf-color-gray-90);
+  --sidebar-foreground: var(--pf-color-white);
+  --sidebar-primary: var(--pf-color-blue-20);
+  --sidebar-primary-foreground: var(--pf-color-gray-95);
+  --sidebar-accent: var(--pf-color-gray-80);
+  --sidebar-accent-foreground: var(--pf-color-white);
+  --sidebar-border: var(--pf-color-gray-60);
+  --sidebar-ring: var(--pf-color-blue-20);
 }
 
 /* High Contrast Light Theme */
@@ -241,6 +361,13 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family:
+      "Red Hat Text",
+      "RedHatText",
+      "Helvetica Neue",
+      Helvetica,
+      Arial,
+      sans-serif;
   }
 
   /**

@@ -264,7 +264,7 @@ export default function NodeDetailPage() {
       {/* Drain Modal */}
       {showDrainModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-[#1f1f1f] rounded-[12px] p-[24px] max-w-[500px] w-full mx-[16px]">
+          <div className="app-glass-panel p-[24px] max-w-[500px] w-full mx-[16px]">
             <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[20px] text-[#151515] dark:text-white mb-[16px]">
               Drain {node.name}
             </h2>
@@ -292,7 +292,7 @@ export default function NodeDetailPage() {
       {/* Restart Modal */}
       {showRestartModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-[#1f1f1f] rounded-[12px] p-[24px] max-w-[500px] w-full mx-[16px]">
+          <div className="app-glass-panel p-[24px] max-w-[500px] w-full mx-[16px]">
             <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[20px] text-[#151515] dark:text-white mb-[16px]">
               Restart {node.name}
             </h2>
@@ -320,7 +320,7 @@ export default function NodeDetailPage() {
       {/* Delete Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-[#1f1f1f] rounded-[12px] p-[24px] max-w-[500px] w-full mx-[16px]">
+          <div className="app-glass-panel p-[24px] max-w-[500px] w-full mx-[16px]">
             <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[20px] text-[#151515] dark:text-white mb-[16px]">
               Delete {node.name}
             </h2>

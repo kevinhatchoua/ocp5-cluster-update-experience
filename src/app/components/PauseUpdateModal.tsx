@@ -11,7 +11,7 @@ export default function PauseUpdateModal({ isOpen, onClose, onConfirm }: PauseUp
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-[24px] bg-[rgba(0,0,0,0.5)] backdrop-blur-sm">
-      <div className="bg-white dark:bg-[#1f1f1f] rounded-[16px] shadow-[0px_8px_32px_0px_rgba(0,0,0,0.2)] max-w-[500px] w-full">
+      <div className="app-glass-panel max-w-[500px] w-full">
         {/* Header */}
         <div className="flex items-center justify-between p-[24px] border-b border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)]">
           <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[20px] text-[#151515] dark:text-white">

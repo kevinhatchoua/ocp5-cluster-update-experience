@@ -53,7 +53,7 @@ export default function ImpersonateUserModal({ isOpen, onClose, onImpersonate }:
       
       {/* Modal */}
       <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-[640px]">
-        <div className="bg-white dark:bg-[#1a1a1a] rounded-[16px] border border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)] shadow-2xl overflow-hidden">
+        <div className="app-glass-panel overflow-hidden">
           {/* Header */}
           <div className="px-[24px] py-[20px] border-b border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)] flex items-center justify-between">
             <div>

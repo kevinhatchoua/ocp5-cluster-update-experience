@@ -182,7 +182,7 @@ function AvatarMd({ impersonatedUser, onImpersonate, onStopImpersonation }: {
           />
           
           {/* Menu */}
-          <div className="absolute right-0 top-[48px] z-40 w-[280px] bg-white/95 dark:bg-[#1a1a1a]/95 backdrop-blur-xl rounded-[12px] border border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)] shadow-lg overflow-hidden">
+          <div className="absolute right-0 top-[48px] z-40 w-[280px] app-glass-panel overflow-hidden">
             {/* User Info Section */}
             <div className="px-[16px] py-[12px] border-b border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)]">
               <p className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[14px] text-[#151515] dark:text-white">
@@ -333,7 +333,7 @@ function ThemeToggle() {
           />
           
           {/* Menu */}
-          <div className="absolute right-0 top-[48px] z-40 w-[220px] bg-white/95 dark:bg-[#1a1a1a]/95 backdrop-blur-xl rounded-[12px] border border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)] shadow-lg overflow-hidden">
+          <div className="absolute right-0 top-[48px] z-40 w-[220px] app-glass-panel overflow-hidden">
             {/* Theme Mode */}
             <div className="px-[16px] py-[12px] border-b border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)]">
               <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] uppercase font-semibold mb-[8px]">Theme Mode</p>
@@ -742,33 +742,27 @@ export default function Layout() {
 
   return (
     <div
-      className="bg-[#e0e0e0] dark:bg-[#1c1c1c] no-glass:bg-[#f8f8f8] no-glass:dark:bg-[#0f0f0f] overflow-clip relative size-full transition-colors"
+      className="bg-[var(--app-page-canvas)] no-glass:bg-[var(--app-page-canvas-no-glass)] overflow-clip relative size-full transition-colors"
       data-name="Home"
     >
-      {/* Glass Effect Background - WITH gradient overlay (stronger contrast so blur reads clearly) */}
-      <div className="absolute inset-0 no-glass:hidden">
-        {/* Light mode background with gradient */}
+      {/* Glass canvas: abstract gradients only (evokes console-style light/dark environments — not literal screenshots) */}
+      <div className="absolute inset-0 no-glass:hidden pointer-events-none" aria-hidden>
         <div className="absolute inset-0 dark:hidden">
-          <img 
-            src="figma:asset/0063c8b2c924b83b2301cb4476c9f3da3f438e88.png" 
-            alt="" 
-            className="absolute inset-0 w-full h-full object-cover opacity-[0.32]"
-          />
-          <div className="absolute inset-0 bg-gradient-to-br from-[#bae6fd]/45 via-[#d8d8d8]/70 to-[#fbcfe8]/45" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#f8f9fb] via-[#eceef4] to-[#f3f1f8]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_120%_85%_at_12%_8%,rgba(224,240,255,0.55),transparent_52%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_70%_at_92%_96%,rgba(245,230,240,0.35),transparent_48%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(158deg,rgba(255,255,255,0.55)_0%,transparent_38%,transparent_62%,rgba(232,236,246,0.4)_100%)]" />
         </div>
-        {/* Dark mode background with gradient */}
         <div className="absolute inset-0 hidden dark:block">
-          <img 
-            src="figma:asset/36e6362e0985ed0b78c1c2e915d3ed8df2963824.png" 
-            alt="" 
-            className="absolute inset-0 w-full h-full object-cover opacity-[0.32]"
-          />
-          <div className="absolute inset-0 bg-gradient-to-br from-[#1e40af]/28 via-[#2a2a2a]/65 to-[#9a3412]/28" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#121018] via-[#181222] to-[#0c0a10]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_100%_65%_at_8%_18%,rgba(76,29,149,0.28),transparent_55%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_85%_55%_at_88%_78%,rgba(30,64,175,0.22),transparent_52%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_45%_at_48%_102%,rgba(55,48,163,0.18),transparent_50%)]" />
         </div>
       </div>
 
       {/* Masthead */}
-      <div className="absolute left-0 right-0 top-0 z-20 h-[50px] bg-white dark:bg-[#1a1a1a] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] shadow-[0px_1px_4px_0px_rgba(41,41,41,0.15)]" data-name="Masthead">
+      <div className="absolute left-0 right-0 top-0 z-20 h-[50px] bg-[var(--app-masthead-bg)] border-b border-[var(--app-masthead-border)] shadow-[0px_1px_4px_0px_rgba(41,41,41,0.15)] dark:shadow-[0px_1px_4px_0px_rgba(0,0,0,0.4)]" data-name="Masthead">
         <div className="flex items-center justify-between h-full px-[24px]">
           {/* Left: Hamburger + Logo */}
           <div className="flex items-center gap-[16px]">
@@ -820,24 +814,24 @@ export default function Layout() {
 
       {/* Impersonation Banner */}
       {impersonatedUser && (
-        <div className="absolute left-[292px] right-[16px] top-[66px] z-10 bg-gradient-to-r from-[#0066cc] to-[#004080] dark:from-[#4dabf7] dark:to-[#339af0] rounded-[12px] shadow-lg">
+        <div className="absolute left-[292px] right-[16px] top-[66px] z-10 bg-gradient-to-r from-[#0066cc] to-[#004d99] dark:from-[#b9dafc] dark:to-[#92c5f9] rounded-[12px] shadow-lg">
           <div className="px-[20px] py-[12px] flex items-center justify-between">
             <div className="flex items-center gap-[12px]">
-              <svg className="size-[20px] text-white" fill="none" viewBox="0 0 20 20">
+              <svg className="size-[20px] text-white dark:text-[#151515]" fill="none" viewBox="0 0 20 20">
                 <path d="M10 1a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM5 12.5c0-.83.67-1.5 1.5-1.5h7c.83 0 1.5.67 1.5 1.5v.5H5v-.5zM2.5 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm15 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM1 12.5C1 11.67 1.67 11 2.5 11H5v2H1v-.5zm14 0V13.5h4v-1c0-.83-.67-1.5-1.5-1.5H15v1.5z" fill="currentColor" />
               </svg>
               <div>
-                <p className="text-white font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[14px]">
+                <p className="text-white dark:text-[#151515] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[14px]">
                   Viewing as {impersonatedUser.name}
                 </p>
-                <p className="text-white/80 text-[12px]">
+                <p className="text-white/80 dark:text-[#4d4d4d] text-[12px]">
                   {impersonatedUser.role} • {impersonatedUser.department}
                 </p>
               </div>
             </div>
             <button
               onClick={handleStopImpersonation}
-              className="bg-white/20 hover:bg-white/30 text-white px-[16px] py-[8px] rounded-[8px] font-semibold text-[13px] transition-colors flex items-center gap-[8px]"
+              className="bg-white/20 hover:bg-white/30 text-white dark:text-[#151515] px-[16px] py-[8px] rounded-[8px] font-semibold text-[13px] transition-colors flex items-center gap-[8px]"
             >
               <X className="size-[14px]" />
               Stop Impersonation
@@ -854,7 +848,7 @@ export default function Layout() {
         data-name="Sidebar"
       >
         {/* Glassmorphic background */}
-        <div className="absolute inset-0 bg-white/90 dark:bg-[#1a1a1a]/90 no-glass:bg-white no-glass:dark:bg-[#1a1a1a] backdrop-blur-xl no-glass:backdrop-blur-none rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.08)] shadow-[0px_4px_10px_0px_rgba(41,41,41,0.1)]" />
+        <div className="absolute inset-0 app-glass-panel" />
         
         {/* Content */}
         <div className="relative p-[12px]">
@@ -966,7 +960,7 @@ export default function Layout() {
       <div 
         className={`absolute bottom-[16px] ${contentTop} transition-all duration-300 ease-in-out ${contentLeftPosition} ${contentRight}`}
       >
-        <div className="bg-white/90 dark:bg-[#1a1a1a]/90 no-glass:bg-white no-glass:dark:bg-[#1a1a1a] backdrop-blur-xl no-glass:backdrop-blur-none rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.08)] shadow-[0px_4px_10px_0px_rgba(41,41,41,0.15)] h-full overflow-y-auto overflow-x-hidden">
+        <div className="app-glass-panel h-full overflow-y-auto overflow-x-hidden">
           <Outlet />
         </div>
       </div>

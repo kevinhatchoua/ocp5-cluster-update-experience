@@ -69,7 +69,7 @@ export default function OperatorKebabMenu({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-[4px] w-[220px] bg-white dark:bg-[#1f1f1f] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.2)] rounded-[8px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.15)] z-[9999]">
+        <div className="absolute right-0 mt-[4px] w-[220px] app-glass-panel app-glass-panel--radius-sm z-[9999]">
           <div className="py-[8px]">
             <button
               onClick={handleViewDetails}

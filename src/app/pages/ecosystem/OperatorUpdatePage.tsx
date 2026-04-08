@@ -400,7 +400,7 @@ export default function OperatorUpdatePage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-[12px] mt-[24px] sticky bottom-[24px] bg-[rgba(255,255,255,0.95)] dark:bg-[rgba(31,31,31,0.95)] backdrop-blur-sm p-[16px] rounded-[12px] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)]">
+        <div className="flex gap-[12px] mt-[24px] sticky bottom-[24px] app-glass-panel p-[16px]">
           <button
             onClick={handleApproveUpdate}
             className="px-[24px] py-[12px] bg-[#0066cc] hover:bg-[#004080] dark:bg-[#4dabf7] dark:hover:bg-[#339af0] text-white rounded-[8px] font-semibold text-[14px] transition-colors"

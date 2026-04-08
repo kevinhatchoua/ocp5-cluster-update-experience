@@ -85,7 +85,7 @@ export function RequiredUpdateModal({ isOpen, onClose, operators }: RequiredUpda
       
       {/* Modal */}
       <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[10001] w-[700px] max-h-[80vh] overflow-hidden">
-        <div className="bg-white dark:bg-[#1f1f1f] rounded-[16px] shadow-2xl">
+        <div className="app-glass-panel">
           {/* Header */}
           <div className="flex items-center justify-between px-[24px] py-[20px] border-b border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)]">
             <div className="flex items-center gap-[12px]">
@@ -438,7 +438,7 @@ export function BulkUpdateModal({ isOpen, onClose, selectedOperators, operators,
       
       {/* Modal */}
       <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[10001] w-[700px] max-h-[80vh] overflow-hidden">
-        <div className="bg-white dark:bg-[#1f1f1f] rounded-[16px] shadow-2xl">
+        <div className="app-glass-panel">
           {/* Header */}
           <div className="flex items-center justify-between px-[24px] py-[20px] border-b border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)]">
             <div className="flex items-center gap-[12px]">

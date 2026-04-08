@@ -408,7 +408,7 @@ function KebabMenu({
             <div className="fixed inset-0 z-[9998]" onClick={onClose} />
             <div
               ref={menuRef}
-              className="fixed z-[9999] w-[200px] bg-white dark:bg-[#1f1f1f] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)] rounded-[8px] shadow-[0px_4px_16px_0px_rgba(0,0,0,0.12)] py-[4px]"
+              className="fixed z-[9999] w-[200px] app-glass-panel app-glass-panel--radius-sm py-[4px]"
               style={{ top: pos.top, left: pos.left }}
             >
               {items.map((item, idx) => (
@@ -710,7 +710,7 @@ export default function InstalledOperatorsPage() {
               </button>
               {columnMenuOpen && (
                 <div
-                  className="absolute left-0 mt-[6px] z-[100] w-[min(100vw-32px,280px)] rounded-[8px] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.12)] bg-white dark:bg-[#1f1f1f] shadow-[0px_4px_16px_0px_rgba(0,0,0,0.12)] py-[8px]"
+                  className="absolute left-0 mt-[6px] z-[100] w-[min(100vw-32px,280px)] app-glass-panel app-glass-panel--radius-sm py-[8px]"
                   role="menu"
                   aria-label="Table column visibility"
                 >
