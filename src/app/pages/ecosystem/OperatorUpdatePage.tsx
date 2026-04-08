@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, Link, useNavigate, useLocation } from "react-router";
-import { Info, ExternalLink, AlertTriangle, CheckCircle } from "lucide-react";
+import { Info, ExternalLink, AlertTriangle, CheckCircle } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
 
 export default function OperatorUpdatePage() {

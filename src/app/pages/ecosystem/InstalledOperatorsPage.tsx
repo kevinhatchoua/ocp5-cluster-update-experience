@@ -10,7 +10,7 @@ import {
   AlertTriangle,
   Clock,
   Columns2,
-} from "lucide-react";
+} from "@/lib/pfIcons";
 import { Link, useNavigate } from "react-router";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import FavoriteButton from "../../components/FavoriteButton";

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, Info, Sparkles } from "lucide-react";
+import { ChevronDown, ChevronRight, Info, Sparkles } from "@/lib/pfIcons";
 
 export type AiAssessmentVariant = "cluster-update" | "installed-operators";
 

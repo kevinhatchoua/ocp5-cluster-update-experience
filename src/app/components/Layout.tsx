@@ -1,6 +1,38 @@
 import { Link, Outlet, useLocation } from "react-router";
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, X, Menu } from "lucide-react";
+import { X } from "@/lib/pfIcons";
+import {
+  Button,
+  Dropdown,
+  DropdownGroup,
+  DropdownItem,
+  Divider,
+  MenuToggle,
+  Switch,
+} from "@patternfly/react-core";
+import AngleRightIcon from "@patternfly/react-icons/dist/esm/icons/angle-right-icon";
+import BarsIcon from "@patternfly/react-icons/dist/esm/icons/bars-icon";
+import BellIcon from "@patternfly/react-icons/dist/esm/icons/bell-icon";
+import ChartLineIcon from "@patternfly/react-icons/dist/esm/icons/chart-line-icon";
+import CogIcon from "@patternfly/react-icons/dist/esm/icons/cog-icon";
+import CubesIcon from "@patternfly/react-icons/dist/esm/icons/cubes-icon";
+import GlobeIcon from "@patternfly/react-icons/dist/esm/icons/globe-icon";
+import HammerIcon from "@patternfly/react-icons/dist/esm/icons/hammer-icon";
+import HddIcon from "@patternfly/react-icons/dist/esm/icons/hdd-icon";
+import HomeIcon from "@patternfly/react-icons/dist/esm/icons/home-icon";
+import MinusCircleIcon from "@patternfly/react-icons/dist/esm/icons/minus-circle-icon";
+import MoonIcon from "@patternfly/react-icons/dist/esm/icons/moon-icon";
+import ProjectDiagramIcon from "@patternfly/react-icons/dist/esm/icons/project-diagram-icon";
+import QuestionCircleIcon from "@patternfly/react-icons/dist/esm/icons/question-circle-icon";
+import RobotIcon from "@patternfly/react-icons/dist/esm/icons/robot-icon";
+import ServerIcon from "@patternfly/react-icons/dist/esm/icons/server-icon";
+import SignOutAltIcon from "@patternfly/react-icons/dist/esm/icons/sign-out-alt-icon";
+import StarIcon from "@patternfly/react-icons/dist/esm/icons/star-icon";
+import SunIcon from "@patternfly/react-icons/dist/esm/icons/sun-icon";
+import ThIcon from "@patternfly/react-icons/dist/esm/icons/th-icon";
+import UserCogIcon from "@patternfly/react-icons/dist/esm/icons/user-cog-icon";
+import UserIcon from "@patternfly/react-icons/dist/esm/icons/user-icon";
+import UsersIcon from "@patternfly/react-icons/dist/esm/icons/users-icon";
 import svgPaths from "../../imports/svg-929lpcd05l";
 import LightSpeedPanel from "./LightSpeedPanel";
 import ImpersonateUserModal from "./ImpersonateUserModal";
@@ -16,136 +48,46 @@ interface ImpersonatedUser {
   department: string;
 }
 
+const mastheadIconBtnClass =
+  "!flex !h-10 !w-10 !shrink-0 !items-center !justify-center !rounded-full !p-0";
+
 function MainNavToggle({ onClick, isCollapsed }: { onClick: () => void; isCollapsed: boolean }) {
   return (
-    <div 
+    <Button
+      variant="plain"
+      type="button"
       onClick={onClick}
-      className="content-stretch flex h-[40px] items-center justify-center relative shrink-0 w-[48px] cursor-pointer hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[8px] transition-colors" 
+      className={`${mastheadIconBtnClass} !rounded-lg !w-12`}
+      aria-label={isCollapsed ? "Expand navigation" : "Collapse navigation"}
       data-name="Main Nav Toggle"
     >
-      <Menu className="size-[18px] text-[#1F1F1F] dark:text-white" />
-    </div>
+      <BarsIcon className="size-[18px] text-[#1F1F1F] dark:text-white" aria-hidden />
+    </Button>
   );
 }
 
-function UiIcon() {
+function MastheadIconButton({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="absolute contents inset-[3.91%]" data-name="UI icon">
-      <div className="absolute inset-[3.91%]" data-name="Group">
-        <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 14.75 14.75">
-          <g id="Group">
-            <path d={svgPaths.p1388cf00} fill="var(--fill-0, #1F1F1F)" className="dark:fill-white" id="Vector" />
-            <path d={svgPaths.p33d09900} fill="var(--fill-0, #1F1F1F)" className="dark:fill-white" id="Vector_2" />
-            <path d={svgPaths.p2e5b1680} fill="var(--fill-0, #1F1F1F)" className="dark:fill-white" id="Vector_3" />
-            <path d={svgPaths.p38df6f80} fill="var(--fill-0, #1F1F1F)" className="dark:fill-white" id="Vector_4" />
-            <path d={svgPaths.p2e0e5700} fill="var(--fill-0, #1F1F1F)" className="dark:fill-white" id="Vector_5" />
-            <path d={svgPaths.p385e8600} fill="var(--fill-0, #1F1F1F)" className="dark:fill-white" id="Vector_6" />
-            <path d={svgPaths.p9155f00} fill="var(--fill-0, #1F1F1F)" className="dark:fill-white" id="Vector_7" />
-            <path d={svgPaths.p36882e80} fill="var(--fill-0, #1F1F1F)" className="dark:fill-white" id="Vector_8" />
-            <path d={svgPaths.p14445380} fill="var(--fill-0, #1F1F1F)" className="dark:fill-white" id="Vector_9" />
-          </g>
-        </svg>
-      </div>
-    </div>
+    <Button variant="plain" type="button" aria-label={label} className={mastheadIconBtnClass} data-name={label}>
+      {children}
+    </Button>
   );
 }
 
-function Apps() {
+function NavMenuChevron({ expanded, emphasize }: { expanded: boolean; emphasize: boolean }) {
   return (
-    <div className="content-stretch flex items-center justify-center p-[8px] relative shrink-0 size-[40px] cursor-pointer hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[999px] transition-colors" data-name="Apps">
-      <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-switcher-menu">
-        <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
-          <g id="Bounding box">
-            <g id="Vector" />
-          </g>
-        </svg>
-        <UiIcon />
-      </div>
-    </div>
-  );
-}
-
-function UiIcon1() {
-  return (
-    <div className="absolute inset-[0_6.25%_-0.03%_6.25%]" data-name="UI icon">
-      <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 14 16.005">
-        <g id="UI icon">
-          <path d={svgPaths.p31ff3ea0} fill="var(--fill-0, #1F1F1F)" className="dark:fill-white" id="Vector" />
-        </g>
-      </svg>
-    </div>
-  );
-}
-
-function Notifications() {
-  return (
-    <div className="content-stretch flex items-center justify-center p-[8px] relative shrink-0 size-[40px] cursor-pointer hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[999px] transition-colors" data-name="Notifications">
-      <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-notification">
-        <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
-          <g id="Bounding box">
-            <g id="Vector" />
-          </g>
-        </svg>
-        <UiIcon1 />
-      </div>
-    </div>
-  );
-}
-
-function UiIcon2() {
-  return (
-    <div className="absolute contents inset-0" data-name="UI icon">
-      <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
-        <g id="Group">
-          <path d={svgPaths.p2238de70} fill="var(--fill-0, #1F1F1F)" className="dark:fill-white" id="Vector" />
-          <path d={svgPaths.p228cba80} fill="var(--fill-0, #1F1F1F)" className="dark:fill-white" id="Vector_2" />
-        </g>
-      </svg>
-    </div>
-  );
-}
-
-function Add() {
-  return (
-    <div className="content-stretch flex items-center justify-center p-[8px] relative shrink-0 size-[40px] cursor-pointer hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[999px] transition-colors" data-name="Add">
-      <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-add-circle">
-        <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
-          <g id="Bounding box">
-            <g id="Vector" />
-          </g>
-        </svg>
-        <UiIcon2 />
-      </div>
-    </div>
-  );
-}
-
-function UiIcon3() {
-  return (
-    <div className="absolute contents inset-0" data-name="UI icon">
-      <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
-        <g id="Group">
-          <path d={svgPaths.p14c76000} fill="var(--fill-0, #1F1F1F)" className="dark:fill-white" id="Vector" />
-          <path d={svgPaths.p228cba80} fill="var(--fill-0, #1F1F1F)" className="dark:fill-white" id="Vector_2" />
-          <path d={svgPaths.pfe94800} fill="var(--fill-0, #1F1F1F)" className="dark:fill-white" id="Vector_3" />
-        </g>
-      </svg>
-    </div>
-  );
-}
-
-function Help() {
-  return (
-    <div className="content-stretch flex items-center justify-center p-[8px] relative shrink-0 size-[40px] cursor-pointer hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[999px] transition-colors" data-name="Help">
-      <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-question-mark-circle">
-        <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
-          <g id="Bounding box">
-            <g id="Vector" />
-          </g>
-        </svg>
-        <UiIcon3 />
-      </div>
-    </div>
+    <span
+      className={`relative inline-flex shrink-0 size-[14px] items-center justify-center transition-transform ${expanded ? "rotate-90" : ""}`}
+      aria-hidden
+    >
+      <AngleRightIcon
+        className={
+          emphasize
+            ? "size-[14px] text-[#151515] dark:text-white"
+            : "size-[14px] text-[#707070] dark:text-[#b0b0b0]"
+        }
+      />
+    </span>
   );
 }
 
@@ -162,111 +104,91 @@ function AvatarMd({ impersonatedUser, onImpersonate, onStopImpersonation }: {
     ? impersonatedUser.name.split(' ').map(n => n[0]).join('').toUpperCase()
     : "JS";
 
+  const avatarToggleClass = impersonatedUser
+    ? "bg-[#e0e0e0] dark:bg-[#2a2a2a]"
+    : "bg-[#b9e5e5]";
+
+  const menuIconMuted = { className: "size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]", "aria-hidden": true as const };
+
   return (
-    <div className="relative">
-      <div 
-        onClick={() => setIsOpen(!isOpen)}
-        className={`${impersonatedUser ? 'bg-[#e0e0e0] dark:bg-[#2a2a2a]' : 'bg-[#b9e5e5]'} content-stretch flex items-center justify-center p-[4px] relative rounded-[999px] shrink-0 size-[36px] cursor-pointer hover:opacity-80 transition-opacity border border-[#9ad8d8]`}
-        data-name="avatar-MD"
-      >
-        <p className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold leading-[24px] relative shrink-0 text-[#151515] text-[14px] text-center whitespace-nowrap">{displayInitials}</p>
-      </div>
-      
-      {/* Dropdown Menu */}
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 z-30" 
-            onClick={() => setIsOpen(false)}
-          />
-          
-          {/* Menu */}
-          <div className="absolute right-0 top-[48px] z-40 w-[280px] app-glass-panel overflow-hidden">
-            {/* User Info Section */}
-            <div className="px-[16px] py-[12px] border-b border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)]">
-              <p className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[14px] text-[#151515] dark:text-white">
-                {displayName}
-              </p>
-              <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] mt-[2px]">
-                {displayEmail}
-              </p>
-              {impersonatedUser && (
-                <p className="text-[11px] text-[#0066cc] dark:text-[#4dabf7] mt-[4px] font-semibold">
-                  {impersonatedUser.role} • {impersonatedUser.department}
-                </p>
-              )}
-            </div>
-
-            {/* Menu Items */}
-            <div className="py-[8px]">
-              <button className="w-full px-[16px] py-[10px] text-left hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors flex items-center gap-[12px]">
-                <svg className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" fill="none" viewBox="0 0 16 16">
-                  <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 1c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z" fill="currentColor"/>
-                </svg>
-                <span className="text-[14px] text-[#151515] dark:text-white">My Account</span>
-              </button>
-
-              <button className="w-full px-[16px] py-[10px] text-left hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors flex items-center gap-[12px]">
-                <svg className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" fill="none" viewBox="0 0 16 16">
-                  <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM4.5 8a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm0 6a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5z" fill="currentColor"/>
-                </svg>
-                <span className="text-[14px] text-[#151515] dark:text-white">User Preferences</span>
-              </button>
-
-              <button className="w-full px-[16px] py-[10px] text-left hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors flex items-center gap-[12px]">
-                <svg className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" fill="none" viewBox="0 0 16 16">
-                  <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z" fill="currentColor"/>
-                  <circle cx="8" cy="8" r="6.5" stroke="currentColor" fill="none"/>
-                </svg>
-                <span className="text-[14px] text-[#151515] dark:text-white">Role Management</span>
-              </button>
-            </div>
-
-            {/* Impersonation Section */}
-            <div className="border-t border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)] py-[8px]">
-              {impersonatedUser ? (
-                <button 
-                  onClick={() => {
-                    onStopImpersonation();
-                    setIsOpen(false);
-                  }}
-                  className="w-full px-[16px] py-[10px] text-left hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors flex items-center gap-[12px]"
-                >
-                  <svg className="size-[16px] text-[#d4183d]" fill="none" viewBox="0 0 16 16">
-                    <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM10.5 8a.5.5 0 0 1-.5.5H6a.5.5 0 0 1 0-1h4a.5.5 0 0 1 .5.5z" fill="currentColor"/>
-                  </svg>
-                  <span className="text-[14px] text-[#d4183d] font-semibold">Stop Impersonation</span>
-                </button>
-              ) : (
-                <button 
-                  onClick={() => {
-                    onImpersonate();
-                    setIsOpen(false);
-                  }}
-                  className="w-full px-[16px] py-[10px] text-left hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors flex items-center gap-[12px]"
-                >
-                  <svg className="size-[16px] text-[#0066cc] dark:text-[#4dabf7]" fill="none" viewBox="0 0 16 16">
-                    <path d="M8 1a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM4 10.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5v.5H4v-.5zM2 4a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm12 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zM1 10.5C1 9.67 1.67 9 2.5 9H4v2H1v-.5zm11 0v.5h3v-.5c0-.83-.67-1.5-1.5-1.5H12v2z" fill="currentColor"/>
-                  </svg>
-                  <span className="text-[14px] text-[#0066cc] dark:text-[#4dabf7] font-semibold">Impersonate User</span>
-                </button>
-              )}
-            </div>
-
-            {/* Logout Section */}
-            <div className="border-t border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)] py-[8px]">
-              <button className="w-full px-[16px] py-[10px] text-left hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors flex items-center gap-[12px]">
-                <svg className="size-[16px] text-[#d4183d]" fill="none" viewBox="0 0 16 16">
-                  <path d="M6 14H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h3m5 8l3-3m0 0l-3-3m3 3H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <span className="text-[14px] text-[#d4183d]">Logout</span>
-              </button>
-            </div>
-          </div>
-        </>
+    <Dropdown
+      isOpen={isOpen}
+      onOpenChange={setIsOpen}
+      popperProps={{ direction: "down", position: "end" }}
+      toggle={(toggleRef) => (
+        <MenuToggle
+          ref={toggleRef}
+          variant="plain"
+          className={`${avatarToggleClass} !flex !size-9 !shrink-0 !items-center !justify-center !rounded-full !border !border-[#9ad8d8] !p-1 hover:!opacity-80`}
+          data-name="avatar-MD"
+          aria-label="User menu"
+          onClick={() => setIsOpen((o) => !o)}
+          isExpanded={isOpen}
+        >
+          <span className="font-['Red_Hat_Display:SemiBold',sans-serif] text-[14px] font-semibold leading-6 text-[#151515]">
+            {displayInitials}
+          </span>
+        </MenuToggle>
       )}
-    </div>
+      onSelect={() => setIsOpen(false)}
+    >
+      <DropdownGroup
+        label={
+          <div className="text-left">
+            <div className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[14px] text-[#151515] dark:text-white">
+              {displayName}
+            </div>
+            <div className="mt-[2px] text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0]">
+              {displayEmail}
+            </div>
+            {impersonatedUser && (
+              <div className="mt-[4px] text-[11px] font-semibold text-[#0066cc] dark:text-[#4dabf7]">
+                {impersonatedUser.role} • {impersonatedUser.department}
+              </div>
+            )}
+          </div>
+        }
+      >
+        <DropdownItem itemId="account" icon={<UserIcon {...menuIconMuted} />} onClick={() => setIsOpen(false)}>
+          My Account
+        </DropdownItem>
+        <DropdownItem itemId="prefs" icon={<CogIcon {...menuIconMuted} />} onClick={() => setIsOpen(false)}>
+          User Preferences
+        </DropdownItem>
+        <DropdownItem itemId="roles" icon={<UserCogIcon {...menuIconMuted} />} onClick={() => setIsOpen(false)}>
+          Role Management
+        </DropdownItem>
+      </DropdownGroup>
+      <Divider component="li" />
+      {impersonatedUser ? (
+        <DropdownItem
+          itemId="stop-impersonate"
+          icon={<MinusCircleIcon className="size-[16px] text-[#d4183d]" aria-hidden />}
+          isDanger
+          onClick={() => {
+            onStopImpersonation();
+            setIsOpen(false);
+          }}
+        >
+          Stop Impersonation
+        </DropdownItem>
+      ) : (
+        <DropdownItem
+          itemId="impersonate"
+          icon={<UsersIcon className="size-[16px] text-[#0066cc] dark:text-[#4dabf7]" aria-hidden />}
+          onClick={() => {
+            onImpersonate();
+            setIsOpen(false);
+          }}
+        >
+          Impersonate User
+        </DropdownItem>
+      )}
+      <Divider component="li" />
+      <DropdownItem itemId="logout" icon={<SignOutAltIcon className="size-[16px] text-[#d4183d]" aria-hidden />} isDanger onClick={() => setIsOpen(false)}>
+        Logout
+      </DropdownItem>
+    </Dropdown>
   );
 }
 
@@ -294,80 +216,68 @@ function ThemeToggle() {
     }
   };
 
-  const toggleGlass = () => {
-    const newIsGlass = !isGlass;
-    setIsGlass(newIsGlass);
-    
-    if (newIsGlass) {
-      document.documentElement.classList.remove('no-glass');
-    } else {
-      document.documentElement.classList.add('no-glass');
-    }
-  };
-
   return (
     <div className="relative">
-      <div
+      <Button
+        variant="plain"
+        type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="content-stretch flex items-center justify-center p-[8px] relative shrink-0 size-[40px] cursor-pointer hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[999px] transition-colors"
+        className={mastheadIconBtnClass}
+        aria-label="Theme and display options"
+        aria-expanded={isExpanded}
         data-name="ThemeToggle"
       >
         {isDark ? (
-          <svg className="size-[16px] text-[#1F1F1F] dark:text-white" fill="none" viewBox="0 0 16 16">
-            <path d="M8 11.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7zm0-1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zm0-9a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zm0 11a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zm5.5-4.5a.5.5 0 0 1 .5.5.5.5 0 0 1-.5.5h-1a.5.5 0 0 1 0-1h1zm-11 0a.5.5 0 0 1 .5.5.5.5 0 0 1-.5.5h-1a.5.5 0 0 1 0-1h1zm9.192-4.692a.5.5 0 0 1 0 .707l-.707.707a.5.5 0 0 1-.707-.707l.707-.707a.5.5 0 0 1 .707 0zm-7.778 7.778a.5.5 0 0 1 0 .707l-.707.707a.5.5 0 0 1-.707-.707l.707-.707a.5.5 0 0 1 .707 0zm7.778 0a.5.5 0 0 1-.707 0l-.707-.707a.5.5 0 0 1 .707-.707l.707.707a.5.5 0 0 1 0 .707zM3.914 3.914a.5.5 0 0 1-.707 0l-.707-.707a.5.5 0 0 1 .707-.707l.707.707a.5.5 0 0 1 0 .707z" fill="currentColor" />
-          </svg>
+          <SunIcon className="size-4 text-[#1F1F1F] dark:text-white" aria-hidden />
         ) : (
-          <svg className="size-[16px] text-[#1F1F1F]" fill="none" viewBox="0 0 16 16">
-            <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z" fill="currentColor" />
-          </svg>
+          <MoonIcon className="size-4 text-[#1F1F1F]" aria-hidden />
         )}
-      </div>
+      </Button>
 
       {/* Theme Options Menu */}
       {isExpanded && (
         <>
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 z-30" 
-            onClick={() => setIsExpanded(false)}
-          />
-          
-          {/* Menu */}
+          <div className="fixed inset-0 z-30" onClick={() => setIsExpanded(false)} aria-hidden />
           <div className="absolute right-0 top-[48px] z-40 w-[220px] app-glass-panel overflow-hidden">
-            {/* Theme Mode */}
-            <div className="px-[16px] py-[12px] border-b border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)]">
-              <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] uppercase font-semibold mb-[8px]">Theme Mode</p>
-              <button 
+            <div className="border-b border-[rgba(0,0,0,0.08)] px-4 py-3 dark:border-[rgba(255,255,255,0.08)]">
+              <p className="mb-2 text-[11px] font-semibold uppercase text-[#4d4d4d] dark:text-[#b0b0b0]">Theme Mode</p>
+              <Button
+                variant="plain"
+                type="button"
                 onClick={toggleTheme}
-                className="w-full px-[12px] py-[8px] text-left hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors flex items-center justify-between rounded-[999px]"
+                className="!flex w-full items-center justify-between rounded-full px-3 py-2"
               >
-                <span className="text-[13px] text-[#151515] dark:text-white">{isDark ? 'Dark' : 'Light'}</span>
-                <div className={`size-[16px] rounded-full ${isDark ? 'bg-[#4dabf7]' : 'bg-[#f59f00]'} flex items-center justify-center`}>
+                <span className="text-[13px] text-[#151515] dark:text-white">{isDark ? "Dark" : "Light"}</span>
+                <span
+                  className={`flex size-4 items-center justify-center rounded-full ${isDark ? "bg-[#4dabf7]" : "bg-[#f59f00]"}`}
+                  aria-hidden
+                >
                   {isDark ? (
-                    <svg className="size-[10px] text-white" fill="none" viewBox="0 0 10 10">
-                      <path d="M5 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z" fill="currentColor" transform="scale(0.6)" />
-                    </svg>
+                    <MoonIcon className="size-2.5 text-white" />
                   ) : (
-                    <svg className="size-[10px] text-white" fill="none" viewBox="0 0 10 10">
-                      <circle cx="5" cy="5" r="2.5" fill="currentColor" />
-                    </svg>
+                    <SunIcon className="size-2.5 text-white" />
                   )}
-                </div>
-              </button>
+                </span>
+              </Button>
             </div>
-
-            {/* Glass Effect */}
-            <div className="px-[16px] py-[12px]">
-              <p className="text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] uppercase font-semibold mb-[8px]">Glass Effect</p>
-              <button 
-                onClick={toggleGlass}
-                className="w-full px-[12px] py-[8px] text-left hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors flex items-center justify-between rounded-[999px]"
-              >
-                <span className="text-[13px] text-[#151515] dark:text-white">{isGlass ? 'Enabled' : 'Disabled'}</span>
-                <div className={`w-[32px] h-[18px] rounded-full transition-colors ${isGlass ? 'bg-[#0066cc] dark:bg-[#4dabf7]' : 'bg-[#d2d2d2] dark:bg-[#4d4d4d]'} relative`}>
-                  <div className={`absolute top-[2px] size-[14px] rounded-full bg-white transition-all ${isGlass ? 'left-[16px]' : 'left-[2px]'}`} />
-                </div>
-              </button>
+            <div className="px-4 py-3">
+              <p className="mb-2 text-[11px] font-semibold uppercase text-[#4d4d4d] dark:text-[#b0b0b0]">Glass Effect</p>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[13px] text-[#151515] dark:text-white">{isGlass ? "Enabled" : "Disabled"}</span>
+                <Switch
+                  id="layout-glass-effect"
+                  isChecked={isGlass}
+                  onChange={(_e, checked) => {
+                    if (checked) {
+                      document.documentElement.classList.remove("no-glass");
+                    } else {
+                      document.documentElement.classList.add("no-glass");
+                    }
+                    setIsGlass(checked);
+                  }}
+                  aria-label="Toggle glass effect"
+                />
+              </div>
             </div>
           </div>
         </>
@@ -409,9 +319,12 @@ function MenuItem({ to, icon, label, isActive, subItems, isCollapsed }: MenuItem
     }
   };
 
-  const shouldHighlight = isActive || (subItems && subItems.some(item => 
-    location.pathname === item.path || location.pathname.startsWith(item.path + '/')
-  ));
+  const shouldHighlight = Boolean(
+    isActive ||
+      subItems?.some(
+        (item) => location.pathname === item.path || location.pathname.startsWith(item.path + "/")
+      )
+  );
 
   if (isCollapsed) {
     if (subItems && subItems.length > 0) {
@@ -470,13 +383,7 @@ function MenuItem({ to, icon, label, isActive, subItems, isCollapsed }: MenuItem
                 {label}
               </p>
             </div>
-            <div 
-              className={`overflow-clip relative shrink-0 size-[14px] transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
-            >
-              <svg className="block size-full" fill="none" viewBox="0 0 6 10">
-                <path d="M1 1l4 4-4 4" stroke={shouldHighlight ? "#151515" : "#707070"} className="dark:stroke-[#b0b0b0]" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-              </svg>
-            </div>
+            <NavMenuChevron expanded={isExpanded} emphasize={shouldHighlight} />
           </div>
         </div>
       ) : (
@@ -499,10 +406,7 @@ function MenuItem({ to, icon, label, isActive, subItems, isCollapsed }: MenuItem
                 {label}
               </p>
             </div>
-            {/* Chevron for non-expandable items with sub-navigation potential */}
-            <svg className="size-[14px]" fill="none" viewBox="0 0 6 10">
-              <path d="M1 1l4 4-4 4" stroke="#707070" className="dark:stroke-[#b0b0b0]" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-            </svg>
+            <NavMenuChevron expanded={false} emphasize={shouldHighlight} />
           </div>
         </Link>
       )}
@@ -563,45 +467,38 @@ export default function Layout() {
   // Check if current user has admin permissions
   const hasAdminPermissions = !impersonatedUser || impersonatedUser.role === 'Cluster Admin';
 
+  const navIconMuted = "size-4 shrink-0 text-[#707070] dark:text-[#b0b0b0]";
+  const navIconActive = "size-4 shrink-0 text-[#151515] dark:text-white";
+
   const menuItems = [
     {
       path: "/",
       label: "Home",
       icon: (
-        <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-home">
-          <div className="absolute inset-[4.22%_3.13%_3.12%_3.13%]" data-name="Vector">
-            <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 15 14.8251">
-              <path d={svgPaths.p2884b900} fill="var(--fill-0, #707070)" className={`${location.pathname === '/' ? 'dark:fill-white fill-[#151515]' : ''}`} id="Vector" />
-            </svg>
-          </div>
-        </div>
+        <HomeIcon
+          className={location.pathname === "/" ? navIconActive : navIconMuted}
+          aria-hidden
+        />
       ),
     },
     {
       path: "/favorites",
       label: "Favorites",
       icon: (
-        <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-star">
-          <div className="absolute inset-[6.25%_2.52%]" data-name="Vector">
-            <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 15.1948 14">
-              <path d={svgPaths.p2f016100} fill="var(--fill-0, #707070)" id="Vector" />
-            </svg>
-          </div>
-        </div>
+        <StarIcon
+          className={
+            location.pathname === "/favorites" || location.pathname.startsWith("/favorites/")
+              ? navIconActive
+              : navIconMuted
+          }
+          aria-hidden
+        />
       ),
     },
     {
       path: "/ecosystem",
       label: "Ecosystem",
-      icon: (
-        <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-topology">
-          <div className="absolute inset-[3.13%]" data-name="Vector">
-            <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 15 15">
-              <path d={svgPaths.p864ee00} fill="var(--fill-0, #707070)" id="Vector" />
-            </svg>
-          </div>
-        </div>
-      ),
+      icon: <ProjectDiagramIcon className={navIconMuted} aria-hidden />,
       subItems: [
         { path: "/ecosystem/software-catalog", label: "Software Catalog" },
         { path: "/ecosystem/installed-operators", label: "Installed Operators" },
@@ -611,15 +508,7 @@ export default function Layout() {
     {
       path: "/workloads",
       label: "Workloads",
-      icon: (
-        <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-package">
-          <div className="absolute inset-[3.13%_3.13%_4.29%_3.13%]" data-name="Vector">
-            <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 15 14.8141">
-              <path d={svgPaths.p34d28180} fill="var(--fill-0, #707070)" id="Vector" />
-            </svg>
-          </div>
-        </div>
-      ),
+      icon: <CubesIcon className={navIconMuted} aria-hidden />,
       subItems: [
         { path: "/workloads/topology", label: "Topology" },
         { path: "/workloads/pods", label: "Pods" },
@@ -633,93 +522,37 @@ export default function Layout() {
     {
       path: "/networking",
       label: "Networking",
-      icon: (
-        <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-network">
-          <div className="absolute inset-[6.25%]" data-name="Vector">
-            <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 14 14">
-              <path d={svgPaths.p1b70bd80} fill="var(--fill-0, #707070)" id="Vector" />
-            </svg>
-          </div>
-        </div>
-      ),
+      icon: <GlobeIcon className={navIconMuted} aria-hidden />,
     },
     {
       path: "/storage",
       label: "Storage",
-      icon: (
-        <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-storage">
-          <div className="absolute inset-[3.13%_6.25%]" data-name="Vector">
-            <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 14 15">
-              <path d={svgPaths.p2d096000} fill="var(--fill-0, #707070)" id="Vector" />
-            </svg>
-          </div>
-        </div>
-      ),
+      icon: <HddIcon className={navIconMuted} aria-hidden />,
     },
     {
       path: "/builds",
       label: "Builds",
-      icon: (
-        <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-build">
-          <div className="absolute inset-[3.13%]" data-name="Vector">
-            <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 14.9994 14.9995">
-              <path d={svgPaths.p5608080} fill="var(--fill-0, #707070)" id="Vector" />
-            </svg>
-          </div>
-        </div>
-      ),
+      icon: <HammerIcon className={navIconMuted} aria-hidden />,
     },
     {
       path: "/observe",
       label: "Observe",
-      icon: (
-        <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-monitoring">
-          <div className="absolute inset-[9.38%_3.13%]" data-name="Vector">
-            <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 15 13">
-              <path d={svgPaths.p126bcb00} fill="var(--fill-0, #707070)" id="Vector" />
-            </svg>
-          </div>
-        </div>
-      ),
+      icon: <ChartLineIcon className={navIconMuted} aria-hidden />,
     },
     {
       path: "/compute",
       label: "Compute",
-      icon: (
-        <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-server">
-          <div className="absolute inset-[28.13%_3.13%]" data-name="Vector">
-            <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 15 7">
-              <path d={svgPaths.p2845b00} fill="var(--fill-0, #707070)" id="Vector" />
-            </svg>
-          </div>
-        </div>
-      ),
+      icon: <ServerIcon className={navIconMuted} aria-hidden />,
     },
     {
       path: "/user-management",
       label: "User Management",
-      icon: (
-        <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-users">
-          <div className="absolute inset-[6.25%_3.13%]" data-name="Vector">
-            <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 15 14">
-              <path d={svgPaths.pe92d880} fill="var(--fill-0, #707070)" id="Vector" />
-            </svg>
-          </div>
-        </div>
-      ),
+      icon: <UsersIcon className={navIconMuted} aria-hidden />,
     },
     {
       path: "/administration",
       label: "Administration",
-      icon: (
-        <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-settings">
-          <div className="absolute inset-[3.13%_3.12%_3.13%_3.13%]" data-name="Vector">
-            <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 14.9999 14.999">
-              <path d={svgPaths.p17dcc480} fill="var(--fill-0, #707070)" id="Vector" />
-            </svg>
-          </div>
-        </div>
-      ),
+      icon: <CogIcon className={navIconMuted} aria-hidden />,
       subItems: [
         { path: "/administration/cluster-update", label: "Cluster Update" },
         { path: "/administration/cluster-settings", label: "Cluster Settings" },
@@ -785,23 +618,26 @@ export default function Layout() {
           {/* Right: Utility icons + Avatar */}
           <div className="flex items-center gap-[24px]">
             <div className="content-stretch flex gap-[4px] items-center relative shrink-0">
-              <Help />
-              <Notifications />
-              <Apps />
+              <MastheadIconButton label="Help">
+                <QuestionCircleIcon className="size-4 text-[#1F1F1F] dark:text-white" aria-hidden />
+              </MastheadIconButton>
+              <MastheadIconButton label="Notifications">
+                <BellIcon className="size-4 text-[#1F1F1F] dark:text-white" aria-hidden />
+              </MastheadIconButton>
+              <MastheadIconButton label="Application launcher">
+                <ThIcon className="size-4 text-[#1F1F1F] dark:text-white" aria-hidden />
+              </MastheadIconButton>
             </div>
-            <div 
+            <Button
+              variant="secondary"
+              type="button"
               onClick={() => setIsAIOpen(true)}
-              className="bg-white dark:bg-[rgba(255,255,255,0.05)] flex items-center gap-[4px] h-[37px] min-w-[40px] px-[8px] relative rounded-[999px] shrink-0 cursor-pointer hover:bg-[rgba(0,0,0,0.03)] dark:hover:bg-[rgba(255,255,255,0.08)] transition-colors border border-[#8c8c8c] dark:border-[rgba(255,255,255,0.2)]"
+              className="!flex !h-[37px] !min-w-[40px] !shrink-0 !items-center !gap-1 !rounded-full !border !border-[#8c8c8c] !bg-white !px-2 hover:!bg-[rgba(0,0,0,0.03)] dark:!border-[rgba(255,255,255,0.2)] dark:!bg-[rgba(255,255,255,0.05)] dark:hover:!bg-[rgba(255,255,255,0.08)]"
+              aria-label="Open OpenShift LightSpeed"
             >
-              <div className="overflow-clip relative shrink-0 size-[16px]" data-name="rh-ui-icon-ai-experience">
-                <div className="absolute inset-[4.67%_4.68%_3.13%_3.11%]" data-name="icon">
-                  <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 14.7534 14.7519">
-                    <path d={svgPaths.p36bc1600} fill="var(--fill-0, #1F1F1F)" className="dark:fill-white" id="icon" />
-                  </svg>
-                </div>
-              </div>
-              <p className="font-['Red_Hat_Text:Regular',sans-serif] text-[#151515] dark:text-white text-[14px] text-center">10</p>
-            </div>
+              <RobotIcon className="size-4 text-[#1F1F1F] dark:text-white" aria-hidden />
+              <span className="font-['Red_Hat_Text:Regular',sans-serif] text-[14px] text-[#151515] dark:text-white">10</span>
+            </Button>
             <ThemeToggle />
             <AvatarMd 
               impersonatedUser={impersonatedUser} 
@@ -817,9 +653,7 @@ export default function Layout() {
         <div className="absolute left-[292px] right-[16px] top-[66px] z-10 bg-gradient-to-r from-[#0066cc] to-[#004d99] dark:from-[#b9dafc] dark:to-[#92c5f9] rounded-[12px] shadow-lg">
           <div className="px-[20px] py-[12px] flex items-center justify-between">
             <div className="flex items-center gap-[12px]">
-              <svg className="size-[20px] text-white dark:text-[#151515]" fill="none" viewBox="0 0 20 20">
-                <path d="M10 1a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM5 12.5c0-.83.67-1.5 1.5-1.5h7c.83 0 1.5.67 1.5 1.5v.5H5v-.5zM2.5 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm15 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM1 12.5C1 11.67 1.67 11 2.5 11H5v2H1v-.5zm14 0V13.5h4v-1c0-.83-.67-1.5-1.5-1.5H15v1.5z" fill="currentColor" />
-              </svg>
+              <UsersIcon className="size-5 text-white dark:text-[#151515]" aria-hidden />
               <div>
                 <p className="text-white dark:text-[#151515] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[14px]">
                   Viewing as {impersonatedUser.name}
@@ -829,13 +663,15 @@ export default function Layout() {
                 </p>
               </div>
             </div>
-            <button
+            <Button
+              variant="secondary"
+              type="button"
               onClick={handleStopImpersonation}
-              className="bg-white/20 hover:bg-white/30 text-white dark:text-[#151515] px-[16px] py-[8px] rounded-[8px] font-semibold text-[13px] transition-colors flex items-center gap-[8px]"
+              className="!border-white/40 !bg-white/20 !text-white hover:!bg-white/30 dark:!text-[#151515] dark:!border-[#151515]/20 dark:!bg-[#151515]/10"
             >
-              <X className="size-[14px]" />
+              <X className="size-3.5" aria-hidden />
               Stop Impersonation
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -891,13 +727,7 @@ export default function Layout() {
                           Favorites {favorites.length > 0 && `(${favorites.length})`}
                         </p>
                       </div>
-                      <div 
-                        className={`overflow-clip relative shrink-0 size-[14px] transition-transform ${isFavoritesExpanded ? 'rotate-90' : ''}`}
-                      >
-                        <svg className="block size-full" fill="none" viewBox="0 0 6 10">
-                          <path d="M1 1l4 4-4 4" stroke="#707070" className="dark:stroke-[#b0b0b0]" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                        </svg>
-                      </div>
+                      <NavMenuChevron expanded={isFavoritesExpanded} emphasize={isFavoritesExpanded} />
                     </>
                   )}
                 </div>

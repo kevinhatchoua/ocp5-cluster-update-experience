@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { ArrowLeft, CheckCircle, AlertTriangle } from "lucide-react";
+import { ArrowLeft, CheckCircle, AlertTriangle } from "@/lib/pfIcons";
 
 export default function AgentModePage() {
   const [channelPref, setChannelPref] = useState("fast");

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router";
-import { ArrowLeft, CheckCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCircle, Loader2 } from "@/lib/pfIcons";
 
 const checks = [
   { name: "Cluster version operator", description: "Verify CVO health" },

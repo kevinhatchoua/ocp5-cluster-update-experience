@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
 
 export default function OperatorInstalledPage() {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { X, Send, ThumbsUp, ThumbsDown, Copy, Bookmark, Volume2, Paperclip, Sparkles } from "lucide-react";
+import { X, Send, ThumbsUp, ThumbsDown, Copy, Bookmark, Volume2, Paperclip, Sparkles } from "@/lib/pfIcons";
 
 type ChatAction = {
   label: string;

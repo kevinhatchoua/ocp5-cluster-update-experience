@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { Server, Cpu, HardDrive, Activity, Search, RefreshCw } from "lucide-react";
+import { Server, Cpu, HardDrive, Activity, Search, RefreshCw } from "@/lib/pfIcons";
 import Breadcrumbs from "../components/Breadcrumbs";
 import FavoriteButton from "../components/FavoriteButton";
 

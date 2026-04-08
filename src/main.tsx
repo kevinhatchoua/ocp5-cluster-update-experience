@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import "@patternfly/patternfly/patternfly.css";
 import App from "./app/App";
 import "./styles/index.css";
 import "./styles/global.css";

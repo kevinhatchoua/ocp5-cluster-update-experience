@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
-import { CheckCircle, AlertCircle, Sparkles, Download, Code2, Columns2, FileText, ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
+import { CheckCircle, AlertCircle, Sparkles, Download, Code2, Columns2, FileText, ChevronDown, ChevronRight, AlertTriangle } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import LightSpeedPanel from "../../components/LightSpeedPanel";
 import OperatorKebabMenu from "../../components/OperatorKebabMenu";

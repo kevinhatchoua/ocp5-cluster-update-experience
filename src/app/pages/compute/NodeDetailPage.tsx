@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router";
-import { ArrowLeft, Server, Droplet, RotateCw, Trash2, CheckCircle2, Activity } from "lucide-react";
+import { ArrowLeft, Server, Droplet, RotateCw, Trash2, CheckCircle2, Activity } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import FavoriteButton from "../../components/FavoriteButton";
 

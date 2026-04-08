@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { MoreVertical, Eye, RefreshCw, Trash2 } from "lucide-react";
+import { MoreVertical, Eye, RefreshCw, Trash2 } from "@/lib/pfIcons";
 import { useNavigate } from "react-router";
 
 interface OperatorKebabMenuProps {

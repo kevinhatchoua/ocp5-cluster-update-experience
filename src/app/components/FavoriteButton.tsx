@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import { Star } from "@/lib/pfIcons";
 import { useFavorites } from "../contexts/FavoritesContext";
 
 interface FavoriteButtonProps {
