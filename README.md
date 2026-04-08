@@ -42,7 +42,7 @@ Under the page title, a **segmented control** switches between two demo presenta
 | Option | Label in UI | Behavior |
 |--------|-------------|----------|
 | **Manual + Agent** | Manual + Agent **(OCP 5.1)** | Full **Update Method** picker (Manual vs Agent-based). **AI Assessment** is shown. Manual path includes available versions, operators on the cluster, and worker nodes. Agent path shows the **AI Update Agent** experience. |
-| **Agent only** | Agent only **(OCP 5.0)** | **Update Method** and **AI Assessment** are hidden. Only the agent-driven update plan experience is shown. |
+| **Agent only** | Agent only **(OCP 5.0)** | **Update Method** is hidden. **AI Assessment** is shown with OCP 5.0–oriented copy. Only the agent-driven update plan experience is shown below it. |
 
 This is for **design and stakeholder demos**, not product configuration.
 

@@ -10,18 +10,23 @@ type InstalledSummary = {
   channelLabel: string;
 };
 
+export type ClusterUpdateDemoVariant = "manual-and-agent" | "agent-only";
+
 /** Shared AI Assessment card (OCPSTRAT-2701) — Cluster Update and Installed Operators. */
 export function AiAssessmentSection({
   openChatbot,
   selectedVersion,
   variant = "cluster-update",
   installedSummary,
+  /** When set on Cluster Update, tunes copy for Manual+Agent (OCP 5.1) vs Agent-only (OCP 5.0) demos. */
+  clusterUpdateDemoVariant,
 }: {
   openChatbot: (ctx: string) => void;
   selectedVersion: string;
   variant?: AiAssessmentVariant;
   /** Required when variant is installed-operators — drives contextual copy and the info callout. */
   installedSummary?: InstalledSummary;
+  clusterUpdateDemoVariant?: ClusterUpdateDemoVariant;
 }) {
   const [expanded, setExpanded] = useState(true);
 
@@ -68,17 +73,40 @@ export function AiAssessmentSection({
           ) : (
             <>
               <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[16px] leading-[20px]">
-                OpenShift LightSpeed can help you assess whether this <span className="text-[#151515] dark:text-white font-medium">cluster</span>{" "}
-                is ready to move to the target version and how your{" "}
-                <span className="text-[#151515] dark:text-white font-medium">operators</span>—both platform and catalog—may be affected.
-                Use a pre-check to surface compatibility risks, blocking work, and follow-up actions before you start the update.
+                {clusterUpdateDemoVariant === "agent-only" ? (
+                  <>
+                    In the <span className="text-[#151515] dark:text-white font-medium">OCP 5.0</span> agent-led experience, the update agent
+                    proposes plans and drives execution—OpenShift LightSpeed can still run a{" "}
+                    <span className="text-[#151515] dark:text-white font-medium">pre-check</span> on cluster and{" "}
+                    <span className="text-[#151515] dark:text-white font-medium">operator</span> readiness before you approve, so risks and
+                    prerequisites stay visible alongside automated planning.
+                  </>
+                ) : (
+                  <>
+                    OpenShift LightSpeed can help you assess whether this{" "}
+                    <span className="text-[#151515] dark:text-white font-medium">cluster</span> is ready to move to the target version and how
+                    your <span className="text-[#151515] dark:text-white font-medium">operators</span>—both platform and catalog—may be
+                    affected. Use a pre-check to surface compatibility risks, blocking work, and follow-up actions before you start the
+                    update.
+                  </>
+                )}
               </p>
 
               <div className="rounded-[8px] border-2 border-[#5e40be] dark:border-[#b2a3e0] px-[16px] py-[12px] mb-[16px]">
                 <div className="flex items-center gap-[10px]">
                   <Info className="size-[16px] text-[#0066cc] dark:text-[#4dabf7] shrink-0" />
                   <p className="text-[#151515] dark:text-white text-[14px] font-['Red_Hat_Text:Regular',sans-serif]">
-                    Version {selectedVersion} Available
+                    {clusterUpdateDemoVariant === "agent-only" ? (
+                      <>
+                        Version <span className="font-mono font-semibold">{selectedVersion}</span> available
+                        <span className="text-[#6a6e73] dark:text-[#8a8d90] font-normal"> · OCP 5.0 (agent-only demo)</span>
+                      </>
+                    ) : (
+                      <>
+                        Version {selectedVersion} available
+                        <span className="text-[#6a6e73] dark:text-[#8a8d90] font-normal"> · OCP 5.1 (manual + agent demo)</span>
+                      </>
+                    )}
                   </p>
                 </div>
               </div>

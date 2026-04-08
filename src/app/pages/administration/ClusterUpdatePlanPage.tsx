@@ -3,13 +3,12 @@ import { createPortal } from "react-dom";
 import { useNavigate, Link, useLocation } from "react-router";
 import { ChevronDown, ChevronRight, ExternalLink, Sparkles, ArrowRight, CheckCircle, AlertTriangle, AlertCircle, HelpCircle, Info, X, Loader2, Shield, Bot, Settings, RotateCcw, Play, Pause, Calendar, Bell, Clock, FileText, User, Zap, Eye, RefreshCw, MoreVertical, Check } from "lucide-react";
 import Breadcrumbs from "../../components/Breadcrumbs";
-import { AiAssessmentSection } from "../../components/AiAssessmentSection";
+import { AiAssessmentSection, type ClusterUpdateDemoVariant } from "../../components/AiAssessmentSection";
 import { OlsChatbot } from "../../components/OlsChatbot";
 
 type TabKey = "update-plan" | "update-history";
 
 /** Prototype-only: switch between full UX (manual + agent) and agent-only cluster update. Persisted for demos. */
-type ClusterUpdateDemoVariant = "manual-and-agent" | "agent-only";
 
 const CLUSTER_UPDATE_DEMO_VARIANT_KEY = "ocp5-cluster-update-demo-variant";
 
@@ -486,10 +485,11 @@ export default function ClusterUpdatePlanPage() {
             </div>
           )}
 
-          {/* AI Assessment — omitted in agent-only demo variant */}
-          {demoVariant === "manual-and-agent" && (
-            <AiAssessmentSection openChatbot={openChatbot} selectedVersion={selectedVersion} />
-          )}
+          <AiAssessmentSection
+            openChatbot={openChatbot}
+            selectedVersion={selectedVersion}
+            clusterUpdateDemoVariant={demoVariant}
+          />
 
           {/* Update Method — hidden in agent-only demo variant */}
           {demoVariant === "manual-and-agent" && (
