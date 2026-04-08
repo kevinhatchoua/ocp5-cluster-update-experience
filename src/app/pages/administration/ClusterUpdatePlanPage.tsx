@@ -8,6 +8,21 @@ import { OlsChatbot } from "../../components/OlsChatbot";
 
 type TabKey = "update-plan" | "update-history";
 
+/** Prototype-only: switch between full UX (manual + agent) and agent-only cluster update. Persisted for demos. */
+type ClusterUpdateDemoVariant = "manual-and-agent" | "agent-only";
+
+const CLUSTER_UPDATE_DEMO_VARIANT_KEY = "ocp5-cluster-update-demo-variant";
+
+function readClusterUpdateDemoVariant(): ClusterUpdateDemoVariant {
+  try {
+    const v = localStorage.getItem(CLUSTER_UPDATE_DEMO_VARIANT_KEY);
+    if (v === "agent-only") return "agent-only";
+  } catch {
+    /* ignore */
+  }
+  return "manual-and-agent";
+}
+
 export type RiskResolution = {
   type: "update-operator" | "wait-for-fix" | "update-z-stream" | "accept-only";
   description: string;
@@ -273,6 +288,7 @@ export default function ClusterUpdatePlanPage() {
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({ "5.1": true });
   
   const [updateMode, setUpdateMode] = useState<"manual" | "agent">("manual");
+  const [demoVariant, setDemoVariantState] = useState<ClusterUpdateDemoVariant>(() => readClusterUpdateDemoVariant());
   const [chatbotOpen, setChatbotOpen] = useState(false);
   const [chatbotContext, setChatbotContext] = useState("");
 
@@ -321,6 +337,21 @@ export default function ClusterUpdatePlanPage() {
     }
   };
 
+  const setDemoVariant = useCallback((v: ClusterUpdateDemoVariant) => {
+    setDemoVariantState(v);
+    try {
+      localStorage.setItem(CLUSTER_UPDATE_DEMO_VARIANT_KEY, v);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (demoVariant === "agent-only") {
+      setUpdateMode("agent");
+    }
+  }, [demoVariant]);
+
   const openChatbot = useCallback((context: string) => {
     setChatbotContext(context);
     setChatbotOpen(true);
@@ -353,9 +384,55 @@ export default function ClusterUpdatePlanPage() {
         { label: "Cluster Update" },
       ]} />
 
-      <h1 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[28px] mb-[16px]">
+      <h1 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[28px] mb-[12px]">
         Cluster Update
       </h1>
+
+      <div className="mb-[20px] flex flex-col gap-[10px] rounded-[12px] border border-[#c4c4c4] dark:border-[rgba(255,255,255,0.15)] bg-[linear-gradient(135deg,rgba(0,102,204,0.06)_0%,rgba(103,83,172,0.06)_100%)] dark:bg-[linear-gradient(135deg,rgba(0,102,204,0.12)_0%,rgba(103,83,172,0.12)_100%)] px-[16px] py-[12px]">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-[12px]">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[#6a6e73] dark:text-[#8a8d90] mb-[2px]">
+              Prototype demo
+            </p>
+            <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] font-medium">
+              Experience variant <span className="text-[#6a6e73] dark:text-[#8a8d90] font-normal">(saved in this browser)</span>
+            </p>
+          </div>
+          <div
+            className="flex rounded-[999px] p-[3px] bg-[rgba(0,0,0,0.06)] dark:bg-[rgba(255,255,255,0.08)] shrink-0"
+            role="group"
+            aria-label="Cluster update experience variant"
+          >
+            <button
+              type="button"
+              onClick={() => setDemoVariant("manual-and-agent")}
+              className={`px-[14px] py-[7px] rounded-[999px] text-[12px] font-semibold font-['Red_Hat_Text:Regular',sans-serif] border-0 cursor-pointer transition-colors whitespace-nowrap ${
+                demoVariant === "manual-and-agent"
+                  ? "bg-white dark:bg-[#2a2a2a] text-[#0066cc] dark:text-[#4dabf7] shadow-sm"
+                  : "bg-transparent text-[#4d4d4d] dark:text-[#b0b0b0] hover:text-[#151515] dark:hover:text-white"
+              }`}
+            >
+              Manual + Agent
+            </button>
+            <button
+              type="button"
+              onClick={() => setDemoVariant("agent-only")}
+              className={`px-[14px] py-[7px] rounded-[999px] text-[12px] font-semibold font-['Red_Hat_Text:Regular',sans-serif] border-0 cursor-pointer transition-colors whitespace-nowrap ${
+                demoVariant === "agent-only"
+                  ? "bg-white dark:bg-[#2a2a2a] text-[#6753ac] dark:text-[#b2a3e0] shadow-sm"
+                  : "bg-transparent text-[#4d4d4d] dark:text-[#b0b0b0] hover:text-[#151515] dark:hover:text-white"
+              }`}
+            >
+              Agent only
+            </button>
+          </div>
+        </div>
+        {demoVariant === "agent-only" && (
+          <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] border-t border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)] pt-[10px]">
+            Manual update controls are hidden. The agent-driven plan, approval, and execution flow is shown as the only path.
+          </p>
+        )}
+      </div>
 
       <div className="border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)] mb-[24px] flex gap-[0px]">
         {tabs.map((tab) => (
@@ -394,58 +471,73 @@ export default function ClusterUpdatePlanPage() {
           {/* AI Assessment */}
           <AiAssessmentSection openChatbot={openChatbot} selectedVersion={selectedVersion} />
 
-          {/* Update Method Selector */}
-          <CollapsibleSection title="Update Method" defaultExpanded>
-            <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[16px]">Choose how cluster updates are managed.</p>
-            <div className="grid grid-cols-2 gap-[12px]">
-              <button
-                onClick={() => setUpdateMode("manual")}
-                className={`flex items-start gap-[12px] p-[16px] rounded-[12px] border-2 text-left cursor-pointer transition-all bg-transparent ${
-                  updateMode === "manual"
-                    ? "border-[#0066cc] dark:border-[#4dabf7] bg-[rgba(0,102,204,0.03)] dark:bg-[rgba(77,171,247,0.05)]"
-                    : "border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90]"
-                }`}
-              >
-                <div className={`mt-[2px] size-[36px] rounded-[8px] flex items-center justify-center shrink-0 ${
-                  updateMode === "manual" ? "bg-[#0066cc] text-white" : "bg-[#f0f0f0] dark:bg-[rgba(255,255,255,0.08)] text-[#6a6e73]"
-                }`}>
-                  <Settings className="size-[18px]" />
-                </div>
-                <div>
-                  <p className={`text-[14px] font-semibold font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] ${updateMode === "manual" ? "text-[#0066cc] dark:text-[#4dabf7]" : "text-[#151515] dark:text-white"}`}>
-                    Manual
-                  </p>
-                  <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
-                    Review available updates, assess risks, and initiate updates yourself. Full control over timing and version selection.
-                  </p>
-                </div>
-              </button>
-              <button
-                onClick={() => setUpdateMode("agent")}
-                className={`flex items-start gap-[12px] p-[16px] rounded-[12px] border-2 text-left cursor-pointer transition-all bg-transparent ${
-                  updateMode === "agent"
-                    ? "border-[#6753ac] dark:border-[#b2a3e0] bg-[rgba(103,83,172,0.03)] dark:bg-[rgba(178,163,224,0.05)]"
-                    : "border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90]"
-                }`}
-              >
-                <div className={`mt-[2px] size-[36px] rounded-[8px] flex items-center justify-center shrink-0 ${
-                  updateMode === "agent" ? "bg-[#6753ac] text-white" : "bg-[#f0f0f0] dark:bg-[rgba(255,255,255,0.08)] text-[#6a6e73]"
-                }`}>
-                  <Bot className="size-[18px]" />
-                </div>
-                <div>
-                  <p className={`text-[14px] font-semibold font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] ${updateMode === "agent" ? "text-[#6753ac] dark:text-[#b2a3e0]" : "text-[#151515] dark:text-white"}`}>
-                    Agent-based
-                  </p>
-                  <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
-                    An AI agent handles pre-flight checks, scheduling, coordinated platform and catalog operator updates, and rollback automatically. Pre-checks and status span both layers holistically. You approve plans before execution.
-                  </p>
-                </div>
-              </button>
-            </div>
-          </CollapsibleSection>
+          {/* Update Method — hidden in agent-only demo variant */}
+          {demoVariant === "manual-and-agent" && (
+            <CollapsibleSection title="Update Method" defaultExpanded>
+              <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[16px]">
+                Choose how cluster updates are managed.
+              </p>
+              <div className="grid grid-cols-2 gap-[12px]">
+                <button
+                  type="button"
+                  onClick={() => setUpdateMode("manual")}
+                  className={`flex items-start gap-[12px] p-[16px] rounded-[12px] border-2 text-left cursor-pointer transition-all bg-transparent ${
+                    updateMode === "manual"
+                      ? "border-[#0066cc] dark:border-[#4dabf7] bg-[rgba(0,102,204,0.03)] dark:bg-[rgba(77,171,247,0.05)]"
+                      : "border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90]"
+                  }`}
+                >
+                  <div
+                    className={`mt-[2px] size-[36px] rounded-[8px] flex items-center justify-center shrink-0 ${
+                      updateMode === "manual" ? "bg-[#0066cc] text-white" : "bg-[#f0f0f0] dark:bg-[rgba(255,255,255,0.08)] text-[#6a6e73]"
+                    }`}
+                  >
+                    <Settings className="size-[18px]" />
+                  </div>
+                  <div>
+                    <p
+                      className={`text-[14px] font-semibold font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] ${updateMode === "manual" ? "text-[#0066cc] dark:text-[#4dabf7]" : "text-[#151515] dark:text-white"}`}
+                    >
+                      Manual
+                    </p>
+                    <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
+                      Review available updates, assess risks, and initiate updates yourself. Full control over timing and version selection.
+                    </p>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUpdateMode("agent")}
+                  className={`flex items-start gap-[12px] p-[16px] rounded-[12px] border-2 text-left cursor-pointer transition-all bg-transparent ${
+                    updateMode === "agent"
+                      ? "border-[#6753ac] dark:border-[#b2a3e0] bg-[rgba(103,83,172,0.03)] dark:bg-[rgba(178,163,224,0.05)]"
+                      : "border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90]"
+                  }`}
+                >
+                  <div
+                    className={`mt-[2px] size-[36px] rounded-[8px] flex items-center justify-center shrink-0 ${
+                      updateMode === "agent" ? "bg-[#6753ac] text-white" : "bg-[#f0f0f0] dark:bg-[rgba(255,255,255,0.08)] text-[#6a6e73]"
+                    }`}
+                  >
+                    <Bot className="size-[18px]" />
+                  </div>
+                  <div>
+                    <p
+                      className={`text-[14px] font-semibold font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] ${updateMode === "agent" ? "text-[#6753ac] dark:text-[#b2a3e0]" : "text-[#151515] dark:text-white"}`}
+                    >
+                      Agent-based
+                    </p>
+                    <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
+                      An AI agent handles pre-flight checks, scheduling, coordinated platform and catalog operator updates, and rollback
+                      automatically. Pre-checks and status span both layers holistically. You approve plans before execution.
+                    </p>
+                  </div>
+                </button>
+              </div>
+            </CollapsibleSection>
+          )}
 
-          {updateMode === "manual" ? (
+          {demoVariant === "manual-and-agent" && updateMode === "manual" ? (
             <>
               <AvailableUpdatesSection
                 channelData={channelData}
