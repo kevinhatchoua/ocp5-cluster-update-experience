@@ -1,6 +1,6 @@
 {
   "name": "ocp5-cluster-update-experience",
-  "description": "OpenShift Container Platform 5.x Cluster Update UX prototype — interactive React/TypeScript prototype for exploring cluster update workflows including manual updates, agent-based updates, pre-flight checks, operator lifecycle management, and OpenShift Lightspeed AI integration.",
+  "description": "OpenShift Container Platform 5.x Cluster Update UX prototype (Vite/React/TypeScript): manual and agent-based update flows, demo variants (OCP 5.1 dual-path vs OCP 5.0 agent-only), Installed Operators table aligned with cluster update, bulk operator approval, column management, OpenShift Lightspeed pre-check entry points, and ecosystem operator routes.",
   "private": true,
   "version": "1.0.0",
   "type": "module",

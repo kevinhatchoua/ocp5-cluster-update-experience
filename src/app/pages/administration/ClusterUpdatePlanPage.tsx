@@ -577,7 +577,7 @@ export default function ClusterUpdatePlanPage() {
               <WorkerNodesSection />
             </>
           ) : (
-            <UpdateAgentTab />
+            <UpdateAgentTab openChatbot={openChatbot} />
           )}
         </>
       )}
@@ -1852,7 +1852,7 @@ function BadgeLabel({ text, color }: { text: string; color: string }) {
   );
 }
 
-function UpdateAgentTab() {
+function UpdateAgentTab({ openChatbot }: { openChatbot: (ctx: string) => void }) {
   const [planDecision, setPlanDecision] = useState<"pending" | "approved" | "scheduled" | "rejected">("pending");
   const [expandedSteps, setExpandedSteps] = useState<Set<number>>(new Set([1, 2]));
 
@@ -1896,19 +1896,18 @@ function UpdateAgentTab() {
   return (
     <div className="space-y-[24px]">
       <div className="bg-[rgba(255,255,255,0.5)] dark:bg-[rgba(255,255,255,0.05)] rounded-[16px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.06)] p-[24px] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)]">
-        <div className="flex items-center justify-between mb-[20px]">
+        <div className="mb-[20px]">
           <div className="flex items-center gap-[12px]">
             <div className="size-[40px] rounded-[10px] bg-[#f0f0f0] dark:bg-[rgba(255,255,255,0.08)] flex items-center justify-center">
               <Bot className="size-[22px] text-[#151515] dark:text-white" />
             </div>
             <div>
               <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">AI Update Agent</h2>
-              <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Intelligent automation for cluster updates · Monitoring fast-4.22 channel</p>
+              <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
+                Activity summary and the current proposed plan · fast-4.22 channel
+              </p>
             </div>
           </div>
-          <span className="inline-flex items-center gap-[6px] text-[12px] font-medium text-[#3e8635] border border-[#3e8635] rounded-[999px] px-[10px] py-[4px]">
-            <span className="size-[6px] rounded-full bg-[#3e8635] animate-pulse" /> Analyzing
-          </span>
         </div>
         <div className="grid grid-cols-4 gap-[12px]">
           {stats.map(s => (
@@ -1933,14 +1932,34 @@ function UpdateAgentTab() {
               ))}
             </div>
           </div>
-          <span className={`text-[12px] font-semibold px-[12px] py-[5px] rounded-[999px] border ${
-            planDecision === "approved" ? "border-[#3e8635] text-[#3e8635] bg-[rgba(62,134,53,0.05)]" :
-            planDecision === "rejected" ? "border-[#c9190b] text-[#c9190b] bg-[rgba(201,25,11,0.05)]" :
-            planDecision === "scheduled" ? "border-[#0066cc] text-[#0066cc] bg-[rgba(0,102,204,0.05)]" :
-            "border-[#f0ab00] text-[#795600] bg-[rgba(240,171,0,0.08)]"
-          }`}>
-            {planDecision === "approved" ? "Approved" : planDecision === "rejected" ? "Rejected" : planDecision === "scheduled" ? "Scheduled" : "Ready for Review"}
-          </span>
+          {planDecision === "pending" ? (
+            <div className="shrink-0 text-right sm:max-w-[220px]">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px]">
+                Prerequisites
+              </p>
+              <p className="text-[13px] text-[#151515] dark:text-white font-medium font-['Red_Hat_Text:Regular',sans-serif] leading-[18px]">
+                {requiredCount > 0 ? (
+                  <>
+                    {requiredCount} operator {requiredCount === 1 ? "update" : "updates"} required before this cluster upgrade
+                  </>
+                ) : (
+                  <>No operator blockers — review steps below to approve or schedule</>
+                )}
+              </p>
+            </div>
+          ) : (
+            <span
+              className={`shrink-0 text-[12px] font-semibold px-[12px] py-[5px] rounded-[999px] border ${
+                planDecision === "approved"
+                  ? "border-[#3e8635] text-[#3e8635] bg-[rgba(62,134,53,0.05)]"
+                  : planDecision === "rejected"
+                    ? "border-[#c9190b] text-[#c9190b] bg-[rgba(201,25,11,0.05)]"
+                    : "border-[#0066cc] text-[#0066cc] bg-[rgba(0,102,204,0.05)]"
+              }`}
+            >
+              {planDecision === "approved" ? "Approved" : planDecision === "rejected" ? "Rejected" : "Scheduled"}
+            </span>
+          )}
         </div>
 
         <div className="px-[24px] py-[20px] space-y-[0px]">
@@ -2072,18 +2091,34 @@ function UpdateAgentTab() {
           </div>
 
           {planDecision === "pending" && (
-            <div className="flex items-center gap-[10px]">
-              <button onClick={() => setPlanDecision("approved")}
-                className="flex items-center gap-[6px] bg-[#3e8635] hover:bg-[#2e6b27] text-white text-[14px] px-[20px] py-[9px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-                <Check className="size-[14px]" /> Approve Plan
+            <div className="flex flex-wrap items-center gap-[10px]">
+              <button
+                type="button"
+                onClick={() => setPlanDecision("approved")}
+                className="flex items-center gap-[6px] bg-[#3e8635] hover:bg-[#2e6b27] text-white text-[14px] px-[20px] py-[9px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium"
+              >
+                <Check className="size-[14px]" aria-hidden /> Approve Plan
               </button>
-              <button onClick={() => setPlanDecision("scheduled")}
-                className="flex items-center gap-[6px] bg-transparent text-[#0066cc] dark:text-[#4dabf7] text-[14px] px-[20px] py-[9px] rounded-[999px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer hover:bg-[rgba(0,102,204,0.05)] transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-                <Calendar className="size-[14px]" /> Schedule for Later
+              <button
+                type="button"
+                onClick={() => openChatbot("ai-precheck")}
+                className="flex items-center gap-[8px] bg-transparent hover:bg-[rgba(0,102,204,0.05)] dark:hover:bg-[rgba(77,171,247,0.08)] text-[#0066cc] dark:text-[#4dabf7] text-[14px] px-[16px] py-[9px] rounded-[999px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium"
+              >
+                <Sparkles className="size-[14px]" aria-hidden /> Pre-check with AI
               </button>
-              <button onClick={() => setPlanDecision("rejected")}
-                className="flex items-center gap-[6px] bg-transparent text-[#c9190b] text-[14px] px-[20px] py-[9px] rounded-[999px] border border-[#c9190b] cursor-pointer hover:bg-[rgba(201,25,11,0.05)] transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium">
-                <X className="size-[14px]" /> Reject Plan
+              <button
+                type="button"
+                onClick={() => setPlanDecision("rejected")}
+                className="flex items-center gap-[6px] bg-transparent text-[#c9190b] text-[14px] px-[20px] py-[9px] rounded-[999px] border border-[#c9190b] cursor-pointer hover:bg-[rgba(201,25,11,0.05)] transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium"
+              >
+                <X className="size-[14px]" aria-hidden /> Reject Plan
+              </button>
+              <button
+                type="button"
+                onClick={() => setPlanDecision("scheduled")}
+                className="inline-flex items-center gap-[6px] text-[14px] text-[#0066cc] dark:text-[#4dabf7] bg-transparent border-0 cursor-pointer font-['Red_Hat_Text:Regular',sans-serif] font-medium px-[4px] py-[9px] underline-offset-4 hover:underline"
+              >
+                <Calendar className="size-[14px] shrink-0" aria-hidden /> Schedule for later
               </button>
             </div>
           )}
