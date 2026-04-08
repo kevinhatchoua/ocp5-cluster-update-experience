@@ -405,25 +405,43 @@ export default function ClusterUpdatePlanPage() {
           >
             <button
               type="button"
-              onClick={() => setDemoVariant("manual-and-agent")}
-              className={`px-[14px] py-[7px] rounded-[999px] text-[12px] font-semibold font-['Red_Hat_Text:Regular',sans-serif] border-0 cursor-pointer transition-colors whitespace-nowrap ${
-                demoVariant === "manual-and-agent"
-                  ? "bg-white dark:bg-[#2a2a2a] text-[#0066cc] dark:text-[#4dabf7] shadow-sm"
-                  : "bg-transparent text-[#4d4d4d] dark:text-[#b0b0b0] hover:text-[#151515] dark:hover:text-white"
-              }`}
-            >
-              Manual + Agent
-            </button>
-            <button
-              type="button"
               onClick={() => setDemoVariant("agent-only")}
-              className={`px-[14px] py-[7px] rounded-[999px] text-[12px] font-semibold font-['Red_Hat_Text:Regular',sans-serif] border-0 cursor-pointer transition-colors whitespace-nowrap ${
+              className={`inline-flex items-center gap-[6px] px-[14px] py-[7px] rounded-[999px] text-[12px] font-semibold font-['Red_Hat_Text:Regular',sans-serif] border-0 cursor-pointer transition-colors whitespace-nowrap ${
                 demoVariant === "agent-only"
                   ? "bg-white dark:bg-[#2a2a2a] text-[#6753ac] dark:text-[#b2a3e0] shadow-sm"
                   : "bg-transparent text-[#4d4d4d] dark:text-[#b0b0b0] hover:text-[#151515] dark:hover:text-white"
               }`}
             >
-              Agent only
+              <span>Agent only</span>
+              <span
+                className={`text-[11px] font-medium ${
+                  demoVariant === "agent-only"
+                    ? "text-[#6753ac]/85 dark:text-[#b2a3e0]/90"
+                    : "text-[#6a6e73] dark:text-[#8a8d90]"
+                }`}
+              >
+                (OCP 5.0)
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setDemoVariant("manual-and-agent")}
+              className={`inline-flex items-center gap-[6px] px-[14px] py-[7px] rounded-[999px] text-[12px] font-semibold font-['Red_Hat_Text:Regular',sans-serif] border-0 cursor-pointer transition-colors whitespace-nowrap ${
+                demoVariant === "manual-and-agent"
+                  ? "bg-white dark:bg-[#2a2a2a] text-[#0066cc] dark:text-[#4dabf7] shadow-sm"
+                  : "bg-transparent text-[#4d4d4d] dark:text-[#b0b0b0] hover:text-[#151515] dark:hover:text-white"
+              }`}
+            >
+              <span>Manual + Agent</span>
+              <span
+                className={`text-[11px] font-medium ${
+                  demoVariant === "manual-and-agent"
+                    ? "text-[#0066cc]/85 dark:text-[#4dabf7]/90"
+                    : "text-[#6a6e73] dark:text-[#8a8d90]"
+                }`}
+              >
+                (OCP 5.1)
+              </span>
             </button>
           </div>
         </div>
