@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { X, AlertTriangle, Loader2, CheckCircle2, Sparkles } from "lucide-react";
+import { X, AlertTriangle, Loader2, CheckCircle2, Sparkles } from "@/lib/pfIcons";
 import { useNavigate } from "react-router";
 import { useChat } from "../contexts/ChatContext";
 

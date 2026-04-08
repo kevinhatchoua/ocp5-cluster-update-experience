@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import { X, AlertCircle, CheckCircle, Loader2 } from "@/lib/pfIcons";
 
 interface OperatorUpdateModalProps {
   isOpen: boolean;

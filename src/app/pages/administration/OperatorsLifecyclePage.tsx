@@ -1,4 +1,4 @@
-import { AlertCircle, CheckCircle, Clock, Info, MoreVertical } from "lucide-react";
+import { AlertCircle, CheckCircle, Clock, Info, MoreVertical } from "@/lib/pfIcons";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import Breadcrumbs from "../../components/Breadcrumbs";

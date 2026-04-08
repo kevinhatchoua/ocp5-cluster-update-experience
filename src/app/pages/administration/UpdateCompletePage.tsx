@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle } from "@/lib/pfIcons";
 
 export default function UpdateCompletePage() {
   const navigate = useNavigate();

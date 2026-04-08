@@ -1,4 +1,4 @@
-import { X, AlertTriangle } from "lucide-react";
+import { X, AlertTriangle } from "@/lib/pfIcons";
 
 interface PauseUpdateModalProps {
   isOpen: boolean;

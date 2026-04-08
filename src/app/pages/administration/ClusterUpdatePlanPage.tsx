@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, Link, useLocation } from "react-router";
-import { ChevronDown, ChevronRight, ExternalLink, Sparkles, ArrowRight, CheckCircle, AlertTriangle, AlertCircle, HelpCircle, Info, X, Loader2, Shield, Bot, Settings, RotateCcw, Play, Pause, Calendar, Bell, Clock, FileText, User, Zap, Eye, RefreshCw, MoreVertical, Check } from "lucide-react";
+import { ChevronDown, ChevronRight, ExternalLink, Sparkles, ArrowRight, CheckCircle, AlertTriangle, AlertCircle, HelpCircle, Info, X, Loader2, Shield, Bot, Settings, RotateCcw, Play, Pause, Calendar, Bell, Clock, FileText, User, Zap, Eye, RefreshCw, MoreVertical, Check } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import { AiAssessmentSection, type ClusterUpdateDemoVariant } from "../../components/AiAssessmentSection";
 import { OlsChatbot } from "../../components/OlsChatbot";

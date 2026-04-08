@@ -4,7 +4,7 @@ import {
   ExternalLink, Globe, Box, Database, ChevronRight, X, MoreVertical,
   ArrowUpRight, RefreshCw, Layers, GitBranch, CheckCircle2, AlertTriangle,
   XCircle, Clock, ChevronDown, Play, Pause, Trash2, Edit, Copy, Terminal
-} from "lucide-react";
+} from "@/lib/pfIcons";
 import { useNavigate } from "react-router";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import FavoriteButton from "../../components/FavoriteButton";

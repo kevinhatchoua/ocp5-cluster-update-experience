@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
+import { X, AlertTriangle, CheckCircle, Loader2 } from "@/lib/pfIcons";
 
 interface OperatorUninstallModalProps {
   isOpen: boolean;
