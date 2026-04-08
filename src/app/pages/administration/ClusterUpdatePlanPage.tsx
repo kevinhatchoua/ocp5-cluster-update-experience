@@ -468,8 +468,10 @@ export default function ClusterUpdatePlanPage() {
             </div>
           )}
 
-          {/* AI Assessment */}
-          <AiAssessmentSection openChatbot={openChatbot} selectedVersion={selectedVersion} />
+          {/* AI Assessment — omitted in agent-only demo variant */}
+          {demoVariant === "manual-and-agent" && (
+            <AiAssessmentSection openChatbot={openChatbot} selectedVersion={selectedVersion} />
+          )}
 
           {/* Update Method — hidden in agent-only demo variant */}
           {demoVariant === "manual-and-agent" && (
