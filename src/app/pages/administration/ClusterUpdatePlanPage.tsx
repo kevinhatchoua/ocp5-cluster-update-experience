@@ -2438,7 +2438,6 @@ function KebabMenu({ isOpen, onToggle, onClose, items }: { isOpen: boolean; onTo
 /* ─── Installed Operators Section (OLM-integrated widget) ─── */
 function InstalledOperatorsSection({ selectedVersion, operators, navigate }: { selectedVersion: string; operators: InstalledOperator[]; navigate: ReturnType<typeof useNavigate> }) {
   const [sectionExpanded, setSectionExpanded] = useState(true);
-  const [search, setSearch] = useState("");
   const [filterCompat, setFilterCompat] = useState<"all" | "incompatible" | "update-available">("all");
   const [openKebabIndex, setOpenKebabIndex] = useState<number | null>(null);
   const [updateAll, setUpdateAll] = useState(false);
@@ -2448,13 +2447,11 @@ function InstalledOperatorsSection({ selectedVersion, operators, navigate }: { s
     return { ...op, clusterCompatibility: compatibility, compatibilityMessage: message || op.compatibilityMessage };
   });
 
-  const filtered = operatorsWithCompat
-    .filter((op) => {
-      if (search && !op.name.toLowerCase().includes(search.toLowerCase()) && !op.namespace.toLowerCase().includes(search.toLowerCase())) return false;
-      if (filterCompat === "incompatible") return op.clusterCompatibility === "Incompatible";
-      if (filterCompat === "update-available") return !!op.updateAvailable;
-      return true;
-    });
+  const filtered = operatorsWithCompat.filter((op) => {
+    if (filterCompat === "incompatible") return op.clusterCompatibility === "Incompatible";
+    if (filterCompat === "update-available") return !!op.updateAvailable;
+    return true;
+  });
   const incompatibleCount = operatorsWithCompat.filter((op) => op.clusterCompatibility === "Incompatible").length;
   const updateAvailableCount = operatorsWithCompat.filter((op) => op.updateAvailable).length;
   const upgradeableFalse = incompatibleCount > 0;
@@ -2475,23 +2472,6 @@ function InstalledOperatorsSection({ selectedVersion, operators, navigate }: { s
       </button>
 
       {sectionExpanded && <div className="mt-[16px]">
-      <div className="flex items-center justify-between mb-[12px]">
-        <div />
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Filter operators..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="text-[13px] px-[12px] py-[7px] pr-[32px] rounded-[999px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.2)] bg-white dark:bg-[#1a1a1a] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] w-[220px] outline-none focus:border-[#0066cc] transition-colors"
-          />
-          {search && (
-            <button onClick={() => setSearch("")} className="absolute right-[8px] top-1/2 -translate-y-1/2 bg-transparent border-0 cursor-pointer text-[#6a6e73] hover:text-[#151515] dark:hover:text-white p-0">
-              <X className="size-[14px]" />
-            </button>
-          )}
-        </div>
-      </div>
       <div className="flex items-center gap-[8px] mb-[12px] flex-wrap">
         <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">
           {operators.length} catalog operators installed · Compatibility for <span className="font-medium text-[#151515] dark:text-white">{selectedVersion}</span>
