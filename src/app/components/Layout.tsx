@@ -59,7 +59,6 @@ import UserCogIcon from "@patternfly/react-icons/dist/esm/icons/user-cog-icon";
 import UserIcon from "@patternfly/react-icons/dist/esm/icons/user-icon";
 import UsersIcon from "@patternfly/react-icons/dist/esm/icons/users-icon";
 import svgPaths from "../../imports/svg-929lpcd05l";
-import LightSpeedPanel from "./LightSpeedPanel";
 import ImpersonateUserModal from "./ImpersonateUserModal";
 import ClusterUpdateDemoBanner from "./ClusterUpdateDemoBanner";
 import { usePermissions } from "../contexts/PermissionsContext";
@@ -526,7 +525,13 @@ export default function Layout() {
                 </MastheadIconButton>
               </ToolbarItem>
               <ToolbarItem>
-                <Button variant="secondary" type="button" onClick={() => setIsAIOpen(true)} aria-label="Open OpenShift LightSpeed">
+                <Button
+                  variant="secondary"
+                  type="button"
+                  onClick={() => setIsAIOpen(true)}
+                  aria-label="Open OpenShift LightSpeed"
+                  className="!text-[var(--pf-color-blue-50)] [&_svg]:!text-[var(--pf-color-blue-50)] [&_span]:!text-[var(--pf-color-blue-50)] hover:!text-[var(--pf-color-blue-60)]"
+                >
                   <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsCenter" }} display={{ default: "inlineFlex" }}>
                     <RobotIcon aria-hidden />
                     <span>10</span>
@@ -669,6 +674,7 @@ export default function Layout() {
           <Page
             className={css(sizingStyles.h_100)}
             isManagedSidebar
+            isContentFilled
             masthead={masthead}
             sidebar={sidebar}
             skipToContent={<SkipToContent href="#app-main-container">Skip to content</SkipToContent>}
@@ -679,6 +685,9 @@ export default function Layout() {
             <div
               className={css(sizingStyles.h_100)}
               style={{
+                flex: "1 1 auto",
+                display: "flex",
+                flexDirection: "column",
                 minHeight: 0,
                 paddingInlineEnd: isAIOpen ? "420px" : undefined,
                 transition: "padding-inline-end 0.3s ease-in-out",
@@ -690,12 +699,6 @@ export default function Layout() {
           </Page>
         </div>
       </div>
-
-      <LightSpeedPanel
-        isOpen={isAIOpen}
-        onClose={() => setIsAIOpen(false)}
-        context="Hi John! I'm OpenShift LightSpeed, your AI assistant for cluster and operator management.\n\nI can help you with:\n• Cluster updates\n• Operator lifecycle management\n• General cluster information and health\n• Troubleshooting and remediation\n\nWhat would you like to know?"
-      />
 
       <ImpersonateUserModal
         isOpen={isImpersonateModalOpen}

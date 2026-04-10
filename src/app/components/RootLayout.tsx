@@ -3,6 +3,7 @@ import { ChatProvider } from "../contexts/ChatContext";
 import { PermissionsProvider } from "../contexts/PermissionsContext";
 import { FavoritesProvider } from "../contexts/FavoritesContext";
 import { ClusterUpdateDemoProvider } from "../contexts/ClusterUpdateDemoContext";
+import LightSpeedGlobalMount from "./LightSpeedGlobalMount";
 
 export default function RootLayout() {
   return (
@@ -11,6 +12,7 @@ export default function RootLayout() {
         <FavoritesProvider>
           <ClusterUpdateDemoProvider>
             <Outlet />
+            <LightSpeedGlobalMount />
           </ClusterUpdateDemoProvider>
         </FavoritesProvider>
       </ChatProvider>

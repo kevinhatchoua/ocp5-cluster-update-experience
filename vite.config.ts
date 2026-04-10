@@ -25,9 +25,14 @@ export default defineConfig({
     tailwindcss(),
   ],
   resolve: {
+    /** Avoid multiple React copies in @vite/deps (invalid hooks / useId on null with PatternFly + Router). */
+    dedupe: ['react', 'react-dom'],
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+  },
+  optimizeDeps: {
+    include: ['react', 'react/jsx-runtime', 'react-dom', 'react-dom/client'],
   },
   assetsInclude: ['**/*.svg', '**/*.csv'],
 })
