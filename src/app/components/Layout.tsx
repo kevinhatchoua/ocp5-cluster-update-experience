@@ -681,16 +681,11 @@ export default function Layout() {
             banner={impersonationBanner}
           >
             <div
-              className={css(sizingStyles.h_100)}
-              style={{
-                flex: "1 1 auto",
-                display: "flex",
-                flexDirection: "column",
-                minHeight: 0,
-                paddingInlineEnd: isAIOpen ? "420px" : undefined,
-                transition: "padding-inline-end 0.3s ease-in-out",
-                backgroundColor: "var(--pf-t--global--background--color--secondary--default)",
-              }}
+              className={css(
+                sizingStyles.h_100,
+                "layout-page-outlet",
+                isAIOpen && "layout-page-outlet--ai-open"
+              )}
             >
               <Outlet />
             </div>

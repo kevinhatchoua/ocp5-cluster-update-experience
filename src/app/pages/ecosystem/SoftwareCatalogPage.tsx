@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { Search, ChevronDown, ChevronRight, Info, AlertTriangle, CheckCircle, X } from "@/lib/pfIcons";
+import {
+  Alert,
+  AlertActionCloseButton,
+  AlertActionLink,
+  AlertGroup,
+  Content,
+} from "@patternfly/react-core";
+import { Search, ChevronDown, ChevronRight, AlertTriangle, CheckCircle, X } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
 
 interface Operator {
@@ -637,72 +644,54 @@ export default function SoftwareCatalogPage() {
           ]}
         />
 
-        <div className="mb-[24px]">
-          <h1 className="font-['Red_Hat_Display_VF:Medium',sans-serif] font-medium leading-[36.4px] text-[#151515] dark:text-white text-[28px] mb-[8px]">
-            Software Catalog
-          </h1>
-          <p className="text-[14px] text-[#4d4d4d] dark:text-[#b0b0b0]">
-            Add shared applications, services, event sources, or source-to-image builders to your Project from the software catalog. Cluster administrators can customize the content made available in the catalog.
+        <Content className="mb-6">
+          <h1 id="main-title">Software Catalog</h1>
+          <p>
+            Add shared applications, services, event sources, or source-to-image builders to your Project from the
+            software catalog. Cluster administrators can customize the content made available in the catalog.
           </p>
-        </div>
+        </Content>
 
-        {/* Info Banners */}
-        {availableUpdates > 0 && !dismissedAlerts.includes('updates') && (
-          <div className="mb-[16px] bg-white dark:bg-[rgba(43,154,243,0.1)] border-l-2 border-[#2b9af3] rounded-[16px] p-[16px] relative">
-            <div aria-hidden="true" className="absolute border-2 border-[#2b9af3] border-solid inset-0 pointer-events-none rounded-[16px]" />
-            <button
-              onClick={() => setDismissedAlerts(prev => [...prev, 'updates'])}
-              className="absolute top-[16px] right-[16px] p-[4px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[4px] transition-colors z-10"
-              aria-label="Dismiss alert"
-            >
-              <X className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" />
-            </button>
-            <div className="flex items-start gap-[12px] pr-[32px]">
-              <Info className="size-[20px] text-[#2b9af3] dark:text-[#73bcf7] shrink-0 mt-[2px]" />
-              <div className="flex-1">
-                <p className="text-[14px] text-[#151515] dark:text-white font-medium mb-[4px]">
-                  {availableUpdates} Software versions available
-                </p>
-                <p className="text-[14px] text-[#151515] dark:text-[#b0b0b0] mb-[8px]">
-                  Review and approve pending software updates to keep your cluster secure and up-to-date.
-                </p>
-                <Link
-                  to="/ecosystem/installed-operators"
-                  className="text-[14px] text-[#06c] dark:text-[#4dabf7] hover:underline"
+        {((availableUpdates > 0 && !dismissedAlerts.includes("updates")) || !dismissedAlerts.includes("olmv1")) && (
+          <AlertGroup className="mb-4">
+            {availableUpdates > 0 && !dismissedAlerts.includes("updates") && (
+              <Alert
+                variant="info"
+                isInline
+                title={`${availableUpdates} Software versions available`}
+                actionClose={
+                  <AlertActionCloseButton onClose={() => setDismissedAlerts((prev) => [...prev, "updates"])} />
+                }
+                actionLinks={
+                  <AlertActionLink component={Link} to="/ecosystem/installed-operators">
+                    Manage updates
+                  </AlertActionLink>
+                }
+              >
+                Review and approve pending software updates to keep your cluster secure and up-to-date.
+              </Alert>
+            )}
+            {!dismissedAlerts.includes("olmv1") && (
+              <Alert
+                variant="info"
+                isInline
+                title="Operator Lifecycle Management version 1"
+                actionClose={
+                  <AlertActionCloseButton onClose={() => setDismissedAlerts((prev) => [...prev, "olmv1"])} />
+                }
+              >
+                {`With OLMv1, you'll get a much simpler API that's easier to work with and understand. Plus, you have more direct control over upgrade. You can define update ranges, and decide exactly how updates are rolled out. `}
+                <a
+                  href="https://docs.openshift.com/container-platform/latest/operators/understanding/olm-understanding-operatorhub.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  Manage updates
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {!dismissedAlerts.includes('olmv1') && (
-          <div className="mb-[16px] bg-white dark:bg-[rgba(182,166,233,0.1)] border-l-2 border-[#b6a6e9] rounded-[16px] p-[16px] relative">
-            <div aria-hidden="true" className="absolute border-2 border-[#b6a6e9] border-solid inset-0 pointer-events-none rounded-[16px]" />
-            <button
-              onClick={() => setDismissedAlerts(prev => [...prev, 'olmv1'])}
-              className="absolute top-[16px] right-[16px] p-[4px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[4px] transition-colors z-10"
-              aria-label="Dismiss alert"
-            >
-              <X className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" />
-            </button>
-            <div className="flex items-start gap-[12px] pr-[32px]">
-              <Info className="size-[20px] text-[#b6a6e9] shrink-0 mt-[2px]" />
-              <div className="flex-1">
-                <p className="text-[14px] text-[#151515] dark:text-white font-medium mb-[4px]">
-                  Operator Lifecycle Management version 1
-                </p>
-                <p className="text-[14px] text-[#151515] dark:text-[#b0b0b0] mb-[8px]">
-                  With OLMv1, you'll get a much simpler API that's easier to work with and understand. Plus, you have more direct control over upgrade. You can define update ranges, and decide exactly how updates are rolled out.{" "}
-                  <a href="https://docs.openshift.com/container-platform/latest/operators/understanding/olm-understanding-operatorhub.html" target="_blank" rel="noopener noreferrer" className="text-[#06c] dark:text-[#4dabf7] hover:underline">
-                    Learn more
-                  </a>{" "}
-                  about OLMv1.
-                </p>
-              </div>
-            </div>
-          </div>
+                  Learn more
+                </a>
+                {` about OLMv1.`}
+              </Alert>
+            )}
+          </AlertGroup>
         )}
 
         <div className="flex gap-[24px]">
