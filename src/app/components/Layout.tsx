@@ -60,7 +60,6 @@ import UserIcon from "@patternfly/react-icons/dist/esm/icons/user-icon";
 import UsersIcon from "@patternfly/react-icons/dist/esm/icons/users-icon";
 import svgPaths from "../../imports/svg-929lpcd05l";
 import ImpersonateUserModal from "./ImpersonateUserModal";
-import ClusterUpdateDemoBanner from "./ClusterUpdateDemoBanner";
 import { usePermissions } from "../contexts/PermissionsContext";
 import { useChat } from "../contexts/ChatContext";
 import { useFavorites } from "../contexts/FavoritesContext";
@@ -669,7 +668,6 @@ export default function Layout() {
           flexDirection: "column",
         }}
       >
-        <ClusterUpdateDemoBanner />
         <div style={{ flex: "1 1 auto", minHeight: 0, display: "flex", flexDirection: "column" }}>
           <Page
             className={css(sizingStyles.h_100)}
