@@ -275,8 +275,10 @@ export default function ClusterUpdatePlanPage() {
   const [selectedVersion, setSelectedVersion] = useState<string>("5.1.10");
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({ "5.1": true });
   
-  const [updateMode, setUpdateMode] = useState<"manual" | "agent">("manual");
   const { demoVariant } = useClusterUpdateDemoVariant();
+  const [updateMode, setUpdateMode] = useState<"manual" | "agent">(
+    () => (demoVariant === "agent-only" ? "agent" : "manual")
+  );
   const [chatbotOpen, setChatbotOpen] = useState(false);
   const [chatbotContext, setChatbotContext] = useState("");
 
@@ -333,9 +335,7 @@ export default function ClusterUpdatePlanPage() {
   };
 
   useEffect(() => {
-    if (demoVariant === "agent-only") {
-      setUpdateMode("agent");
-    }
+    setUpdateMode(demoVariant === "agent-only" ? "agent" : "manual");
   }, [demoVariant]);
 
   const openChatbot = useCallback((context: string) => {
