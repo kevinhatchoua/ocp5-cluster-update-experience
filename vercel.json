@@ -1,5 +1,9 @@
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+  "redirects": [
+    {
+      "source": "/:path*",
+      "destination": "https://ocp5-cluster-update-experience-6wz4iom6i.vercel.app/:path*",
+      "permanent": true
+    }
   ]
 }
