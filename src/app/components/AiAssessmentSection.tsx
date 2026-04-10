@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, Info, Sparkles } from "lucide-react";
+import { ChevronDown, ChevronRight, Info, Sparkles, ArrowRight } from "lucide-react";
 
 export type AiAssessmentVariant = "cluster-update" | "installed-operators";
 
@@ -93,21 +93,30 @@ export function AiAssessmentSection({
               </p>
 
               <div className="rounded-[8px] border-2 border-[#5e40be] dark:border-[#b2a3e0] px-[16px] py-[12px] mb-[16px]">
-                <div className="flex items-center gap-[10px]">
-                  <Info className="size-[16px] text-[#0066cc] dark:text-[#4dabf7] shrink-0" />
-                  <p className="text-[#151515] dark:text-white text-[14px] font-['Red_Hat_Text:Regular',sans-serif]">
-                    {clusterUpdateDemoVariant === "agent-only" ? (
-                      <>
-                        Version <span className="font-mono font-semibold">{selectedVersion}</span> available
-                        <span className="text-[#6a6e73] dark:text-[#8a8d90] font-normal"> · OCP 5.0 (agent-only demo)</span>
-                      </>
-                    ) : (
-                      <>
-                        Version {selectedVersion} available
-                        <span className="text-[#6a6e73] dark:text-[#8a8d90] font-normal"> · OCP 5.1 (manual + agent demo)</span>
-                      </>
-                    )}
-                  </p>
+                <div className="flex flex-wrap items-start gap-x-[10px] gap-y-[8px]">
+                  <div className="flex items-start gap-[10px] min-w-0 flex-1">
+                    <Info className="size-[16px] text-[#0066cc] dark:text-[#4dabf7] shrink-0 mt-[2px]" />
+                    <p className="text-[#151515] dark:text-white text-[14px] font-['Red_Hat_Text:Regular',sans-serif] min-w-0">
+                      {clusterUpdateDemoVariant === "agent-only" ? (
+                        <>
+                          Version <span className="font-mono font-semibold">{selectedVersion}</span> available
+                        </>
+                      ) : (
+                        <>
+                          Version {selectedVersion} available
+                          <span className="text-[#6a6e73] dark:text-[#8a8d90] font-normal"> · OCP 5.1 (manual + agent demo)</span>
+                        </>
+                      )}
+                    </p>
+                  </div>
+                  <a
+                    href="https://docs.redhat.com/en/documentation/openshift_container_platform/5.1/html/release_notes/index"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-[4px] shrink-0 text-[#0066cc] dark:text-[#4dabf7] text-[13px] no-underline hover:underline font-['Red_Hat_Text:Regular',sans-serif] font-medium sm:ml-auto"
+                  >
+                    See what&apos;s new in 5.1 <ArrowRight className="size-[14px]" aria-hidden />
+                  </a>
                 </div>
               </div>
             </>
