@@ -1,5 +1,5 @@
 import { useParams, useNavigate, Link } from "react-router";
-import { ArrowLeft, Star, Shield, Bug, Zap } from "lucide-react";
+import { ArrowLeft, Star, Shield, Bug, Zap } from "@/lib/pfIcons";
 
 const versionData: Record<string, any> = {
   "5.1.10": {

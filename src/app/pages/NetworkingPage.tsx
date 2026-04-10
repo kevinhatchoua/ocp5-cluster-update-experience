@@ -4,7 +4,7 @@ import {
   Search, RefreshCw, MoreVertical, Network, Globe, Lock, Shield, ExternalLink,
   Plus, X, CheckCircle2, AlertTriangle, ArrowUpRight, Copy, ChevronRight,
   Edit, Trash2, Eye, Terminal, ArrowLeftRight, Filter
-} from "lucide-react";
+} from "@/lib/pfIcons";
 import Breadcrumbs from "../components/Breadcrumbs";
 import FavoriteButton from "../components/FavoriteButton";
 

@@ -4,7 +4,7 @@ import {
   ExternalLink, Globe, Box, Database, ChevronRight, X, MoreVertical,
   ArrowUpRight, RefreshCw, Layers, GitBranch, CheckCircle2, AlertTriangle,
   XCircle, Clock, ChevronDown, Play, Pause, Trash2, Edit, Copy, Terminal
-} from "lucide-react";
+} from "@/lib/pfIcons";
 import { useNavigate } from "react-router";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import FavoriteButton from "../../components/FavoriteButton";
@@ -910,7 +910,7 @@ export default function TopologyPage() {
               </div>
 
               {/* Legend overlay */}
-              <div className="absolute bottom-[12px] left-[12px] bg-white/90 dark:bg-[#1a1a1a]/90 backdrop-blur-sm rounded-[8px] p-[10px] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)] text-[10px]">
+              <div className="absolute bottom-[12px] left-[12px] app-glass-panel p-[10px] text-[10px]">
                 <p className="font-semibold text-[#151515] dark:text-white mb-[6px]">Resource Types</p>
                 <div className="grid grid-cols-2 gap-x-[12px] gap-y-[3px]">
                   {Object.entries(kindColors).map(([kind, color]) => (
@@ -937,7 +937,7 @@ export default function TopologyPage() {
               </div>
 
               {/* Namespace info */}
-              <div className="absolute top-[12px] left-[12px] bg-white/90 dark:bg-[#1a1a1a]/90 backdrop-blur-sm rounded-[8px] px-[12px] py-[6px] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)]">
+              <div className="absolute top-[12px] left-[12px] app-glass-panel px-[12px] py-[6px]">
                 <span className="text-[11px] text-[#6a6e73]">Namespace: </span>
                 <span className="text-[12px] font-semibold text-[#151515] dark:text-white">{selectedNamespace}</span>
                 <span className="text-[11px] text-[#6a6e73] ml-[8px]">{filteredNodes.length} workloads</span>

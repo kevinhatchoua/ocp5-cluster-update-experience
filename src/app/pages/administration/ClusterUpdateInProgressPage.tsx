@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router";
-import { CheckCircle, Loader2, Info, MoreVertical, AlertTriangle, X, Play, Pause, FileText } from "lucide-react";
+import { CheckCircle, Loader2, Info, MoreVertical, AlertTriangle, X, Play, Pause, FileText } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
 
 type TabKey = "update-plan" | "active-update-plans" | "update-history";

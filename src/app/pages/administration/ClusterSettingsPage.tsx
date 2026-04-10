@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CheckCircle, AlertCircle, Clock, ExternalLink, ChevronDown, ChevronRight, Loader2 } from "lucide-react";
+import { CheckCircle, AlertCircle, Clock, ExternalLink, ChevronDown, ChevronRight, Loader2 } from "@/lib/pfIcons";
 import { Link } from "react-router";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import FavoriteButton from "../../components/FavoriteButton";

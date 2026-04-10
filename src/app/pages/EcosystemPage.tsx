@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { Package, ListChecks, AlertTriangle } from "lucide-react";
+import { Package, ListChecks, AlertTriangle } from "@/lib/pfIcons";
 import FavoriteButton from "../components/FavoriteButton";
 
 export default function EcosystemPage() {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { AlertTriangle, Info, CheckCircle } from "lucide-react";
+import { AlertTriangle, Info, CheckCircle } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
 
 export default function SoftwareLifecycleManagementPage() {

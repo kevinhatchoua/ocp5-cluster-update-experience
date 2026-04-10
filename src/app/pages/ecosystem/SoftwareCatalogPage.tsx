@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { Search, ChevronDown, ChevronRight, Info, AlertTriangle, CheckCircle, X } from "lucide-react";
+import { Search, ChevronDown, ChevronRight, Info, AlertTriangle, CheckCircle, X } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
 
 interface Operator {
@@ -987,7 +987,7 @@ export default function SoftwareCatalogPage() {
             className="absolute inset-0 bg-black/30"
             onClick={() => setShowSidePanel(false)}
           />
-          <div className="absolute right-0 top-0 bottom-0 w-[480px] bg-white dark:bg-[#1f1f1f] shadow-[-4px_0_16px_rgba(0,0,0,0.16)] overflow-y-auto">
+          <div className="absolute right-0 top-0 bottom-0 w-[480px] app-glass-panel app-glass-panel--edge-right overflow-y-auto">
             <div className="p-[24px]">
               <div className="flex items-start justify-between mb-[24px]">
                 <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[20px] text-[#151515] dark:text-white">

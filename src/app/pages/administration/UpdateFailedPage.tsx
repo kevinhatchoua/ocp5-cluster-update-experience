@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
-import { XCircle, Sparkles } from "lucide-react";
+import { XCircle, Sparkles } from "@/lib/pfIcons";
 
 export default function UpdateFailedPage() {
   const navigate = useNavigate();

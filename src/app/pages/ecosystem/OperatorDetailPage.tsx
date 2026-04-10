@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router";
-import { AlertTriangle, ExternalLink, ChevronRight, ArrowRight, CheckCircle2, Info, Edit2 } from "lucide-react";
+import { AlertTriangle, ExternalLink, ChevronRight, ArrowRight, CheckCircle2, Info, Edit2 } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import FavoriteButton from "../../components/FavoriteButton";
 

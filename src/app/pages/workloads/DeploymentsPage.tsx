@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, RefreshCw, MoreVertical, CheckCircle, Package } from "lucide-react";
+import { Search, RefreshCw, MoreVertical, CheckCircle, Package } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import FavoriteButton from "../../components/FavoriteButton";
 

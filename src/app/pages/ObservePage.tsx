@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import { Activity, AlertCircle, TrendingUp, Cpu, HardDrive, Network, Sparkles } from "lucide-react";
+import { Activity, AlertCircle, TrendingUp, Cpu, HardDrive, Network, Sparkles } from "@/lib/pfIcons";
 import LightSpeedPanel from "../components/LightSpeedPanel";
 import FavoriteButton from "../components/FavoriteButton";
 

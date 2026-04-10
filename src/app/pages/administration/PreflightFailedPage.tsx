@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
-import { CheckCircle, XCircle, AlertCircle, AlertTriangle, Sparkles, TriangleAlert, RefreshCw } from "lucide-react";
+import { CheckCircle, XCircle, AlertCircle, AlertTriangle, Sparkles, TriangleAlert, RefreshCw } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import LightSpeedPanel from "../../components/LightSpeedPanel";
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Users, UserCog, Search, RefreshCw } from "lucide-react";
+import { Users, UserCog, Search, RefreshCw } from "@/lib/pfIcons";
 import Breadcrumbs from "../components/Breadcrumbs";
 import FavoriteButton from "../components/FavoriteButton";
 import { usePermissions } from "../contexts/PermissionsContext";
