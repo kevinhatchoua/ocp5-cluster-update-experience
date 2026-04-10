@@ -1,17 +1,37 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { createPortal } from "react-dom";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   CheckCircle,
   Info,
   AlertCircle,
-  MoreVertical,
   ExternalLink,
   Layers,
   AlertTriangle,
   Clock,
   Columns2,
 } from "@/lib/pfIcons";
+import { usePatternFlyGlassActive } from "@/lib/usePatternFlyGlassActive";
 import { Link, useNavigate } from "react-router";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Content,
+  Dropdown,
+  DropdownGroup,
+  DropdownItem,
+  Flex,
+  Icon,
+  Label,
+  MenuToggle,
+  SearchInput,
+  Toolbar,
+  ToolbarContent,
+  ToolbarGroup,
+  ToolbarItem,
+} from "@patternfly/react-core";
+import EllipsisVIcon from "@patternfly/react-icons/dist/esm/icons/ellipsis-v-icon";
+import { InnerScrollContainer, Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import FavoriteButton from "../../components/FavoriteButton";
 import { useChat } from "../../contexts/ChatContext";
@@ -361,77 +381,6 @@ const INITIAL_CATALOG_OPERATORS: CatalogOperator[] = [
   },
 ];
 
-function KebabMenu({
-  isOpen,
-  onToggle,
-  onClose,
-  items,
-}: {
-  isOpen: boolean;
-  onToggle: () => void;
-  onClose: () => void;
-  items: { label: string; onClick: () => void }[];
-}) {
-  const btnRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState({ top: 0, left: 0 });
-
-  useEffect(() => {
-    if (isOpen && btnRef.current) {
-      const rect = btnRef.current.getBoundingClientRect();
-      const menuHeight = items.length * 36 + 8;
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const opensUp = spaceBelow < menuHeight + 8;
-      setPos({
-        top: opensUp ? rect.top - menuHeight - 4 : rect.bottom + 4,
-        left: rect.right - 200,
-      });
-    }
-  }, [isOpen, items.length]);
-
-  return (
-    <>
-      <button
-        ref={btnRef}
-        type="button"
-        className="p-[4px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[4px] transition-colors bg-transparent border-0 cursor-pointer"
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggle();
-        }}
-      >
-        <MoreVertical className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" />
-      </button>
-      {isOpen &&
-        createPortal(
-          <>
-            <div className="fixed inset-0 z-[9998]" onClick={onClose} />
-            <div
-              ref={menuRef}
-              className="fixed z-[9999] w-[200px] app-glass-panel app-glass-panel--radius-sm py-[4px]"
-              style={{ top: pos.top, left: pos.left }}
-            >
-              {items.map((item, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  className="w-full text-left px-[16px] py-[8px] text-[14px] text-[#151515] dark:text-white hover:bg-[rgba(0,0,0,0.03)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors bg-transparent border-0 cursor-pointer"
-                  onClick={() => {
-                    item.onClick();
-                    onClose();
-                  }}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </>,
-          document.body
-        )}
-    </>
-  );
-}
-
 export default function InstalledOperatorsPage() {
   const [operators, setOperators] = useState<CatalogOperator[]>(() => [...INITIAL_CATALOG_OPERATORS]);
   const [selectedOperators, setSelectedOperators] = useState<string[]>([]);
@@ -451,9 +400,9 @@ export default function InstalledOperatorsPage() {
     lastUpdated: true,
     managedNamespaces: true,
   });
-  const columnMenuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { setCurrentPage } = useChat();
+  const isGlass = usePatternFlyGlassActive();
 
   const openChatbot = useCallback((context: string) => {
     setChatbotContext(context);
@@ -473,17 +422,6 @@ export default function InstalledOperatorsPage() {
   useEffect(() => {
     setCurrentPage("/ecosystem/installed-operators");
   }, [setCurrentPage]);
-
-  useEffect(() => {
-    if (!columnMenuOpen) return;
-    const onDocMouseDown = (e: MouseEvent) => {
-      if (columnMenuRef.current && !columnMenuRef.current.contains(e.target as Node)) {
-        setColumnMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", onDocMouseDown);
-    return () => document.removeEventListener("mousedown", onDocMouseDown);
-  }, [columnMenuOpen]);
 
   const visibleDataColumnCount = useMemo(
     () => TABLE_COLUMN_OPTIONS.filter(({ key }) => visibleColumns[key]).length,
@@ -665,322 +603,356 @@ export default function InstalledOperatorsPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-[12px] mb-[20px]">
-            <input
-              type="text"
-              placeholder="Find by name or namespace"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-[280px] px-[12px] py-[10px] bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[rgba(0,0,0,0.2)] dark:border-[rgba(255,255,255,0.2)] rounded-[8px] text-[13px] text-[#151515] dark:text-white placeholder:text-[#4d4d4d] dark:placeholder:text-[#b0b0b0] focus:outline-none focus:ring-2 focus:ring-[#0066cc] dark:focus:ring-[#4dabf7]"
-            />
-            <button
-              type="button"
-              onClick={() => setIsBulkUpdateModalOpen(true)}
-              disabled={selectedOperators.length < 2}
-              title={
-                selectedOperators.length < 2
-                  ? "Select at least two operators to run a bulk approval"
-                  : "Review and approve updates for the selected operators"
-              }
-              className={`px-[16px] py-[10px] rounded-[8px] font-semibold text-[14px] transition-all ${
-                selectedOperators.length < 2
-                  ? "bg-[#d2d2d2] dark:bg-[#4d4d4d] text-[#8a8d90] dark:text-[#8a8d90] cursor-not-allowed"
-                  : "bg-[#0066cc] hover:bg-[#004080] dark:bg-[#4dabf7] dark:hover:bg-[#339af0] text-white cursor-pointer"
-              }`}
-            >
-              Approve update
-            </button>
-            <Link
-              to="/ecosystem/software-catalog"
-              className="text-[#0066cc] dark:text-[#4dabf7] hover:underline font-semibold text-[14px] no-underline flex items-center gap-[4px]"
-            >
-              Browse Software Catalog
-              <ExternalLink className="size-[14px]" />
-            </Link>
-            <div className="relative" ref={columnMenuRef}>
-              <button
-                type="button"
-                onClick={() => setColumnMenuOpen((o) => !o)}
-                aria-expanded={columnMenuOpen}
-                aria-haspopup="true"
-                className="inline-flex items-center gap-[6px] px-[12px] py-[8px] rounded-[8px] border border-[#0066cc] dark:border-[#4dabf7] text-[#0066cc] dark:text-[#4dabf7] text-[13px] font-semibold font-['Red_Hat_Text:Regular',sans-serif] hover:bg-[rgba(0,102,204,0.06)] dark:hover:bg-[rgba(77,171,247,0.1)] transition-colors bg-white dark:bg-[rgba(255,255,255,0.05)]"
-              >
-                <Columns2 className="size-[16px] shrink-0" aria-hidden />
-                Manage columns
-              </button>
-              {columnMenuOpen && (
-                <div
-                  className="absolute left-0 mt-[6px] z-[100] w-[min(100vw-32px,280px)] app-glass-panel app-glass-panel--radius-sm py-[8px]"
-                  role="menu"
-                  aria-label="Table column visibility"
-                >
-                  <p className="px-[14px] pb-[6px] text-[11px] font-semibold uppercase tracking-wide text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif]">
-                    Visible columns
-                  </p>
-                  {TABLE_COLUMN_OPTIONS.map(({ key, label }) => (
-                    <label
-                      key={key}
-                      className="flex items-center gap-[10px] px-[14px] py-[8px] cursor-pointer hover:bg-[rgba(0,0,0,0.04)] dark:hover:bg-[rgba(255,255,255,0.06)] mx-[4px] rounded-[4px]"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={visibleColumns[key]}
-                        onChange={() => setVisibleColumns((v) => ({ ...v, [key]: !v[key] }))}
-                        className="size-[14px] rounded border-[#8a8d90] cursor-pointer accent-[#0066cc]"
-                      />
-                      <span className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">
-                        {label}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+          <Toolbar
+            id="installed-operators-toolbar"
+            ouiaId="installed-operators-toolbar"
+            style={{ marginBottom: "var(--pf-t--global--spacer--lg)" }}
+          >
+            <ToolbarContent>
+              <ToolbarItem>
+                <SearchInput
+                  aria-label="Find by name or namespace"
+                  placeholder="Find by name or namespace"
+                  value={searchTerm}
+                  onChange={(_event, value) => setSearchTerm(value)}
+                  onClear={(e) => {
+                    e.stopPropagation();
+                    setSearchTerm("");
+                  }}
+                  style={{ width: "min(100%, 280px)" }}
+                />
+              </ToolbarItem>
+              <ToolbarGroup align={{ default: "alignEnd" }} gap={{ default: "gapMd" }}>
+                <ToolbarItem>
+                  <Button
+                    variant="primary"
+                    onClick={() => setIsBulkUpdateModalOpen(true)}
+                    isDisabled={selectedOperators.length < 2}
+                    title={
+                      selectedOperators.length < 2
+                        ? "Select at least two operators to run a bulk approval"
+                        : "Review and approve updates for the selected operators"
+                    }
+                  >
+                    Approve update
+                  </Button>
+                </ToolbarItem>
+                <ToolbarItem>
+                  <Button
+                    variant="link"
+                    component={Link}
+                    to="/ecosystem/software-catalog"
+                    icon={<ExternalLink />}
+                    iconPosition="right"
+                  >
+                    Browse Software Catalog
+                  </Button>
+                </ToolbarItem>
+                <ToolbarItem>
+                  <Dropdown
+                    isOpen={columnMenuOpen}
+                    onOpenChange={setColumnMenuOpen}
+                    toggle={(toggleRef) => (
+                      <MenuToggle
+                        ref={toggleRef}
+                        variant="secondary"
+                        aria-label="Table column visibility"
+                        onClick={() => setColumnMenuOpen((o) => !o)}
+                        isExpanded={columnMenuOpen}
+                        icon={<Columns2 aria-hidden />}
+                      >
+                        Manage columns
+                      </MenuToggle>
+                    )}
+                    onSelect={() => {}}
+                    shouldFocusToggleOnSelect={false}
+                  >
+                    <DropdownGroup label="Visible columns">
+                      {TABLE_COLUMN_OPTIONS.map(({ key, label }) => (
+                        <DropdownItem
+                          key={key}
+                          itemId={key}
+                          hasCheckbox
+                          isSelected={visibleColumns[key]}
+                          onClick={() =>
+                            setVisibleColumns((v) => ({ ...v, [key]: !v[key] }))
+                          }
+                        >
+                          {label}
+                        </DropdownItem>
+                      ))}
+                    </DropdownGroup>
+                  </Dropdown>
+                </ToolbarItem>
+              </ToolbarGroup>
+            </ToolbarContent>
+          </Toolbar>
 
-          <div className="bg-[rgba(255,255,255,0.5)] dark:bg-[rgba(255,255,255,0.05)] rounded-[16px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.04)] overflow-hidden border border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]">
-            <div className="px-[20px] py-[12px] border-b border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.02)] dark:bg-[rgba(255,255,255,0.03)]">
-              <p className="text-[12px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif] flex flex-wrap items-center gap-[6px]">
-                <Layers className="size-[14px] text-[#6753ac] dark:text-[#b2a3e0] shrink-0" aria-hidden />
-                <span>
-                  = <span className="font-medium text-[#151515] dark:text-white">Cluster extension</span>{" "}
-                  <span className="text-[#6a6e73] dark:text-[#8a8d90]">(OLM v1 managed)</span>
-                </span>
-              </p>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="border-b-2 border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)]">
-                    <th className="text-left py-[12px] pl-[16px] pr-[8px] w-[48px]">
-                      <input
-                        type="checkbox"
-                        checked={
-                          filteredOperators.length > 0 &&
-                          selectedOperators.length === filteredOperators.length
-                        }
-                        onChange={handleSelectAll}
-                        className="size-[16px] cursor-pointer"
-                        title="Select all in view"
-                      />
-                    </th>
-                    <th className="text-left py-[12px] px-[16px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
-                      Operator
-                    </th>
-                    {visibleColumns.version && (
-                      <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
-                        Version
-                      </th>
-                    )}
-                    {visibleColumns.clusterCompatibility && (
-                      <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
-                        Cluster compatibility
-                      </th>
-                    )}
-                    {visibleColumns.updatePlan && (
-                      <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
-                        Update plan
-                      </th>
-                    )}
-                    {visibleColumns.support && (
-                      <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
-                        Support
-                      </th>
-                    )}
-                    {visibleColumns.status && (
-                      <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
-                        Status
-                      </th>
-                    )}
-                    {visibleColumns.lastUpdated && (
-                      <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
-                        Last updated
-                      </th>
-                    )}
-                    {visibleColumns.managedNamespaces && (
-                      <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">
-                        Managed namespaces
-                      </th>
-                    )}
-                    <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px] w-[60px]">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredOperators.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={tableColSpan}
-                        className="px-[16px] py-[24px] text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]"
-                      >
-                        No operators match your search.
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredOperators.map((op, i) => (
-                      <tr
-                        key={op.name}
-                        className={`border-b border-[rgba(0,0,0,0.05)] dark:border-[rgba(255,255,255,0.05)] hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)] transition-colors ${
-                          i === filteredOperators.length - 1 ? "border-b-0" : ""
-                        }`}
-                      >
-                        <td className="py-[14px] pl-[16px] pr-[8px] align-top">
-                          <input
-                            type="checkbox"
-                            checked={selectedOperators.includes(op.name)}
-                            onChange={() => handleSelectOperator(op.name)}
-                            className="size-[16px] cursor-pointer mt-[2px]"
-                          />
-                        </td>
-                        <td className="py-[14px] px-[16px]">
-                          <div className="min-w-0">
-                            <div className="flex flex-wrap items-center gap-[8px] gap-y-[2px]">
-                              <Link
-                                to={`/ecosystem/installed-operators/${encodeURIComponent(op.name)}`}
-                                className="text-[#0066cc] dark:text-[#4dabf7] text-[13px] font-['Red_Hat_Text:Medium',sans-serif] font-medium hover:underline no-underline"
+          <Card isGlass={isGlass}>
+            <CardHeader>
+              <Flex
+                alignItems={{ default: "alignItemsCenter" }}
+                gap={{ default: "gapSm" }}
+                flexWrap={{ default: "flexWrapWrap" }}
+              >
+                <Icon>
+                  <Layers />
+                </Icon>
+                <Content component="small">
+                  = <strong>Cluster extension</strong> (OLM v1 managed)
+                </Content>
+              </Flex>
+            </CardHeader>
+            <CardBody>
+              <InnerScrollContainer>
+                <Table aria-label="Installed operators" borders>
+                  <Thead>
+                    <Tr>
+                      <Th modifier="fitContent" aria-label="Select all operators in view">
+                        <input
+                          type="checkbox"
+                          checked={
+                            filteredOperators.length > 0 &&
+                            selectedOperators.length === filteredOperators.length
+                          }
+                          onChange={handleSelectAll}
+                          title="Select all in view"
+                        />
+                      </Th>
+                      <Th dataLabel="Operator">Operator</Th>
+                      {visibleColumns.version && <Th dataLabel="Version">Version</Th>}
+                      {visibleColumns.clusterCompatibility && (
+                        <Th dataLabel="Cluster compatibility">Cluster compatibility</Th>
+                      )}
+                      {visibleColumns.updatePlan && <Th dataLabel="Update plan">Update plan</Th>}
+                      {visibleColumns.support && <Th dataLabel="Support">Support</Th>}
+                      {visibleColumns.status && <Th dataLabel="Status">Status</Th>}
+                      {visibleColumns.lastUpdated && <Th dataLabel="Last updated">Last updated</Th>}
+                      {visibleColumns.managedNamespaces && (
+                        <Th dataLabel="Managed namespaces">Managed namespaces</Th>
+                      )}
+                      <Th modifier="fitContent" dataLabel="Actions">
+                        Actions
+                      </Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {filteredOperators.length === 0 ? (
+                      <Tr>
+                        <Td colSpan={tableColSpan} dataLabel="Empty state">
+                          No operators match your search.
+                        </Td>
+                      </Tr>
+                    ) : (
+                      filteredOperators.map((op, i) => (
+                        <Tr key={op.name} isRowSelected={selectedOperators.includes(op.name)}>
+                          <Td modifier="fitContent" dataLabel="Select row">
+                            <input
+                              type="checkbox"
+                              checked={selectedOperators.includes(op.name)}
+                              onChange={() => handleSelectOperator(op.name)}
+                              aria-label={`Select ${op.name}`}
+                            />
+                          </Td>
+                          <Td dataLabel="Operator">
+                            <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
+                              <Flex
+                                flexWrap={{ default: "flexWrapWrap" }}
+                                gap={{ default: "gapSm" }}
+                                alignItems={{ default: "alignItemsCenter" }}
                               >
-                                {op.name}
-                              </Link>
-                              {op.requiredBeforeClusterUpdate && (
-                                <span className="px-[6px] py-[1px] bg-[#f0ab00] text-white rounded-[4px] text-[10px] font-semibold shrink-0">
-                                  Required
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-[11px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Mono:Regular',sans-serif] truncate mt-[1px]">
-                              {op.namespace}
-                            </p>
-                          </div>
-                        </td>
-                        {visibleColumns.version && (
-                          <td className="py-[14px] px-[12px]">
-                            <span className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">
-                              {op.version}
-                            </span>
-                            {op.updateAvailable ? (
-                              <span className="block text-[11px] text-[#0066cc] dark:text-[#4dabf7] mt-[4px] font-['Red_Hat_Text:Regular',sans-serif]">
-                                Update available: {op.updateAvailable}
-                              </span>
-                            ) : null}
-                          </td>
-                        )}
-                        {visibleColumns.clusterCompatibility && (
-                          <td className="py-[14px] px-[12px]">
-                            {op.clusterCompatibility === "Compatible" ? (
-                              <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]">
-                                <CheckCircle className="size-[14px] text-[#3d7317]" /> Compatible
-                              </span>
-                            ) : op.clusterCompatibility === "Incompatible" ? (
-                              <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]">
-                                <AlertCircle className="size-[14px] text-[#b1380b]" /> Incompatible
-                              </span>
-                            ) : (
-                              <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]">
-                                <AlertTriangle className="size-[14px] text-[#dca614]" /> Unknown
-                              </span>
-                            )}
-                          </td>
-                        )}
-                        {visibleColumns.updatePlan && (
-                          <td className="py-[14px] px-[12px] text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0]">
-                            {op.autoUpdate ? "Automatic" : "Manual"}
-                          </td>
-                        )}
-                        {visibleColumns.support && (
-                          <td className="py-[14px] px-[12px]">
-                            <div>
-                              <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0]">
-                                {op.supportEndDate || "—"}
-                              </p>
-                              {op.supportBadge && (
-                                <span
-                                  className={`text-[12px] ${
-                                    op.supportBadgeType === "danger"
-                                      ? "text-[#f0ab00] dark:text-[#f4c145]"
-                                      : op.supportBadgeType === "warning"
-                                        ? "text-[#f0ab00] dark:text-[#f4c145]"
-                                        : "text-[#3e8635] dark:text-[#5ba352]"
-                                  }`}
+                                <Button
+                                  variant="link"
+                                  isInline
+                                  component={Link}
+                                  to={`/ecosystem/installed-operators/${encodeURIComponent(op.name)}`}
                                 >
-                                  {op.supportBadge}
-                                </span>
+                                  {op.name}
+                                </Button>
+                                {op.requiredBeforeClusterUpdate ? (
+                                  <Label color="orange" isCompact>
+                                    Required
+                                  </Label>
+                                ) : null}
+                              </Flex>
+                              <Content component="small">
+                                <code>{op.namespace}</code>
+                              </Content>
+                            </Flex>
+                          </Td>
+                          {visibleColumns.version && (
+                            <Td dataLabel="Version">
+                              <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
+                                <Content component="small">
+                                  <code>{op.version}</code>
+                                </Content>
+                                {op.updateAvailable ? (
+                                  <Content component="small">
+                                    <Button
+                                      variant="link"
+                                      isInline
+                                      component={Link}
+                                      to={`/ecosystem/installed-operators/${encodeURIComponent(op.name)}/update`}
+                                      state={{
+                                        returnTo: "/ecosystem/installed-operators",
+                                        operatorName: op.name,
+                                        operatorData: op,
+                                      }}
+                                    >
+                                      Update available: {op.updateAvailable}
+                                    </Button>
+                                  </Content>
+                                ) : null}
+                              </Flex>
+                            </Td>
+                          )}
+                          {visibleColumns.clusterCompatibility && (
+                            <Td dataLabel="Cluster compatibility">
+                              {op.clusterCompatibility === "Compatible" ? (
+                                <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                                  <Icon status="success">
+                                    <CheckCircle />
+                                  </Icon>
+                                  Compatible
+                                </Flex>
+                              ) : op.clusterCompatibility === "Incompatible" ? (
+                                <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                                  <Icon status="danger">
+                                    <AlertCircle />
+                                  </Icon>
+                                  Incompatible
+                                </Flex>
+                              ) : (
+                                <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                                  <Icon status="warning">
+                                    <AlertTriangle />
+                                  </Icon>
+                                  Unknown
+                                </Flex>
                               )}
-                            </div>
-                          </td>
-                        )}
-                        {visibleColumns.status && (
-                          <td className="py-[14px] px-[12px]">
-                            {op.status === "Running" ? (
-                              <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]">
-                                <CheckCircle className="size-[14px] text-[#3d7317]" /> Running
-                              </span>
-                            ) : op.status === "Degraded" ? (
-                              <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]">
-                                <AlertCircle className="size-[14px] text-[#b1380b]" /> Degraded
-                              </span>
-                            ) : (
-                              <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]">
-                                <Clock className="size-[14px] text-[#dca614]" /> Pending
-                              </span>
-                            )}
-                          </td>
-                        )}
-                        {visibleColumns.lastUpdated && (
-                          <td className="py-[14px] px-[12px] text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] whitespace-nowrap">
-                            {op.lastUpdated || "—"}
-                          </td>
-                        )}
-                        {visibleColumns.managedNamespaces && (
-                          <td className="py-[14px] px-[12px]">
-                            <div className="flex flex-wrap gap-[4px]">
-                              {(op.managedNamespaces || []).map((ns, idx) => (
-                                <span
-                                  key={idx}
-                                  className="text-[11px] px-[6px] py-[1px] rounded-[4px] bg-[rgba(0,0,0,0.04)] dark:bg-[rgba(255,255,255,0.06)] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Mono:Regular',sans-serif]"
-                                >
-                                  {ns}
-                                </span>
-                              ))}
-                            </div>
-                          </td>
-                        )}
-                        <td className="py-[14px] px-[12px]">
-                          <KebabMenu
-                            isOpen={openKebabIndex === i}
-                            onToggle={() => setOpenKebabIndex(openKebabIndex === i ? null : i)}
-                            onClose={() => setOpenKebabIndex(null)}
-                            items={[
-                              {
-                                label: "View details",
-                                onClick: () =>
-                                  navigate(`/ecosystem/installed-operators/${encodeURIComponent(op.name)}`),
-                              },
-                              ...(typeof op.updateAvailable === "string" && op.updateAvailable.length > 0
-                                ? [
-                                    {
-                                      label: "Update",
-                                      onClick: () => navigateToUpdate(op),
-                                    },
-                                  ]
-                                : []),
-                              {
-                                label: "Edit subscription",
-                                onClick: () =>
+                            </Td>
+                          )}
+                          {visibleColumns.updatePlan && (
+                            <Td dataLabel="Update plan">{op.autoUpdate ? "Automatic" : "Manual"}</Td>
+                          )}
+                          {visibleColumns.support && (
+                            <Td dataLabel="Support">
+                              <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
+                                <Content>{op.supportEndDate || "—"}</Content>
+                                {op.supportBadge ? (
+                                  <Label
+                                    isCompact
+                                    variant="outline"
+                                    status={
+                                      op.supportBadgeType === "danger"
+                                        ? "danger"
+                                        : op.supportBadgeType === "warning"
+                                          ? "warning"
+                                          : "success"
+                                    }
+                                  >
+                                    {op.supportBadge}
+                                  </Label>
+                                ) : null}
+                              </Flex>
+                            </Td>
+                          )}
+                          {visibleColumns.status && (
+                            <Td dataLabel="Status">
+                              {op.status === "Running" ? (
+                                <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                                  <Icon status="success">
+                                    <CheckCircle />
+                                  </Icon>
+                                  Running
+                                </Flex>
+                              ) : op.status === "Degraded" ? (
+                                <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                                  <Icon status="danger">
+                                    <AlertCircle />
+                                  </Icon>
+                                  Degraded
+                                </Flex>
+                              ) : (
+                                <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                                  <Icon status="warning">
+                                    <Clock />
+                                  </Icon>
+                                  Pending
+                                </Flex>
+                              )}
+                            </Td>
+                          )}
+                          {visibleColumns.lastUpdated && (
+                            <Td dataLabel="Last updated" modifier="nowrap">
+                              {op.lastUpdated || "—"}
+                            </Td>
+                          )}
+                          {visibleColumns.managedNamespaces && (
+                            <Td dataLabel="Managed namespaces">
+                              <Flex gap={{ default: "gapXs" }} flexWrap={{ default: "flexWrapWrap" }}>
+                                {(op.managedNamespaces || []).map((ns, idx) => (
+                                  <Label key={idx} isCompact variant="outline" color="grey">
+                                    {ns}
+                                  </Label>
+                                ))}
+                              </Flex>
+                            </Td>
+                          )}
+                          <Td dataLabel="Actions" isActionCell hasAction>
+                            <Dropdown
+                              isOpen={openKebabIndex === i}
+                              onOpenChange={(open) => setOpenKebabIndex(open ? i : null)}
+                              popperProps={{ position: "right-end" }}
+                              toggle={(toggleRef) => (
+                                <MenuToggle
+                                  ref={toggleRef}
+                                  variant="plain"
+                                  aria-label={`Actions for ${op.name}`}
+                                  icon={<EllipsisVIcon />}
+                                  onClick={() =>
+                                    setOpenKebabIndex(openKebabIndex === i ? null : i)
+                                  }
+                                  isExpanded={openKebabIndex === i}
+                                />
+                              )}
+                              onSelect={() => setOpenKebabIndex(null)}
+                            >
+                              <DropdownItem
+                                itemId="view"
+                                onClick={() =>
+                                  navigate(
+                                    `/ecosystem/installed-operators/${encodeURIComponent(op.name)}`
+                                  )
+                                }
+                              >
+                                View details
+                              </DropdownItem>
+                              {typeof op.updateAvailable === "string" && op.updateAvailable.length > 0 ? (
+                                <DropdownItem itemId="update" onClick={() => navigateToUpdate(op)}>
+                                  Update
+                                </DropdownItem>
+                              ) : null}
+                              <DropdownItem
+                                itemId="subscription"
+                                onClick={() =>
                                   navigate(
                                     `/ecosystem/installed-operators/${encodeURIComponent(op.name)}/subscription`
-                                  ),
-                              },
-                            ]}
-                          />
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                                  )
+                                }
+                              >
+                                Edit subscription
+                              </DropdownItem>
+                            </Dropdown>
+                          </Td>
+                        </Tr>
+                      ))
+                    )}
+                  </Tbody>
+                </Table>
+              </InnerScrollContainer>
+            </CardBody>
+          </Card>
         </div>
       </div>
 

@@ -1,37 +1,46 @@
-import { ChevronRight } from "@/lib/pfIcons";
+import { Breadcrumb, BreadcrumbItem } from "@patternfly/react-core";
 import { Link } from "react-router";
 
-interface BreadcrumbItem {
+interface BreadcrumbItemData {
   label: string;
   path?: string;
 }
 
 interface BreadcrumbsProps {
-  items: BreadcrumbItem[];
+  items: BreadcrumbItemData[];
+  /** Extra classes on the nav (default bottom margin matches prior layout). */
+  className?: string;
 }
 
-export default function Breadcrumbs({ items }: BreadcrumbsProps) {
+export default function Breadcrumbs({ items, className = "mb-4" }: BreadcrumbsProps) {
   return (
-    <nav className="flex items-center gap-[8px] text-[14px] mb-[16px]">
-      {items.map((item, index) => (
-        <div key={index} className="flex items-center gap-[8px]">
-          {index > 0 && (
-            <ChevronRight className="size-[14px] text-[#4d4d4d] dark:text-[#b0b0b0]" />
-          )}
-          {item.path && index < items.length - 1 ? (
-            <Link
-              to={item.path}
-              className="text-[#0066cc] dark:text-[#4dabf7] hover:underline font-['Red_Hat_Text_VF:Regular',sans-serif]"
-            >
+    <Breadcrumb className={className}>
+      {items.map((item, index) => {
+        const isLast = index === items.length - 1;
+
+        if (isLast) {
+          return (
+            <BreadcrumbItem key={index} isActive>
               {item.label}
-            </Link>
-          ) : (
-            <span className={index === items.length - 1 ? "text-[#151515] dark:text-white font-medium font-['Red_Hat_Text_VF:Regular',sans-serif]" : "text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text_VF:Regular',sans-serif]"}>
-              {item.label}
-            </span>
-          )}
-        </div>
-      ))}
-    </nav>
+            </BreadcrumbItem>
+          );
+        }
+
+        if (item.path) {
+          return (
+            <BreadcrumbItem
+              key={index}
+              render={({ className: linkClass, ariaCurrent }) => (
+                <Link to={item.path!} className={linkClass} aria-current={ariaCurrent ?? undefined}>
+                  {item.label}
+                </Link>
+              )}
+            />
+          );
+        }
+
+        return <BreadcrumbItem key={index}>{item.label}</BreadcrumbItem>;
+      })}
+    </Breadcrumb>
   );
 }
