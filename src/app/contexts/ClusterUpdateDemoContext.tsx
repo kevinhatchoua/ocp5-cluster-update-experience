@@ -12,11 +12,14 @@ export const CLUSTER_UPDATE_DEMO_VARIANT_KEY = "ocp5-cluster-update-demo-variant
 
 function readVariant(): ClusterUpdateDemoVariant {
   try {
-    if (localStorage.getItem(CLUSTER_UPDATE_DEMO_VARIANT_KEY) === "agent-only") return "agent-only";
+    const raw = localStorage.getItem(CLUSTER_UPDATE_DEMO_VARIANT_KEY);
+    /** Explicit opt-in keeps the Manual + Agent storyline; default is agent-first (matches current prototype). */
+    if (raw === "manual-and-agent") return "manual-and-agent";
+    if (raw === "agent-only") return "agent-only";
   } catch {
     /* ignore */
   }
-  return "manual-and-agent";
+  return "agent-only";
 }
 
 type ClusterUpdateDemoContextValue = {
