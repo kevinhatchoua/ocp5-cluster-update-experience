@@ -1008,15 +1008,15 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
                 </button>
               </div>
 
-              {/* Operator Compatibility */}
+              {/* Operator Compatibility — table chrome aligned with Update history tab */}
               <div className="mb-[12px]">
-                <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[8px] font-semibold uppercase tracking-wide">Operator Compatibility Status</p>
+                <p className="text-[12px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif] mb-[8px] font-medium">Operator compatibility status</p>
                 <div className="border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)] rounded-[8px] overflow-hidden">
-                  <div className="grid grid-cols-[1fr_65px_80px_60px_80px_1fr_100px] gap-[8px] px-[12px] py-[6px] text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)]">
-                    <span>Operator</span><span>Type</span><span>Version</span><span>Max OCP</span><span>Status</span><span>Required Action</span><span>Resolution</span>
+                  <div className="grid grid-cols-[1fr_65px_80px_60px_80px_1fr_100px] gap-[8px] px-[16px] py-[10px] text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)]">
+                    <span>Operator</span><span>Type</span><span>Version</span><span>Max OCP</span><span>Status</span><span>Required action</span><span>Resolution</span>
                   </div>
                   {compatAnalysis.operators.map((op) => (
-                    <div key={op.name} className={`grid grid-cols-[1fr_65px_80px_60px_80px_1fr_100px] gap-[8px] items-center px-[12px] py-[8px] border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] last:border-0 ${op.status === "incompatible" ? "bg-[rgba(201,25,11,0.02)]" : ""}`}>
+                    <div key={op.name} className={`grid grid-cols-[1fr_65px_80px_60px_80px_1fr_100px] gap-[8px] items-center px-[16px] py-[12px] border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] last:border-0 transition-colors hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)] ${op.status === "incompatible" ? "bg-[rgba(201,25,11,0.02)]" : ""}`}>
                       <span className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">{op.name}</span>
                       <span className={`text-[10px] px-[4px] py-[1px] rounded-[3px] font-semibold w-fit font-['Red_Hat_Text:Regular',sans-serif] ${op.category === "Platform" ? "bg-[rgba(94,64,190,0.1)] text-[#5e40be]" : "bg-[rgba(0,102,204,0.1)] text-[#0066cc]"}`}>
                         {op.category}
@@ -2091,7 +2091,7 @@ function UpdateAgentTab({
               type="button"
               onClick={runGeneratePlan}
               disabled={isPlanLoading}
-              className="flex items-center justify-center gap-[6px] shrink-0 bg-[#0066cc] hover:bg-[#004080] dark:bg-[#4dabf7] dark:hover:bg-[#73bcf7] text-white text-[14px] px-[20px] py-[9px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-[6px] shrink-0 bg-[var(--pf-color-blue-50)] hover:bg-[var(--pf-color-blue-60)] dark:bg-[var(--pf-color-blue-50)] dark:hover:bg-[var(--pf-color-blue-60)] text-white !text-white [&_svg]:text-white text-[14px] px-[20px] py-[9px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isPlanLoading ? (
                 <>
@@ -2207,54 +2207,54 @@ function UpdateAgentTab({
 
               {expandedSteps.has(i) && i === 2 && (
                 <div className="ml-[30px] mb-[12px]">
-                  <div className="rounded-[8px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] overflow-hidden">
-                    <div className="flex items-center justify-between px-[16px] py-[10px] border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]">
+                  <div className="rounded-[8px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)] overflow-hidden bg-white dark:bg-transparent">
+                    <div className="flex items-center justify-between px-[16px] py-[10px] bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)]">
                       <div className="flex items-center gap-[6px]">
                         <AlertTriangle className="size-[14px] text-[#f0ab00]" />
-                        <span className="text-[13px] font-medium text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">Operator Compatibility</span>
+                        <span className="text-[13px] font-medium text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">Operator compatibility</span>
                       </div>
                       <div className="flex gap-[6px]">
                         <span className="text-[11px] px-[8px] py-[2px] rounded-[999px] bg-[rgba(62,134,53,0.1)] text-[#3e8635] font-semibold">{planProfile.compatCompatible} compatible</span>
                         <span className="text-[11px] px-[8px] py-[2px] rounded-[999px] bg-[rgba(240,171,0,0.1)] text-[#795600] font-semibold">{planProfile.compatRequired} require update</span>
                       </div>
                     </div>
-                    <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] px-[16px] py-[8px] border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]">
+                    <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] px-[16px] py-[10px] border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] bg-[#fafafa] dark:bg-[rgba(255,255,255,0.02)]">
                       {planProfile.compatRequired} operators must be updated before upgrading to {targetVersion}
                     </p>
-                    <table className="w-full text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">
+                    <table className="w-full text-[13px] font-['Red_Hat_Text:Regular',sans-serif] border-collapse">
                       <thead>
-                        <tr className="border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] text-[11px] text-[#6a6e73] uppercase tracking-wide text-left">
-                          <th className="px-[16px] py-[8px] font-medium">Operator</th>
-                          <th className="px-[16px] py-[8px] font-medium">Current</th>
-                          <th className="px-[16px] py-[8px] font-medium">Required version</th>
-                          <th className="px-[16px] py-[8px] font-medium">OCP {targetVersion} compat.</th>
-                          <th className="px-[16px] py-[8px] font-medium">Action needed</th>
+                        <tr className="bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)] text-left">
+                          <th className="pl-[16px] pr-[16px] py-[10px] text-[12px] font-medium text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Operator</th>
+                          <th className="px-[16px] py-[10px] text-[12px] font-medium text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Current</th>
+                          <th className="px-[16px] py-[10px] text-[12px] font-medium text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Required version</th>
+                          <th className="px-[16px] py-[10px] text-[12px] font-medium text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">OCP {targetVersion} compat.</th>
+                          <th className="pl-[16px] pr-[16px] py-[10px] text-[12px] font-medium text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Action needed</th>
                         </tr>
                       </thead>
                       <tbody>
                         {AGENT_OPERATORS.map(op => (
-                          <tr key={op.name} className="border-b border-[rgba(0,0,0,0.04)] dark:border-[rgba(255,255,255,0.04)] last:border-0">
-                            <td className="px-[16px] py-[10px]">
+                          <tr key={op.name} className="border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] last:border-0 hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)] transition-colors">
+                            <td className="pl-[16px] pr-[16px] py-[12px] align-top">
                               <span className={`font-medium ${!op.compatible ? "text-[#c9190b]" : "text-[#151515] dark:text-white"}`}>
                                 {!op.compatible && <span className="mr-[4px]">●</span>}{op.name}
                               </span>
                             </td>
-                            <td className="px-[16px] py-[10px] font-mono text-[#4d4d4d] dark:text-[#b0b0b0]">{op.current}</td>
-                            <td className="px-[16px] py-[10px]">
+                            <td className="px-[16px] py-[12px] font-mono text-[#4d4d4d] dark:text-[#b0b0b0] align-top">{op.current}</td>
+                            <td className="px-[16px] py-[12px] align-top">
                               {op.required ? (
                                 <span className={`font-mono font-semibold ${!op.compatible ? "text-[#c9190b]" : "text-[#151515] dark:text-white"}`}>{op.required}</span>
                               ) : (
                                 <span className="text-[#6a6e73]">–</span>
                               )}
                             </td>
-                            <td className="px-[16px] py-[10px]">
+                            <td className="px-[16px] py-[12px] align-top">
                               {op.compatible ? (
                                 <span className="inline-flex items-center gap-[4px] text-[12px] text-[#3e8635]"><CheckCircle className="size-[12px]" /> Compatible</span>
                               ) : (
                                 <span className="inline-flex items-center gap-[4px] text-[12px] text-[#f0ab00]"><AlertTriangle className="size-[12px]" /> Incompatible at {op.incompatibleAt}</span>
                               )}
                             </td>
-                            <td className="px-[16px] py-[10px]">
+                            <td className="pl-[16px] pr-[16px] py-[12px] align-top">
                               {op.action === "required" ? (
                                 <span className="text-[11px] font-semibold px-[10px] py-[3px] rounded-[999px] bg-[#f0ab00] text-white">Update required before OCP upgrade</span>
                               ) : op.action === "optional" ? (
@@ -2313,7 +2313,7 @@ function UpdateAgentTab({
                   setApproveAcknowledged(false);
                   setShowApproveModal(true);
                 }}
-                className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] dark:bg-[#4dabf7] dark:hover:bg-[#73bcf7] text-white text-[14px] px-[20px] py-[9px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex items-center gap-[6px] bg-[var(--pf-color-blue-50)] hover:bg-[var(--pf-color-blue-60)] dark:bg-[var(--pf-color-blue-50)] dark:hover:bg-[var(--pf-color-blue-60)] text-white !text-white [&_svg]:text-white text-[14px] px-[20px] py-[9px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Check className="size-[14px]" aria-hidden /> Approve plan
               </button>
@@ -2326,9 +2326,9 @@ function UpdateAgentTab({
                   setScheduleTzLabel("Eastern Time (ET)");
                   setShowScheduleModal(true);
                 }}
-                className="flex items-center gap-[6px] bg-transparent hover:bg-[rgba(0,102,204,0.05)] dark:hover:bg-[rgba(77,171,247,0.08)] text-[#0066cc] dark:text-[#4dabf7] text-[14px] px-[16px] py-[9px] rounded-[999px] border border-[#0066cc] dark:border-[#4dabf7] cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex items-center gap-[6px] bg-transparent hover:bg-[rgba(0,102,204,0.05)] dark:hover:bg-[rgba(0,102,204,0.12)] text-[var(--pf-color-blue-50)] text-[14px] px-[16px] py-[9px] rounded-[999px] border border-[var(--pf-color-blue-50)] cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                <Calendar className="size-[14px] shrink-0" aria-hidden /> Schedule for later
+                <Calendar className="size-[14px] shrink-0 text-[var(--pf-color-blue-50)]" aria-hidden /> Schedule for later
               </button>
               <button
                 type="button"
@@ -2381,7 +2381,7 @@ function UpdateAgentTab({
                 <button
                   type="button"
                   onClick={runGeneratePlan}
-                  className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#004080] dark:bg-[#4dabf7] dark:hover:bg-[#73bcf7] text-white text-[13px] px-[16px] py-[8px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex items-center gap-[6px] bg-[var(--pf-color-blue-50)] hover:bg-[var(--pf-color-blue-60)] dark:bg-[var(--pf-color-blue-50)] dark:hover:bg-[var(--pf-color-blue-60)] text-white !text-white [&_svg]:text-white text-[13px] px-[16px] py-[8px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium disabled:opacity-40 disabled:cursor-not-allowed"
                   disabled={isPlanLoading}
                 >
                   <RefreshCw className="size-[14px]" aria-hidden /> Generate new plan
@@ -2450,7 +2450,7 @@ function UpdateAgentTab({
                 type="button"
                 disabled={!approveAcknowledged}
                 onClick={confirmApproveAndStart}
-                className="flex items-center gap-[6px] text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 bg-[#0066cc] hover:bg-[#004080] dark:bg-[#4dabf7] dark:hover:bg-[#73bcf7] text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium"
+                className="flex items-center gap-[6px] text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 bg-[var(--pf-color-blue-50)] hover:bg-[var(--pf-color-blue-60)] dark:bg-[var(--pf-color-blue-50)] dark:hover:bg-[var(--pf-color-blue-60)] text-white !text-white [&_svg]:text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium"
               >
                 <Play className="size-[14px]" aria-hidden /> Start update
               </button>
@@ -2607,7 +2607,7 @@ function UpdateAgentTab({
               <button
                 type="button"
                 onClick={confirmScheduleWindow}
-                className="flex items-center gap-[6px] text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 bg-[#0066cc] hover:bg-[#004080] dark:bg-[#4dabf7] dark:hover:bg-[#73bcf7] text-white cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium"
+                className="flex items-center gap-[6px] text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 bg-[var(--pf-color-blue-50)] hover:bg-[var(--pf-color-blue-60)] dark:bg-[var(--pf-color-blue-50)] dark:hover:bg-[var(--pf-color-blue-60)] text-white !text-white [&_svg]:text-white cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium"
               >
                 <Calendar className="size-[14px]" aria-hidden /> Save schedule
               </button>
@@ -3528,53 +3528,50 @@ function ActiveUpdatePlansTab() {
       <p className="text-[14px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[16px]">
         Scheduled or ongoing agent-based update plans. Select a row to view details.
       </p>
-      <div className="rounded-[12px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] overflow-hidden bg-white/50 dark:bg-[rgba(255,255,255,0.03)]">
-        <table className="w-full text-[13px] font-['Red_Hat_Text:Regular',sans-serif] border-collapse">
-          <thead>
-            <tr className="border-b border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)] text-left">
-              <th className="px-[16px] py-[10px] text-[11px] font-medium text-[#6a6e73] dark:text-[#8a8d90] uppercase tracking-wide">Status</th>
-              <th className="px-[16px] py-[10px] text-[11px] font-medium text-[#6a6e73] dark:text-[#8a8d90] uppercase tracking-wide">Target</th>
-              <th className="px-[16px] py-[10px] text-[11px] font-medium text-[#6a6e73] dark:text-[#8a8d90] uppercase tracking-wide">Summary</th>
-              <th className="px-[16px] py-[10px] text-[11px] font-medium text-[#6a6e73] dark:text-[#8a8d90] uppercase tracking-wide">Window / started</th>
-            </tr>
-          </thead>
-          <tbody>
-            {MOCK_ACTIVE_AGENT_PLANS.map((p) => (
-              <tr
-                key={p.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => setSelectedId(p.id === selectedId ? null : p.id)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setSelectedId(p.id === selectedId ? null : p.id);
-                  }
-                }}
-                className={`border-b border-[rgba(0,0,0,0.05)] dark:border-[rgba(255,255,255,0.05)] cursor-pointer transition-colors last:border-0 ${
-                  selectedId === p.id
-                    ? "bg-[rgba(0,102,204,0.08)] dark:bg-[rgba(77,171,247,0.1)]"
-                    : "hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)]"
-                }`}
-              >
-                <td className="px-[16px] py-[12px]">
-                  <span
-                    className={`text-[12px] font-semibold px-[8px] py-[2px] rounded-[999px] ${
-                      p.status === "scheduled"
-                        ? "bg-[rgba(0,102,204,0.12)] text-[#0066cc] dark:text-[#4dabf7]"
-                        : "bg-[rgba(103,83,172,0.12)] text-[#6753ac] dark:text-[#b2a3e0]"
-                    }`}
-                  >
-                    {p.status === "scheduled" ? "Scheduled" : "In progress"}
-                  </span>
-                </td>
-                <td className="px-[16px] py-[12px] font-['Red_Hat_Mono:Regular',sans-serif] text-[#151515] dark:text-white">{p.targetVersion}</td>
-                <td className="px-[16px] py-[12px] text-[#151515] dark:text-white">{p.summary}</td>
-                <td className="px-[16px] py-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] whitespace-nowrap">{p.windowLabel}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)] rounded-[8px] overflow-hidden">
+        <div className="grid grid-cols-[minmax(110px,120px)_minmax(72px,90px)_1fr_minmax(140px,1fr)] gap-[8px] px-[16px] py-[10px] text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)]">
+          <span>Status</span>
+          <span>Target</span>
+          <span>Summary</span>
+          <span>Window / started</span>
+        </div>
+        {MOCK_ACTIVE_AGENT_PLANS.map((p) => {
+          const isSelected = selectedId === p.id;
+          return (
+            <div
+              key={p.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => setSelectedId(p.id === selectedId ? null : p.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setSelectedId(p.id === selectedId ? null : p.id);
+                }
+              }}
+              className={`grid grid-cols-[minmax(110px,120px)_minmax(72px,90px)_1fr_minmax(140px,1fr)] gap-[8px] items-center px-[16px] py-[12px] border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] last:border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] ${
+                isSelected
+                  ? "bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)]"
+                  : "hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)]"
+              }`}
+            >
+              <span>
+                <span
+                  className={`inline-flex text-[12px] font-semibold px-[8px] py-[2px] rounded-[999px] ${
+                    p.status === "scheduled"
+                      ? "bg-[rgba(0,102,204,0.12)] text-[#0066cc] dark:text-[#4dabf7]"
+                      : "bg-[rgba(103,83,172,0.12)] text-[#6753ac] dark:text-[#b2a3e0]"
+                  }`}
+                >
+                  {p.status === "scheduled" ? "Scheduled" : "In progress"}
+                </span>
+              </span>
+              <span className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">{p.targetVersion}</span>
+              <span className="text-[14px] text-[#151515] dark:text-white min-w-0">{p.summary}</span>
+              <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] whitespace-nowrap">{p.windowLabel}</span>
+            </div>
+          );
+        })}
       </div>
 
       {selected && (

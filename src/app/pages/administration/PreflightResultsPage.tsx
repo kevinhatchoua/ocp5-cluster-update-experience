@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { CheckCircle, AlertCircle, Sparkles, Download, Code2, Columns2, FileText, ChevronDown, ChevronRight, AlertTriangle } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
-import LightSpeedPanel from "../../components/LightSpeedPanel";
 import OperatorKebabMenu from "../../components/OperatorKebabMenu";
 import NodeKebabMenu from "../../components/NodeKebabMenu";
 import OperatorUpdateModal from "../../components/OperatorUpdateModal";
@@ -15,7 +14,7 @@ type ViewMode = "form" | "split" | "yaml";
 export default function PreflightResultsPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isAIOpen, setIsAIOpen] = useState(false);
+  const { setIsOpen: setIsAIOpen } = useChat();
   const [viewMode, setViewMode] = useState<ViewMode>("form");
   const [isClusterHealthExpanded, setIsClusterHealthExpanded] = useState(true);
   const [isAPIChangesExpanded, setIsAPIChangesExpanded] = useState(true);
@@ -582,12 +581,6 @@ status:
         </>
       )}
 
-      <LightSpeedPanel
-        isOpen={isAIOpen}
-        onClose={() => setIsAIOpen(false)}
-        onLaunchPreflight={() => navigate('/administration/cluster-update/preflight')}
-        context="I can guide you through the update process step by step. The pre-checks show your cluster is healthy and ready for the update. What would you like to know?"
-      />
     </div>
   );
 }

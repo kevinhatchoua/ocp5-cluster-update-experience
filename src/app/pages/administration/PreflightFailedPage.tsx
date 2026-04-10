@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { CheckCircle, XCircle, AlertCircle, AlertTriangle, Sparkles, TriangleAlert, RefreshCw } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
-import LightSpeedPanel from "../../components/LightSpeedPanel";
+import { useChat } from "../../contexts/ChatContext";
 
 type ErrorScenario = {
   failedChecks: Array<{
@@ -235,12 +235,12 @@ export default function PreflightFailedPage() {
   const location = useLocation();
   const errorType = location.state?.errorType || "storage";
   const aiMode = location.state?.aiMode || false;
-  
-  const [isAIOpen, setIsAIOpen] = useState(aiMode);
+
+  const { setIsOpen: setIsAIOpen } = useChat();
   const [showRemediation, setShowRemediation] = useState<number | null>(null);
 
   const scenario = errorScenarios[errorType] || errorScenarios.storage;
-  const { failedChecks, passedChecks, aiContext } = scenario;
+  const { failedChecks, passedChecks } = scenario;
 
   // Auto-open AI panel if in AI mode
   useEffect(() => {
@@ -417,12 +417,6 @@ export default function PreflightFailedPage() {
         </div>
       </div>
 
-      <LightSpeedPanel
-        isOpen={isAIOpen}
-        onClose={() => setIsAIOpen(false)}
-        context={aiContext}
-        onLaunchPreflight={() => navigate('/administration/cluster-update/preflight', { state: { aiMode: false, simulateError: false } })}
-      />
     </div>
   );
 }

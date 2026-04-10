@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Activity, AlertCircle, TrendingUp, Cpu, HardDrive, Network, Sparkles } from "@/lib/pfIcons";
-import LightSpeedPanel from "../components/LightSpeedPanel";
 import FavoriteButton from "../components/FavoriteButton";
+import { useChat } from "../contexts/ChatContext";
 
 export default function ObservePage() {
-  const [isAIOpen, setIsAIOpen] = useState(false);
+  const { setIsOpen: setIsAIOpen } = useChat();
   const [timeRange, setTimeRange] = useState("1h");
 
   // CPU usage data
@@ -317,11 +317,6 @@ export default function ObservePage() {
         </div>
       </div>
 
-      <LightSpeedPanel
-        isOpen={isAIOpen}
-        onClose={() => setIsAIOpen(false)}
-        context="I can help you analyze cluster metrics, troubleshoot issues, and optimize resource usage. What would you like to know?"
-      />
     </div>
   );
 }
