@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { X, Send, ThumbsUp, ThumbsDown, Copy, Bookmark, Volume2, Paperclip, Sparkles } from "@/lib/pfIcons";
 import { useChat } from "../contexts/ChatContext";
 import { useNavigate, useLocation } from "react-router";
@@ -27,6 +28,8 @@ interface Message {
 interface LightSpeedPanelProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Viewport Y (px) for top edge; panel uses `bottom: 0` so height never tracks main content scroll height. */
+  dockTop?: number | null;
   context?: string;
   onLaunchPreCheck?: () => void;
   onStartUpdate?: () => void;
@@ -38,12 +41,13 @@ interface LightSpeedPanelProps {
 export default function LightSpeedPanel({
   isOpen,
   onClose,
+  dockTop = null,
   context,
 }: LightSpeedPanelProps) {
   const { messages: globalMessages, addMessage, replaceMessage, context: globalContext, setContext } = useChat();
   const navigate = useNavigate();
   const location = useLocation();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesScrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [input, setInput] = useState('');
@@ -63,9 +67,10 @@ export default function LightSpeedPanel({
   const messages = globalMessages;
 
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
+    const el = messagesScrollRef.current;
+    if (!el) return;
+    /** Do not use scrollIntoView — it can scroll the page behind a fixed/portaled panel. */
+    el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
   }, [messages, isTyping]);
 
   useEffect(() => {
@@ -220,8 +225,21 @@ export default function LightSpeedPanel({
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed top-0 right-0 h-full w-[420px] z-50 flex flex-col transition-transform duration-300 ease-in-out translate-x-0">
+  /** Portaled to `document.body` with `position: fixed` — not a child of `#root` / main, so it does not scroll with page content. */
+  const panel = (
+    <div
+      className="flex flex-col min-h-0 overflow-hidden"
+      style={{
+        position: "fixed",
+        top: dockTop ?? 0,
+        right: 0,
+        bottom: 0,
+        width: 420,
+        zIndex: 500,
+        pointerEvents: "auto",
+        overscrollBehavior: "contain",
+      }}
+    >
       <div className="flex flex-col h-full app-glass-panel app-glass-panel--edge-right overflow-hidden">
 
         {/* ═══ HEADER ═══ */}
@@ -242,7 +260,13 @@ export default function LightSpeedPanel({
         </div>
 
         {/* ═══ MESSAGES ═══ */}
-        <div className="flex-1 overflow-y-auto px-[20px] py-[16px]" role="log" aria-live="polite">
+        <div
+          ref={messagesScrollRef}
+          className="flex-1 overflow-y-auto px-[20px] py-[16px]"
+          style={{ overscrollBehavior: "contain" }}
+          role="log"
+          aria-live="polite"
+        >
           {messages.map((message) => (
             <div key={message.id} className="mb-[20px]">
               {message.type === 'user' ? (
@@ -256,8 +280,8 @@ export default function LightSpeedPanel({
                     <span className="text-[13px] text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif]">{formatTimestamp(message.timestamp)}</span>
                   </div>
                   <div className="ml-[36px]">
-                    <div className="inline-block bg-[#0066cc] text-white rounded-[20px] px-[16px] py-[10px] max-w-[90%]">
-                      <p className="text-[14px] leading-[20px] font-['Red_Hat_Text:Regular',sans-serif]">{message.content}</p>
+                    <div className="inline-block bg-[#0066cc] text-white dark:text-white !text-white rounded-[20px] px-[16px] py-[10px] max-w-[90%] [&_p]:!text-white">
+                      <p className="text-[14px] leading-[20px] font-['Red_Hat_Text:Regular',sans-serif] text-white">{message.content}</p>
                     </div>
                   </div>
                 </div>
@@ -282,8 +306,8 @@ export default function LightSpeedPanel({
                           onClick={() => handleSuggestionClick(suggestion)}
                           className={`text-[13px] px-[16px] py-[8px] rounded-[20px] cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${
                             idx === 0
-                              ? "bg-[#0066cc] text-white border-0 hover:bg-[#004d99]"
-                              : "bg-white text-[#0066cc] border border-[#0066cc] hover:bg-[#e7f1fa]"
+                              ? "bg-[#0066cc] text-white dark:text-white !text-white border-0 hover:bg-[#004d99] [&_svg]:text-white"
+                              : "bg-white dark:bg-[#292929] !text-[var(--pf-color-blue-50)] text-[var(--pf-color-blue-50)] border border-[var(--pf-color-blue-50)] hover:bg-[#e7f1fa] hover:!text-[var(--pf-color-blue-50)] dark:hover:bg-[rgba(0,102,204,0.12)] [&_svg]:text-[var(--pf-color-blue-50)]"
                           }`}>
                           {suggestion}
                         </button>
@@ -330,7 +354,6 @@ export default function LightSpeedPanel({
             </div>
           )}
 
-          <div ref={messagesEndRef} />
         </div>
 
         {/* ═══ FOOTER ═══ */}
@@ -360,4 +383,6 @@ export default function LightSpeedPanel({
       </div>
     </div>
   );
+
+  return createPortal(panel, document.body);
 }

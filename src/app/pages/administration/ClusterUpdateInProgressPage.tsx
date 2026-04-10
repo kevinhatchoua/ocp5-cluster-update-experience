@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router";
 import { CheckCircle, Loader2, Info, MoreVertical, AlertTriangle, X, Play, Pause, FileText } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
 
-type TabKey = "update-plan" | "update-history";
+type TabKey = "update-plan" | "active-update-plans" | "update-history";
 
 interface UpdatingOperator {
   name: string;
@@ -76,6 +76,7 @@ export default function ClusterUpdateInProgressPage() {
 
   const tabs: { key: TabKey; label: string }[] = [
     { key: "update-plan", label: "Update plan" },
+    { key: "active-update-plans", label: "Active update plans" },
     { key: "update-history", label: "Update history" },
   ];
 
