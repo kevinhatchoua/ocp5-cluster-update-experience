@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from "react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { ChevronLeft, ChevronRight, X, Menu } from "lucide-react";
 import svgPaths from "../../imports/svg-929lpcd05l";
 import LightSpeedPanel from "./LightSpeedPanel";
@@ -7,6 +7,7 @@ import ImpersonateUserModal from "./ImpersonateUserModal";
 import { usePermissions } from "../contexts/PermissionsContext";
 import { useChat } from "../contexts/ChatContext";
 import { useFavorites } from "../contexts/FavoritesContext";
+import ClusterUpdateDemoBanner from "./ClusterUpdateDemoBanner";
 
 interface ImpersonatedUser {
   id: string;
@@ -738,7 +739,20 @@ export default function Layout() {
     : (isAIOpen ? 'left-[292px]' : 'left-[292px]');
   
   const contentRight = isAIOpen ? 'right-[420px]' : 'right-[16px]';
-  const contentTop = impersonatedUser ? 'top-[126px]' : 'top-[66px]'; // Adjust for banner height
+
+  /** Distance from viewport top to first row aligned with sidebar (prototype banner + masthead + gap). */
+  const headerStackRef = useRef<HTMLDivElement>(null);
+  const [mainColumnTop, setMainColumnTop] = useState(126);
+  useLayoutEffect(() => {
+    const el = headerStackRef.current;
+    if (!el) return;
+    const sync = () => setMainColumnTop(el.offsetHeight + 16);
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const mainColumnTopImpersonated = mainColumnTop + 60;
 
   return (
     <div
@@ -767,8 +781,17 @@ export default function Layout() {
         </div>
       </div>
 
-      {/* Masthead */}
-      <div className="absolute left-0 right-0 top-0 z-20 h-[50px] bg-white dark:bg-[#1a1a1a] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] shadow-[0px_1px_4px_0px_rgba(41,41,41,0.15)]" data-name="Masthead">
+      {/* Prototype demo + Masthead (banner above masthead) */}
+      <div
+        ref={headerStackRef}
+        className="absolute left-0 right-0 top-0 z-30 flex flex-col shadow-[0px_1px_4px_0px_rgba(41,41,41,0.12)]"
+        data-name="Header stack"
+      >
+        <ClusterUpdateDemoBanner />
+        <div
+          className="h-[50px] bg-white dark:bg-[#1a1a1a] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]"
+          data-name="Masthead"
+        >
         <div className="flex items-center justify-between h-full px-[24px]">
           {/* Left: Hamburger + Logo */}
           <div className="flex items-center gap-[16px]">
@@ -816,11 +839,15 @@ export default function Layout() {
             />
           </div>
         </div>
+        </div>
       </div>
 
       {/* Impersonation Banner */}
       {impersonatedUser && (
-        <div className="absolute left-[292px] right-[16px] top-[66px] z-10 bg-gradient-to-r from-[#0066cc] to-[#004080] dark:from-[#4dabf7] dark:to-[#339af0] rounded-[12px] shadow-lg">
+        <div
+          className="absolute left-[292px] right-[16px] z-10 bg-gradient-to-r from-[#0066cc] to-[#004080] dark:from-[#4dabf7] dark:to-[#339af0] rounded-[12px] shadow-lg"
+          style={{ top: mainColumnTop }}
+        >
           <div className="px-[20px] py-[12px] flex items-center justify-between">
             <div className="flex items-center gap-[12px]">
               <svg className="size-[20px] text-white" fill="none" viewBox="0 0 20 20">
@@ -848,9 +875,10 @@ export default function Layout() {
 
       {/* Collapsible Sidebar */}
       <div 
-        className={`fixed left-[16px] top-[66px] z-20 transition-all duration-300 ease-in-out ${
+        className={`fixed left-[16px] z-20 transition-all duration-300 ease-in-out ${
           isNavCollapsed ? 'w-[72px]' : 'w-[260px]'
         }`}
+        style={{ top: mainColumnTop }}
         data-name="Sidebar"
       >
         {/* Glassmorphic background */}
@@ -964,7 +992,8 @@ export default function Layout() {
 
       {/* Main Content Area - slides when AI panel opens */}
       <div 
-        className={`absolute bottom-[16px] ${contentTop} transition-all duration-300 ease-in-out ${contentLeftPosition} ${contentRight}`}
+        className={`absolute bottom-[16px] transition-all duration-300 ease-in-out ${contentLeftPosition} ${contentRight}`}
+        style={{ top: impersonatedUser ? mainColumnTopImpersonated : mainColumnTop }}
       >
         <div className="bg-white/90 dark:bg-[#1a1a1a]/90 no-glass:bg-white no-glass:dark:bg-[#1a1a1a] backdrop-blur-xl no-glass:backdrop-blur-none rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.08)] shadow-[0px_4px_10px_0px_rgba(41,41,41,0.15)] h-full overflow-y-auto overflow-x-hidden">
           <Outlet />
