@@ -15,16 +15,18 @@ import {
   Button,
   Card,
   CardBody,
-  CardHeader,
   Content,
   Dropdown,
   DropdownGroup,
   DropdownItem,
   Flex,
+  FlexItem,
   Icon,
   Label,
   MenuToggle,
+  PageSection,
   SearchInput,
+  Title,
   Toolbar,
   ToolbarContent,
   ToolbarGroup,
@@ -530,84 +532,125 @@ export default function InstalledOperatorsPage() {
 
   return (
     <div className="flex h-full relative min-w-0">
-      <div className="flex-1 min-w-0 overflow-y-auto">
+      <OlsChatbot
+        key={olsMountKey}
+        isOpen={chatbotOpen}
+        context={chatbotContext}
+        selectedVersion={CLUSTER_TARGET_VERSION}
+        selectedChannel={CLUSTER_CHANNEL}
+        onClose={() => setChatbotOpen(false)}
+        onAction={handleChatAction}
+      >
+      <div className="flex-1 min-h-0 min-w-0 overflow-y-auto">
         <div className="p-[24px]">
-          <Breadcrumbs
-            items={[
-              { label: "Home", path: "/" },
-              { label: "Ecosystem", path: "/ecosystem" },
-              { label: "Installed Operators" },
-            ]}
-          />
+          <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
+            <Breadcrumbs
+              items={[
+                { label: "Home", path: "/" },
+                { label: "Ecosystem", path: "/ecosystem" },
+                { label: "Installed Operators" },
+              ]}
+            />
 
-          <div className="mb-[24px]">
-            <div className="flex items-center justify-between mb-[8px]">
-              <h1 className="font-['Red_Hat_Display_VF:Medium',sans-serif] font-medium leading-[36.4px] text-[#151515] dark:text-white text-[28px]">
-                Installed Operators
-              </h1>
-              <FavoriteButton name="Installed Operators" path="/ecosystem/installed-operators" />
-            </div>
-            <p className="text-[14px] text-[#4d4d4d] dark:text-[#b0b0b0]">
-              Manage catalog operators installed on this cluster. The table matches{" "}
-              <span className="text-[#151515] dark:text-white font-medium">Cluster Update</span> for column
-              names and layout. Select{" "}
-              <span className="text-[#151515] dark:text-white font-medium">two or more</span> operators with
-              catalog updates to run a bulk approval from{" "}
-              <span className="text-[#151515] dark:text-white font-medium">Approve update</span>.
-            </p>
-          </div>
+            <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+              <Flex
+                alignItems={{ default: "alignItemsCenter" }}
+                justifyContent={{ default: "justifyContentSpaceBetween" }}
+              >
+                <h1 className="font-['Red_Hat_Display_VF:Medium',sans-serif] font-medium leading-[36.4px] text-[#151515] dark:text-white text-[28px]">
+                  Installed Operators
+                </h1>
+                <FavoriteButton name="Installed Operators" path="/ecosystem/installed-operators" />
+              </Flex>
+              <p className="text-[14px] text-[#4d4d4d] dark:text-[#b0b0b0]">
+                Manage catalog operators installed on this cluster. The table matches{" "}
+                <span className="text-[#151515] dark:text-white font-medium">Cluster Update</span> for column
+                names and layout. Select{" "}
+                <span className="text-[#151515] dark:text-white font-medium">two or more</span> operators with
+                catalog updates to run a bulk approval from{" "}
+                <span className="text-[#151515] dark:text-white font-medium">Approve update</span>.
+              </p>
+            </Flex>
 
-          <AiAssessmentSection
-            variant="installed-operators"
-            installedSummary={installedAiSummary}
-            openChatbot={openChatbot}
-            selectedVersion={CLUSTER_TARGET_VERSION}
-          />
+            <AiAssessmentSection
+              variant="installed-operators"
+              installedSummary={installedAiSummary}
+              openChatbot={openChatbot}
+              selectedVersion={CLUSTER_TARGET_VERSION}
+            />
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-[16px] mb-[24px]">
-            <div className="bg-[rgba(255,255,255,0.5)] dark:bg-[rgba(255,255,255,0.05)] rounded-[16px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.06)] p-[20px] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)]">
-              <div className="flex items-center gap-[12px] mb-[8px]">
-                <CheckCircle className="size-[24px] text-[#3e8635] dark:text-[#5ba352]" />
-                <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px]">Total installed</p>
-              </div>
-              <p className="font-['Red_Hat_Display:Bold',sans-serif] font-bold text-[#151515] dark:text-white text-[32px]">
-                {operators.length}
-              </p>
-            </div>
-            <div className="bg-[rgba(255,255,255,0.5)] dark:bg-[rgba(255,255,255,0.05)] rounded-[16px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.06)] p-[20px] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)]">
-              <div className="flex items-center gap-[12px] mb-[8px]">
-                <Info className="size-[24px] text-[#2b9af3] dark:text-[#73bcf7]" />
-                <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px]">Available Updates</p>
-              </div>
-              <p className="font-['Red_Hat_Display:Bold',sans-serif] font-bold text-[#2b9af3] dark:text-[#73bcf7] text-[32px]">
-                {operators.filter((o) => o.updateAvailable).length}
-              </p>
-            </div>
-            <div className="bg-[rgba(255,255,255,0.5)] dark:bg-[rgba(255,255,255,0.05)] rounded-[16px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.06)] p-[20px] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)]">
-              <div className="flex items-center gap-[12px] mb-[8px]">
-                <AlertCircle className="size-[24px] text-[#f0ab00] dark:text-[#f4c145]" />
-                <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px]">End of Life Support</p>
-              </div>
-              <p className="font-['Red_Hat_Display:Bold',sans-serif] font-bold text-[#f0ab00] dark:text-[#f4c145] text-[32px]">
-                {operators.filter((o) => o.supportBadge === "End of life").length}
-              </p>
-            </div>
-            <div className="bg-[rgba(255,255,255,0.5)] dark:bg-[rgba(255,255,255,0.05)] rounded-[16px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.06)] p-[20px] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)]">
-              <div className="flex items-center gap-[12px] mb-[8px]">
-                <Layers className="size-[24px] text-[#6753ac] dark:text-[#b2a3e0]" />
-                <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px]">OLM v1 extensions</p>
-              </div>
-              <p className="font-['Red_Hat_Display:Bold',sans-serif] font-bold text-[#6753ac] dark:text-[#b2a3e0] text-[32px]">
-                {v1Count}
-              </p>
-            </div>
-          </div>
+            <Flex flexWrap={{ default: "flexWrapWrap" }} gap={{ default: "gapLg" }}>
+            <FlexItem flex={{ default: "flex_1" }} grow={{ default: "grow" }} shrink={{ default: "shrink" }}>
+              <Card isGlass={isGlass} isFullHeight>
+                <CardBody>
+                  <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+                    <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapMd" }}>
+                      <Icon size="lg" status="success">
+                        <CheckCircle />
+                      </Icon>
+                      <Content component="small">Total installed</Content>
+                    </Flex>
+                    <Title headingLevel="h3" size="4xl">
+                      {operators.length}
+                    </Title>
+                  </Flex>
+                </CardBody>
+              </Card>
+            </FlexItem>
+            <FlexItem flex={{ default: "flex_1" }} grow={{ default: "grow" }} shrink={{ default: "shrink" }}>
+              <Card isGlass={isGlass} isFullHeight>
+                <CardBody>
+                  <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+                    <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapMd" }}>
+                      <Icon size="lg" status="info">
+                        <Info />
+                      </Icon>
+                      <Content component="small">Available Updates</Content>
+                    </Flex>
+                    <Title headingLevel="h3" size="4xl">
+                      {operators.filter((o) => o.updateAvailable).length}
+                    </Title>
+                  </Flex>
+                </CardBody>
+              </Card>
+            </FlexItem>
+            <FlexItem flex={{ default: "flex_1" }} grow={{ default: "grow" }} shrink={{ default: "shrink" }}>
+              <Card isGlass={isGlass} isFullHeight>
+                <CardBody>
+                  <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+                    <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapMd" }}>
+                      <Icon size="lg" status="warning">
+                        <AlertCircle />
+                      </Icon>
+                      <Content component="small">End of Life Support</Content>
+                    </Flex>
+                    <Title headingLevel="h3" size="4xl">
+                      {operators.filter((o) => o.supportBadge === "End of life").length}
+                    </Title>
+                  </Flex>
+                </CardBody>
+              </Card>
+            </FlexItem>
+            <FlexItem flex={{ default: "flex_1" }} grow={{ default: "grow" }} shrink={{ default: "shrink" }}>
+              <Card isGlass={isGlass} isFullHeight>
+                <CardBody>
+                  <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+                    <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapMd" }}>
+                      <Icon size="lg">
+                        <Layers />
+                      </Icon>
+                      <Content component="small">OLM v1 extensions</Content>
+                    </Flex>
+                    <Title headingLevel="h3" size="4xl">
+                      {v1Count}
+                    </Title>
+                  </Flex>
+                </CardBody>
+              </Card>
+            </FlexItem>
+            </Flex>
 
-          <Toolbar
-            id="installed-operators-toolbar"
-            ouiaId="installed-operators-toolbar"
-            style={{ marginBottom: "var(--pf-t--global--spacer--lg)" }}
-          >
+            <Toolbar id="installed-operators-toolbar" ouiaId="installed-operators-toolbar">
             <ToolbarContent>
               <ToolbarItem>
                 <SearchInput
@@ -686,10 +729,10 @@ export default function InstalledOperatorsPage() {
                 </ToolbarItem>
               </ToolbarGroup>
             </ToolbarContent>
-          </Toolbar>
+            </Toolbar>
 
-          <Card isGlass={isGlass}>
-            <CardHeader>
+            <PageSection aria-label="Installed operators table" padding={{ default: "noPadding" }}>
+            <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
               <Flex
                 alignItems={{ default: "alignItemsCenter" }}
                 gap={{ default: "gapSm" }}
@@ -702,8 +745,6 @@ export default function InstalledOperatorsPage() {
                   = <strong>Cluster extension</strong> (OLM v1 managed)
                 </Content>
               </Flex>
-            </CardHeader>
-            <CardBody>
               <InnerScrollContainer>
                 <Table aria-label="Installed operators" borders>
                   <Thead>
@@ -951,21 +992,12 @@ export default function InstalledOperatorsPage() {
                   </Tbody>
                 </Table>
               </InnerScrollContainer>
-            </CardBody>
-          </Card>
+            </Flex>
+            </PageSection>
+          </Flex>
         </div>
       </div>
-
-      {chatbotOpen && (
-        <OlsChatbot
-          key={olsMountKey}
-          context={chatbotContext}
-          selectedVersion={CLUSTER_TARGET_VERSION}
-          selectedChannel={CLUSTER_CHANNEL}
-          onClose={() => setChatbotOpen(false)}
-          onAction={handleChatAction}
-        />
-      )}
+      </OlsChatbot>
 
       <BulkUpdateModal
         isOpen={isBulkUpdateModalOpen}

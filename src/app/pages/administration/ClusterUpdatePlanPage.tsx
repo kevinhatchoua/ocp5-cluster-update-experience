@@ -365,7 +365,15 @@ export default function ClusterUpdatePlanPage() {
 
   return (
     <div className="flex h-full relative min-w-0">
-      <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-[24px] pb-[48px]">
+      <OlsChatbot
+        isOpen={chatbotOpen}
+        context={chatbotContext}
+        selectedVersion={selectedVersion}
+        selectedChannel={selectedChannel}
+        onClose={() => setChatbotOpen(false)}
+        onAction={handleChatAction}
+      >
+      <div className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden p-[24px] pb-[48px]">
       <Breadcrumbs items={[
         { label: "Administration", path: "/administration/cluster-update" },
         { label: "Cluster Update" },
@@ -504,17 +512,7 @@ export default function ClusterUpdatePlanPage() {
       {activeTab === "update-history" && <UpdateHistoryTab />}
 
       </div>
-
-      {/* OLS Chatbot Panel */}
-      {chatbotOpen && (
-        <OlsChatbot
-          context={chatbotContext}
-          selectedVersion={selectedVersion}
-          selectedChannel={selectedChannel}
-          onClose={() => setChatbotOpen(false)}
-          onAction={handleChatAction}
-        />
-      )}
+      </OlsChatbot>
 
     </div>
   );
