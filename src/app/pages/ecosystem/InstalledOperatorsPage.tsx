@@ -552,25 +552,20 @@ export default function InstalledOperatorsPage() {
               ]}
             />
 
-            <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+            <Content>
               <Flex
                 alignItems={{ default: "alignItemsCenter" }}
                 justifyContent={{ default: "justifyContentSpaceBetween" }}
               >
-                <h1 className="font-['Red_Hat_Display_VF:Medium',sans-serif] font-medium leading-[36.4px] text-[#151515] dark:text-white text-[28px]">
-                  Installed Operators
-                </h1>
+                <h1 id="main-title">Installed Operators</h1>
                 <FavoriteButton name="Installed Operators" path="/ecosystem/installed-operators" />
               </Flex>
-              <p className="text-[14px] text-[#4d4d4d] dark:text-[#b0b0b0]">
-                Manage catalog operators installed on this cluster. The table matches{" "}
-                <span className="text-[#151515] dark:text-white font-medium">Cluster Update</span> for column
-                names and layout. Select{" "}
-                <span className="text-[#151515] dark:text-white font-medium">two or more</span> operators with
-                catalog updates to run a bulk approval from{" "}
-                <span className="text-[#151515] dark:text-white font-medium">Approve update</span>.
+              <p>
+                Manage catalog operators installed on this cluster. The table matches <strong>Cluster Update</strong>{" "}
+                for column names and layout. Select <strong>two or more</strong> operators with catalog updates to run a
+                bulk approval from <strong>Approve update</strong>.
               </p>
-            </Flex>
+            </Content>
 
             <AiAssessmentSection
               variant="installed-operators"
