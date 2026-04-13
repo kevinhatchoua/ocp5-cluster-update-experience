@@ -25,6 +25,7 @@ import {
   Masthead,
   MastheadBrand,
   MastheadContent,
+  MastheadLogo,
   MastheadMain,
   MastheadToggle,
   MenuToggle,
@@ -94,12 +95,8 @@ const NavItemLink = forwardRef<HTMLAnchorElement, React.ComponentProps<typeof Li
   }
 );
 
-function MastheadIconButton({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <Button variant="plain" type="button" aria-label={label} data-name={label}>
-      {children}
-    </Button>
-  );
+function MastheadIconButton({ label, icon }: { label: string; icon: React.ReactNode }) {
+  return <Button variant="plain" type="button" aria-label={label} data-name={label} icon={icon} />;
 }
 
 type IconComponent = ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>;
@@ -502,55 +499,29 @@ export default function Layout() {
   }, [favoritesGroupActive]);
 
   const masthead = (
-    <Masthead data-name="Masthead">
+    <Masthead display={{ default: "inline" }}>
       <MastheadMain>
         <MastheadToggle>
           <PageToggleButton id="layout-nav-toggle" aria-label="Global navigation" isHamburgerButton />
         </MastheadToggle>
-        <Toolbar id="layout-masthead-toolbar" ouiaId="layout-masthead-toolbar" isFullHeight>
-          <ToolbarContent>
-            <ToolbarItem>
-              <MastheadBrand data-name="Red Hat OpenShift logo masthead">
-                <NavItemLink
-                  to="/"
-                  style={{
-                    color: "var(--pf-t--global--text--Color--100)",
-                    textDecoration: "none",
-                  }}
-                >
-                  <Content
-                    component="span"
-                    style={{
-                      fontSize: "var(--pf-t--global--FontSize--md)",
-                      fontWeight: "var(--pf-t--global--font--weight--body--bold)",
-                    }}
-                  >
-                    OpenShift
-                  </Content>
-                </NavItemLink>
-              </MastheadBrand>
-            </ToolbarItem>
-          </ToolbarContent>
-        </Toolbar>
+        <MastheadBrand>
+          <MastheadLogo component={NavItemLink} href="/">
+            OpenShift
+          </MastheadLogo>
+        </MastheadBrand>
       </MastheadMain>
       <MastheadContent>
         <Toolbar id="layout-masthead-toolbar-end" ouiaId="layout-masthead-toolbar-end" isFullHeight>
-          <ToolbarContent>
-            <ToolbarGroup gap={{ default: "gapSm" }} align={{ default: "alignEnd" }}>
+          <ToolbarContent alignItems="center">
+            <ToolbarGroup gap={{ default: "gapSm" }} align={{ default: "alignEnd" }} alignItems="center">
               <ToolbarItem>
-                <MastheadIconButton label="Help">
-                  <QuestionCircleIcon aria-hidden />
-                </MastheadIconButton>
+                <MastheadIconButton label="Help" icon={<QuestionCircleIcon aria-hidden />} />
               </ToolbarItem>
               <ToolbarItem>
-                <MastheadIconButton label="Notifications">
-                  <BellIcon aria-hidden />
-                </MastheadIconButton>
+                <MastheadIconButton label="Notifications" icon={<BellIcon aria-hidden />} />
               </ToolbarItem>
               <ToolbarItem>
-                <MastheadIconButton label="Application launcher">
-                  <ThIcon aria-hidden />
-                </MastheadIconButton>
+                <MastheadIconButton label="Application launcher" icon={<ThIcon aria-hidden />} />
               </ToolbarItem>
               <ToolbarItem>
                 <Button
@@ -558,14 +529,10 @@ export default function Layout() {
                   type="button"
                   onClick={() => setIsAIOpen(true)}
                   aria-label="Open OpenShift LightSpeed"
-                  style={{
-                    color: "var(--pf-t--global--palette--blue--50)",
-                  }}
+                  icon={<RobotIcon aria-hidden />}
+                  iconPosition="start"
                 >
-                  <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsCenter" }} display={{ default: "inlineFlex" }}>
-                    <RobotIcon aria-hidden />
-                    <span>10</span>
-                  </Flex>
+                  10
                 </Button>
               </ToolbarItem>
               <ToolbarItem>
