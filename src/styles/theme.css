@@ -459,3 +459,29 @@ html.no-glass.dark .app-glass-panel.app-glass-panel--edge-right {
   margin: 0;
   white-space: pre-wrap;
 }
+
+/**
+ * LightSpeed drawer transcript: bind PF content + heading colors to theme foreground on the panel surface.
+ * Fixes low contrast when tokens do not align with inline drawer / glass backgrounds.
+ */
+.ols-chatbot-panel {
+  color: var(--pf-t--global--text--color--regular);
+  --pf-v6-c-content--Color: var(--pf-t--global--text--color--regular);
+  --pf-v6-c-content--small--Color: var(--pf-t--global--text--color--subtle);
+}
+
+.ols-chatbot-panel .pf-v6-c-title {
+  color: var(--pf-t--global--text--color--regular);
+}
+
+.ols-chatbot-panel .pf-v6-c-content strong {
+  color: var(--pf-t--global--text--color--regular);
+}
+
+.ols-chatbot-panel .pf-v6-c-button.pf-m-plain {
+  color: var(--pf-t--global--text--color--regular);
+}
+
+.ols-chatbot-panel .pf-v6-c-drawer__close .pf-v6-c-button {
+  color: var(--pf-t--global--text--color--regular);
+}

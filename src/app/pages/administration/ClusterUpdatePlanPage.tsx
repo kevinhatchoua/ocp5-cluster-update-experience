@@ -53,9 +53,14 @@ import { usePatternFlyGlassActive } from "@/lib/usePatternFlyGlassActive";
 import { ChevronDown, ChevronRight, ExternalLink, Sparkles, ArrowRight, CheckCircle, AlertTriangle, AlertCircle, HelpCircle, Info, X, Loader2, Shield, Bot, Settings, RotateCcw, Play, Pause, Calendar, Bell, Clock, FileText, User, Zap, Eye, RefreshCw, Check } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import FavoriteButton from "../../components/FavoriteButton";
-import { AiAssessmentSection, type ClusterUpdateDemoVariant } from "../../components/AiAssessmentSection";
+import { AiAssessmentSection } from "../../components/AiAssessmentSection";
 import { OlsChatbot } from "../../components/OlsChatbot";
 import { useClusterUpdateDemoVariant } from "../../contexts/ClusterUpdateDemoContext";
+
+/** Disclosure (displaySize lg) — strip secondary panel chrome inside glass surfaces; see cluster-update-layout.css */
+function clusterExpandablePlainClass(isGlass: boolean): string | undefined {
+  return isGlass ? "ocp-cluster-expandable--plain" : undefined;
+}
 
 type TabKey = "update-plan" | "active-update-plans" | "update-history";
 
@@ -93,43 +98,6 @@ export type VersionGroup = {
   versions: VersionEntry[];
 };
 
-
-/** Segmented control: OCP 5.0 agent-only vs OCP 5.1 manual + agent demos (persists via ClusterUpdateDemoContext). */
-function ClusterUpdateDemoVariantSwitcher({
-  demoVariant,
-  setDemoVariant,
-}: {
-  demoVariant: ClusterUpdateDemoVariant;
-  setDemoVariant: (v: ClusterUpdateDemoVariant) => void;
-}) {
-  return (
-    <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }} style={{ marginBottom: "var(--pf-t--global--spacer--md)" }}>
-      <Content component="small" style={{ color: "var(--pf-t--global--text--Color--200)" }}>
-        Demo experience
-      </Content>
-      <ToggleGroup aria-label="Cluster update demo experience">
-        <ToggleGroupItem
-          text={
-            <>
-              Manual + Agent <Content component="small">· OCP 5.1</Content>
-            </>
-          }
-          isSelected={demoVariant === "manual-and-agent"}
-          onChange={() => setDemoVariant("manual-and-agent")}
-        />
-        <ToggleGroupItem
-          text={
-            <>
-              Agent only <Content component="small">· OCP 5.0</Content>
-            </>
-          }
-          isSelected={demoVariant === "agent-only"}
-          onChange={() => setDemoVariant("agent-only")}
-        />
-      </ToggleGroup>
-    </Flex>
-  );
-}
 
 /* ─── Channel-specific version data ─── */
 export const channelVersions: Record<string, { groups: VersionGroup[]; banner?: { title: string; description: string; link: string } }> = {
@@ -348,7 +316,7 @@ export default function ClusterUpdatePlanPage() {
   const [selectedVersion, setSelectedVersion] = useState<string>("5.1.10");
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({ "5.1": true });
   
-  const { demoVariant, setDemoVariant } = useClusterUpdateDemoVariant();
+  const { demoVariant } = useClusterUpdateDemoVariant();
   const [updateMode, setUpdateMode] = useState<"manual" | "agent">(
     () => (demoVariant === "agent-only" ? "agent" : "manual")
   );
@@ -453,7 +421,6 @@ export default function ClusterUpdatePlanPage() {
           <h1 id="main-title">Cluster Update</h1>
           <FavoriteButton name="Cluster Update" path="/administration/cluster-update" />
         </Flex>
-        <ClusterUpdateDemoVariantSwitcher demoVariant={demoVariant} setDemoVariant={setDemoVariant} />
         <p>
           Review available versions, assess operator compatibility, and plan how this cluster moves to newer OpenShift
           releases. Use <strong>Update plan</strong> to prepare or start an update, <strong>Active update plans</strong>{" "}
@@ -3100,6 +3067,7 @@ function WorkerNodesSection() {
     <Card isGlass={isGlass} component="div" style={{ marginBottom: "var(--pf-t--global--spacer--md)" }}>
       <CardBody>
         <ExpandableSection
+          className={clusterExpandablePlainClass(isGlass)}
           isExpanded={sectionExpanded}
           onToggle={(_event, expanded) => setSectionExpanded(expanded)}
           displaySize="lg"
@@ -3231,6 +3199,7 @@ export function AvailableUpdatesSection({
     >
       <CardBody>
         <ExpandableSection
+          className={clusterExpandablePlainClass(isGlass)}
           isExpanded={sectionExpanded}
           onToggle={(_event, expanded) => setSectionExpanded(expanded)}
           displaySize="lg"
@@ -3246,34 +3215,37 @@ export function AvailableUpdatesSection({
           }
         >
           <Flex direction={{ default: "column" }} gap={{ default: "gapLg" }}>
-            <Panel variant="bordered">
-              <PanelMain>
-                <PanelMainBody>
-                  <Flex
-                    gap={{ default: "gapMd" }}
-                    alignItems={{ default: "alignItemsFlexEnd" }}
-                    flexWrap={{ default: "wrap" }}
+            <Flex
+              direction={{ default: "column" }}
+              gap={{ default: "gapMd" }}
+              style={{
+                paddingBottom: "var(--pf-t--global--spacer--lg)",
+                borderBottom: "1px solid var(--pf-t--global--border--color--default)",
+              }}
+            >
+              <Flex
+                gap={{ default: "gapMd" }}
+                alignItems={{ default: "alignItemsFlexEnd" }}
+                flexWrap={{ default: "wrap" }}
+              >
+                <FormGroup label="Channel" fieldId="cluster-update-channel">
+                  <FormSelect
+                    id="cluster-update-channel"
+                    value={selectedChannel}
+                    onChange={(_e, value) => handleChannelChange(value)}
+                    aria-label="Update channel"
                   >
-                    <FormGroup label="Channel" fieldId="cluster-update-channel">
-                      <FormSelect
-                        id="cluster-update-channel"
-                        value={selectedChannel}
-                        onChange={(_e, value) => handleChannelChange(value)}
-                        aria-label="Update channel"
-                      >
-                        <option value="fast-5.1">fast-5.1</option>
-                        <option value="stable-5.1">stable-5.1</option>
-                        <option value="candidate-5.1">candidate-5.1</option>
-                        <option value="eus-5.0">eus-5.0</option>
-                      </FormSelect>
-                    </FormGroup>
-                    <span onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
-                      <ChannelTooltip />
-                    </span>
-                  </Flex>
-                </PanelMainBody>
-              </PanelMain>
-            </Panel>
+                    <option value="fast-5.1">fast-5.1</option>
+                    <option value="stable-5.1">stable-5.1</option>
+                    <option value="candidate-5.1">candidate-5.1</option>
+                    <option value="eus-5.0">eus-5.0</option>
+                  </FormSelect>
+                </FormGroup>
+                <span onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+                  <ChannelTooltip />
+                </span>
+              </Flex>
+            </Flex>
 
             {showBugfixHint && (
               <Alert
@@ -3381,6 +3353,7 @@ function InstalledOperatorsSection({ selectedVersion, operators, navigate }: { s
     <Card id="operators-section" isGlass={isGlass} component="div" style={{ marginBottom: "var(--pf-t--global--spacer--md)" }}>
       <CardBody>
         <ExpandableSection
+          className={clusterExpandablePlainClass(isGlass)}
           isExpanded={sectionExpanded}
           onToggle={(_event, expanded) => setSectionExpanded(expanded)}
           displaySize="lg"
@@ -3751,9 +3724,9 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
   return (
     <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }} style={{ marginBottom: "var(--pf-t--global--spacer--sm)" }}>
       <ExpandableSection
+        className={clusterExpandablePlainClass(isGlass)}
         isExpanded={expanded}
         onToggle={(_event, exp) => setExpanded(exp)}
-        isIndented
         displaySize="lg"
         toggleContent={
           <Flex gap={{ default: "gapMd" }} alignItems={{ default: "alignItemsCenter" }} flexWrap={{ default: "wrap" }}>
@@ -3782,21 +3755,12 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
             };
             const showRiskReview = isSelected && selectedVer && selectedVer.version === v.version;
             return (
-              <Card
+              <div
                 key={v.version}
-                isCompact
-                isGlass={isGlass}
-                isSelected={isSelected}
-                style={
-                  isSelected
-                    ? {
-                        boxShadow:
-                          "inset 4px 0 0 0 var(--pf-t--global--BorderColor--brand--default), 0 0 0 1px var(--pf-t--global--BorderColor--brand--default)",
-                      }
-                    : undefined
-                }
+                className={`ocp-version-line${isSelected ? " ocp-version-line--selected" : ""}`}
               >
-                <CardBody
+                <div
+                  className="ocp-version-line__body"
                   onClick={selectThisVersion}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
@@ -3911,11 +3875,10 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                       ) : null
                     )}
                   </Flex>
-                </CardBody>
+                </div>
                 {showRiskReview ? (
-                  <>
-                    <Divider />
-                    <CardFooter
+                    <div
+                      className="ocp-version-line__footer"
                       onClick={(e) => e.stopPropagation()}
                       style={{ display: "block" }}
                     >
@@ -4138,10 +4101,9 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
                           </Flex>
                         )}
                       </div>
-                    </CardFooter>
-                  </>
+                    </div>
                 ) : null}
-              </Card>
+              </div>
             );
           })}
         </Flex>
