@@ -1,5 +1,13 @@
 import { Link, Outlet, useLocation } from "react-router";
-import { forwardRef, useState, useEffect, type ComponentType } from "react";
+import {
+  forwardRef,
+  useContext,
+  useEffect,
+  useId,
+  useState,
+  type ComponentType,
+  type ReactNode,
+} from "react";
 import {
   applyThemeToDocument,
   readThemePreferences,
@@ -21,12 +29,13 @@ import {
   MastheadToggle,
   MenuToggle,
   Nav,
-  NavExpandable,
+  NavContext,
   NavItem,
   NavList,
   Page,
   PageSidebar,
   PageSidebarBody,
+  PageSidebarContext,
   PageToggleButton,
   SkipToContent,
   Toolbar,
@@ -60,6 +69,7 @@ import ThIcon from "@patternfly/react-icons/dist/esm/icons/th-icon";
 import UserCogIcon from "@patternfly/react-icons/dist/esm/icons/user-cog-icon";
 import UserIcon from "@patternfly/react-icons/dist/esm/icons/user-icon";
 import UsersIcon from "@patternfly/react-icons/dist/esm/icons/users-icon";
+import RhMicronsCaretDownIcon from "@patternfly/react-icons/dist/esm/icons/rh-microns-caret-down-icon";
 import ImpersonateUserModal from "./ImpersonateUserModal";
 import { usePermissions } from "../contexts/PermissionsContext";
 import { useChat } from "../contexts/ChatContext";
@@ -117,25 +127,87 @@ function activeSubPath(pathname: string, subItems: { path: string }[]): string |
 }
 
 /**
- * NavExpandable wraps non-string titles in a single .pf-v6-c-nav__link-text node.
- * Mirror NavItem’s icon + text structure inside that wrapper so icons align like the
- * “With item icons” example: https://staging.patternfly.org/components/navigation#with-item-icons
+ * PatternFly `NavExpandable` wraps non-string titles in a single link-text node, so icon
+ * + label cannot match `NavItem` markup (icon span, text span, toggle as siblings). This
+ * component mirrors the intended expandable button DOM for the sidebar.
  */
-function navExpandableTitleWithIcon(Icon: IconComponent, label: string) {
+function AppNavExpandable({
+  groupId,
+  title,
+  icon,
+  isActive = false,
+  isExpanded = false,
+  onExpand,
+  children,
+  className,
+  id: idProp,
+  ...props
+}: Omit<React.ComponentProps<"li">, "title"> & {
+  groupId: string | number;
+  title: string;
+  icon: ReactNode;
+  isActive?: boolean;
+  isExpanded?: boolean;
+  onExpand?: (event: React.MouseEvent<HTMLButtonElement>, nextExpanded: boolean) => void;
+  id?: string;
+}) {
+  const generatedId = useId();
+  const navId = idProp ?? generatedId;
+  const { onToggle } = useContext(NavContext);
+  const { isSidebarOpen = true } = useContext(PageSidebarContext);
+  const [expandedState, setExpandedState] = useState(isExpanded);
+
+  useEffect(() => {
+    setExpandedState(isExpanded);
+  }, [isExpanded]);
+
+  const handleExpand = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const next = !expandedState;
+    if (onExpand) {
+      onExpand(event, next);
+    } else {
+      setExpandedState(next);
+      onToggle?.(event, groupId, next);
+    }
+  };
+
   return (
-    <Flex
-      display={{ default: "inlineFlex" }}
-      alignItems={{ default: "alignItemsCenter" }}
-      style={{
-        minWidth: "var(--pf-t--global--spacer--0, 0px)",
-        columnGap: "var(--pf-v6-c-nav__link--ColumnGap)",
-      }}
+    <li
+      className={css(
+        navStyles.navItem,
+        expandedState && navStyles.modifiers.expanded,
+        isActive && navStyles.modifiers.current,
+        className
+      )}
+      {...props}
     >
-      <span className={css(navStyles.navLinkIcon)}>
-        <Icon aria-hidden />
-      </span>
-      <span className={css(navStyles.navLinkText)}>{label}</span>
-    </Flex>
+      <button
+        type="button"
+        className={css(navStyles.navLink)}
+        id={navId}
+        onClick={handleExpand}
+        aria-expanded={expandedState}
+        tabIndex={isSidebarOpen ? undefined : -1}
+      >
+        <span className={css(navStyles.navLinkIcon)}>{icon}</span>
+        <span className={css(navStyles.navLinkText)}>{title}</span>
+        <span className={css(navStyles.navToggle)}>
+          <span className={css(navStyles.navToggleIcon)}>
+            <RhMicronsCaretDownIcon />
+          </span>
+        </span>
+      </button>
+      <section
+        className={css(navStyles.navSubnav)}
+        aria-labelledby={navId}
+        hidden={expandedState ? undefined : true}
+        {...(!expandedState && { inert: "" })}
+      >
+        <ul className={css(navStyles.navList)} role="list">
+          {children}
+        </ul>
+      </section>
+    </li>
   );
 }
 
@@ -161,9 +233,10 @@ function ExpandableNavRouteGroup({
   }, [groupHasActiveChild]);
 
   return (
-    <NavExpandable
+    <AppNavExpandable
       groupId={groupId}
-      title={navExpandableTitleWithIcon(Icon, label)}
+      title={label}
+      icon={<Icon aria-hidden />}
       isActive={false}
       isExpanded={expanded}
       onExpand={(_e, next) => setExpanded(next)}
@@ -179,7 +252,7 @@ function ExpandableNavRouteGroup({
           {sub.label}
         </NavItem>
       ))}
-    </NavExpandable>
+    </AppNavExpandable>
   );
 }
 
@@ -527,12 +600,10 @@ export default function Layout() {
               Home
             </NavItem>
 
-            <NavExpandable
+            <AppNavExpandable
               groupId="layout-favorites"
-              title={navExpandableTitleWithIcon(
-                StarIcon,
-                `Favorites${favorites.length > 0 ? ` (${favorites.length})` : ""}`
-              )}
+              title={`Favorites${favorites.length > 0 ? ` (${favorites.length})` : ""}`}
+              icon={<StarIcon aria-hidden />}
               isActive={false}
               isExpanded={isFavoritesExpanded}
               onExpand={(_e, next) => setIsFavoritesExpanded(next)}
@@ -554,7 +625,7 @@ export default function Layout() {
                   </NavItem>
                 ))
               )}
-            </NavExpandable>
+            </AppNavExpandable>
 
             {menuConfig.slice(2).map((item) => {
               if (item.subItems) {
