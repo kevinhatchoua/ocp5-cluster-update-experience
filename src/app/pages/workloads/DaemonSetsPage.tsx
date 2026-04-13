@@ -43,7 +43,7 @@ export default function DaemonSetsPage() {
           { label: "Workloads", path: "/workloads" },
           { label: "DaemonSets", path: "/workloads/daemonsets" },
         ]}
-      />
+      >
 
       <div className="flex items-center justify-between mb-[24px]">
         <div>
@@ -146,6 +146,7 @@ export default function DaemonSetsPage() {
           </tbody>
         </table>
       </div>
+      </Breadcrumbs>
     </div>
   );
 }

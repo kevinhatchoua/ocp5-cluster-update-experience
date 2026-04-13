@@ -458,7 +458,7 @@ status:
             { label: "Cluster Settings", path: "/administration/cluster-settings" },
             { label: "Pre-check Results" },
           ]}
-        />
+        >
 
         <div className="mb-[24px]">
           <h1 className="font-['Red_Hat_Display_VF:Medium',sans-serif] font-medium leading-[36.4px] text-[#151515] dark:text-white text-[28px] mb-[16px]">
@@ -553,6 +553,7 @@ status:
         <div className="mt-[32px] pt-[24px] border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)]">
           <ActionButtons />
         </div>
+        </Breadcrumbs>
       </div>
 
       {/* Modals */}

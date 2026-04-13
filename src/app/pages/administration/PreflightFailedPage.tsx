@@ -269,7 +269,7 @@ export default function PreflightFailedPage() {
             { label: "Cluster Settings", path: "/administration/cluster-settings" },
             { label: "Pre-check Failed" },
           ]}
-        />
+        >
 
         <div className="mb-[24px]">
           <h1 className="font-['Red_Hat_Display_VF:Medium',sans-serif] font-medium leading-[36.4px] text-[#151515] dark:text-white text-[28px] mb-[8px]">
@@ -415,6 +415,7 @@ export default function PreflightFailedPage() {
             </button>
           </div>
         </div>
+        </Breadcrumbs>
       </div>
 
     </div>

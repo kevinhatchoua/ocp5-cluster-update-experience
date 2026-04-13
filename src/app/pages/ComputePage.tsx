@@ -45,7 +45,7 @@ export default function ComputePage() {
           { label: "Home", path: "/" },
           { label: "Compute", path: "/compute" },
         ]}
-      />
+      >
 
       <div className="flex items-center justify-between mb-[24px]">
         <div>
@@ -158,6 +158,7 @@ export default function ComputePage() {
           </tbody>
         </table>
       </div>
+      </Breadcrumbs>
     </div>
   );
 }

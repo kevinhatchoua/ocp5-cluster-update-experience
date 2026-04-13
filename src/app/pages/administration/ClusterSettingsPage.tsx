@@ -249,7 +249,7 @@ export default function ClusterSettingsPage() {
           { label: "Home", path: "/" },
           { label: "Cluster Settings" },
         ]}
-      />
+      >
 
       <div className="mb-[24px]">
         <div className="flex items-center justify-between mb-[16px]">
@@ -318,6 +318,7 @@ export default function ClusterSettingsPage() {
       {activeTab === "cluster-operators" && <ClusterOperatorsTab />}
 
       {activeTab === "configuration" && <ConfigurationTab />}
+      </Breadcrumbs>
     </div>
   );
 }

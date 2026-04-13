@@ -1,13 +1,47 @@
-import { X } from "@/lib/pfIcons";
+import type { CSSProperties } from "react";
+import {
+  Button,
+  Content,
+  Flex,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from "@patternfly/react-core";
 
 interface UpdateLogsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function UpdateLogsModal({ isOpen, onClose }: UpdateLogsModalProps) {
-  if (!isOpen) return null;
+const logPanelStyle: CSSProperties = {
+  maxHeight: "min(60vh, var(--pf-v6-c-modal-box--MaxHeight, 70vh))",
+  overflowY: "auto",
+  padding: "var(--pf-t--global--spacer--md)",
+  fontFamily: "var(--pf-t--global--FontFamily--text)",
+  fontSize: "var(--pf-t--global--FontSize--sm)",
+  backgroundColor: "var(--pf-t--global--BackgroundColor--dark-300)",
+  color: "var(--pf-t--global--text--Color--inverse)",
+  borderRadius: "var(--pf-t--global--border--radius--small)",
+};
 
+const timestampStyle: CSSProperties = {
+  color: "var(--pf-t--global--text--Color--disabled)",
+  flexShrink: 0,
+};
+
+function levelStyle(level: string): CSSProperties {
+  const base: CSSProperties = { flexShrink: 0, fontWeight: 600 };
+  if (level === "WARN") {
+    return { ...base, color: "var(--pf-t--global--palette--gold--40)" };
+  }
+  if (level === "ERROR") {
+    return { ...base, color: "var(--pf-t--global--danger-color--100)" };
+  }
+  return { ...base, color: "var(--pf-t--global--palette--blue--40)" };
+}
+
+export default function UpdateLogsModal({ isOpen, onClose }: UpdateLogsModalProps) {
   const logs = [
     { timestamp: "2026-03-17 14:32:15", level: "INFO", message: "Starting cluster update process" },
     { timestamp: "2026-03-17 14:32:18", level: "INFO", message: "Validating update prerequisites" },
@@ -29,57 +63,61 @@ export default function UpdateLogsModal({ isOpen, onClose }: UpdateLogsModalProp
   ];
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-[24px] bg-[rgba(0,0,0,0.5)] backdrop-blur-sm">
-      <div className="app-glass-panel max-w-[900px] w-full max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-[24px] border-b border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)]">
-          <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[20px] text-[#151515] dark:text-white">
-            Cluster Update Logs
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-[8px] rounded-[999px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.1)] transition-colors"
-          >
-            <X className="size-[20px] text-[#4d4d4d] dark:text-[#b0b0b0]" />
-          </button>
-        </div>
-
-        {/* Logs Content */}
-        <div className="flex-1 overflow-y-auto p-[24px] bg-[#1e1e1e] dark:bg-[#0d1117] font-mono text-[13px]">
-          <div className="space-y-[4px]">
+    <Modal
+      variant="large"
+      isOpen={isOpen}
+      onClose={onClose}
+      aria-labelledby="update-logs-modal-title"
+      aria-describedby="update-logs-modal-description"
+    >
+      <ModalHeader
+        labelId="update-logs-modal-title"
+        descriptorId="update-logs-modal-description"
+        title="Cluster Update Logs"
+        description="Live-style log output from the simulated cluster update."
+      />
+      <ModalBody>
+        <div style={logPanelStyle}>
+          <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
             {logs.map((log, index) => (
-              <div key={index} className="flex gap-[12px] text-[#d4d4d4]">
-                <span className="text-[#858585] shrink-0">{log.timestamp}</span>
-                <span className={`shrink-0 font-semibold ${
-                  log.level === "INFO" ? "text-[#4dabf7]" : 
-                  log.level === "WARN" ? "text-[#ffb300]" : 
-                  "text-[#ee0000]"
-                }`}>
+              <Flex
+                key={index}
+                flexWrap={{ default: "nowrap" }}
+                gap={{ default: "gapMd" }}
+                alignItems={{ default: "alignItemsFlexStart" }}
+              >
+                <Content component="span" style={timestampStyle}>
+                  {log.timestamp}
+                </Content>
+                <Content component="span" style={levelStyle(log.level)}>
                   [{log.level}]
-                </span>
-                <span>{log.message}</span>
-              </div>
+                </Content>
+                <Content component="span" style={{ wordBreak: "break-word" }}>
+                  {log.message}
+                </Content>
+              </Flex>
             ))}
-            {/* Live cursor */}
-            <div className="flex gap-[12px] text-[#d4d4d4] animate-pulse">
-              <span className="text-[#858585]">2026-03-17 14:43:15</span>
-              <span className="text-[#4dabf7] font-semibold">[INFO]</span>
-              <span>Updating...</span>
-              <span className="inline-block w-[8px] h-[14px] bg-[#4dabf7] animate-blink" />
-            </div>
-          </div>
+            <Flex
+              flexWrap={{ default: "nowrap" }}
+              gap={{ default: "gapMd" }}
+              alignItems={{ default: "alignItemsCenter" }}
+            >
+              <Content component="span" style={timestampStyle}>
+                2026-03-17 14:43:15
+              </Content>
+              <Content component="span" style={levelStyle("INFO")}>
+                [INFO]
+              </Content>
+              <Content component="span">Updating…</Content>
+            </Flex>
+          </Flex>
         </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-[12px] p-[24px] border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)]">
-          <button
-            onClick={onClose}
-            className="px-[20px] py-[10px] rounded-[8px] font-semibold text-[14px] bg-[#0066cc] hover:bg-[#004080] dark:bg-[#4dabf7] dark:hover:bg-[#339af0] text-white transition-colors"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
+      </ModalBody>
+      <ModalFooter>
+        <Button variant="primary" onClick={onClose}>
+          Close
+        </Button>
+      </ModalFooter>
+    </Modal>
   );
 }

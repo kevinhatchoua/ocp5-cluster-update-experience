@@ -60,7 +60,7 @@ export default function UserManagementPage() {
           { label: "Home", path: "/" },
           { label: "User Management", path: "/user-management" },
         ]}
-      />
+      >
 
       <div className="flex items-center justify-between mb-[24px]">
         <div>
@@ -210,6 +210,7 @@ export default function UserManagementPage() {
           </tbody>
         </table>
       </div>
+      </Breadcrumbs>
 
       {/* Impersonate Modal */}
       {isImpersonateModalOpen && selectedUser && (

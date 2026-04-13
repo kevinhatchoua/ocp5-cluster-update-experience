@@ -53,7 +53,7 @@ export const router = createBrowserRouter([
     Component: RootLayout,
     children: [
       {
-        path: "",
+        /** Pathless layout: matches `/` and all child paths (avoids empty-string segment issues). */
         Component: Layout,
         children: [
           { index: true, Component: HomePage },

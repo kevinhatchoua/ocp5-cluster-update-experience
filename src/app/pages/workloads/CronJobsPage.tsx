@@ -49,7 +49,7 @@ export default function CronJobsPage() {
           { label: "Workloads", path: "/workloads" },
           { label: "CronJobs", path: "/workloads/cronjobs" },
         ]}
-      />
+      >
 
       <div className="flex items-center justify-between mb-[24px]">
         <div>
@@ -176,6 +176,7 @@ export default function CronJobsPage() {
           </tbody>
         </table>
       </div>
+      </Breadcrumbs>
     </div>
   );
 }

@@ -99,7 +99,7 @@ export default function PodsPage() {
           { label: "Workloads", path: "/workloads" },
           { label: "Pods", path: "/workloads/pods" },
         ]}
-      />
+      >
 
       <div className="flex items-center justify-between mb-[24px]">
         <div>
@@ -244,6 +244,7 @@ export default function PodsPage() {
           </tbody>
         </table>
       </div>
+      </Breadcrumbs>
     </div>
   );
 }

@@ -42,7 +42,7 @@ export default function DeploymentsPage() {
           { label: "Workloads", path: "/workloads" },
           { label: "Deployments", path: "/workloads/deployments" },
         ]}
-      />
+      >
 
       <div className="flex items-center justify-between mb-[24px]">
         <div>
@@ -143,6 +143,7 @@ export default function DeploymentsPage() {
           </tbody>
         </table>
       </div>
+      </Breadcrumbs>
     </div>
   );
 }

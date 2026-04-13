@@ -85,7 +85,7 @@ export default function ClusterUpdateInProgressPage() {
       <Breadcrumbs items={[
         { label: "Administration", path: "/administration/cluster-update" },
         { label: "Cluster Update" },
-      ]} />
+      ]}>
 
       <h1 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[28px] mb-[16px]">
         Cluster Update
@@ -263,6 +263,7 @@ export default function ClusterUpdateInProgressPage() {
       >
         Abort cluster update
       </button>
+      </Breadcrumbs>
 
       {/* Abort Confirmation Modal */}
       {showAbortModal && (

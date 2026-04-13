@@ -108,7 +108,7 @@ export default function OperatorsLifecyclePage() {
             { label: "Home", path: "/" },
             { label: "Cluster Settings", path: "/administration/cluster-settings" },
           ]}
-        />
+        >
 
         <div className="mb-[24px]">
           <h1 className="font-['Red_Hat_Display_VF:Medium',sans-serif] font-medium leading-[36.4px] text-[#151515] dark:text-white text-[28px] mb-[16px]">
@@ -419,6 +419,7 @@ export default function OperatorsLifecyclePage() {
             </div>
           </div>
         </div>
+      </Breadcrumbs>
       </div>
     </div>
   );

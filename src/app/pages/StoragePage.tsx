@@ -125,7 +125,7 @@ export default function StoragePage() {
           { label: "Home", path: "/" },
           { label: "Storage", path: "/storage" },
         ]}
-      />
+      >
 
       <div className="flex items-center justify-between mb-[24px]">
         <div>
@@ -310,6 +310,7 @@ export default function StoragePage() {
           </div>
         )}
       </div>
+      </Breadcrumbs>
     </div>
   );
 }

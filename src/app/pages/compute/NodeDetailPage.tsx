@@ -80,7 +80,7 @@ export default function NodeDetailPage() {
             { label: "Nodes", path: "/compute" },
             { label: node.name },
           ]}
-        />
+        >
 
         {/* Header */}
         <div className="mb-[24px]">
@@ -259,6 +259,7 @@ export default function NodeDetailPage() {
             )}
           </div>
         </div>
+      </Breadcrumbs>
       </div>
 
       {/* Drain Modal */}

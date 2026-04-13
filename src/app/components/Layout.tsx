@@ -36,6 +36,8 @@ import {
 } from "@patternfly/react-core";
 import { css } from "@patternfly/react-styles";
 import navStyles from "@patternfly/react-styles/css/components/Nav/nav.mjs";
+import displayStyles from "@patternfly/react-styles/css/utilities/Display/display.mjs";
+import flexStyles from "@patternfly/react-styles/css/utilities/Flex/flex.mjs";
 import sizingStyles from "@patternfly/react-styles/css/utilities/Sizing/sizing.mjs";
 import BellIcon from "@patternfly/react-icons/dist/esm/icons/bell-icon";
 import ChartLineIcon from "@patternfly/react-icons/dist/esm/icons/chart-line-icon";
@@ -58,7 +60,6 @@ import ThIcon from "@patternfly/react-icons/dist/esm/icons/th-icon";
 import UserCogIcon from "@patternfly/react-icons/dist/esm/icons/user-cog-icon";
 import UserIcon from "@patternfly/react-icons/dist/esm/icons/user-icon";
 import UsersIcon from "@patternfly/react-icons/dist/esm/icons/users-icon";
-import svgPaths from "../../imports/svg-929lpcd05l";
 import ImpersonateUserModal from "./ImpersonateUserModal";
 import { usePermissions } from "../contexts/PermissionsContext";
 import { useChat } from "../contexts/ChatContext";
@@ -122,19 +123,19 @@ function activeSubPath(pathname: string, subItems: { path: string }[]): string |
  */
 function navExpandableTitleWithIcon(Icon: IconComponent, label: string) {
   return (
-    <span
+    <Flex
+      display={{ default: "inlineFlex" }}
+      alignItems={{ default: "alignItemsCenter" }}
       style={{
-        display: "flex",
-        alignItems: "center",
+        minWidth: "var(--pf-t--global--spacer--0, 0px)",
         columnGap: "var(--pf-v6-c-nav__link--ColumnGap)",
-        minWidth: 0,
       }}
     >
       <span className={css(navStyles.navLinkIcon)}>
         <Icon aria-hidden />
       </span>
       <span className={css(navStyles.navLinkText)}>{label}</span>
-    </span>
+    </Flex>
   );
 }
 
@@ -437,68 +438,23 @@ export default function Layout() {
           <ToolbarContent>
             <ToolbarItem>
               <MastheadBrand data-name="Red Hat OpenShift logo masthead">
-                <div style={{ height: 37, width: 108, position: "relative", overflow: "hidden" }}>
-                  <div className="absolute inset-[59.9%_57.93%_9.21%_31.48%]">
-                    <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 12.494 12.3569">
-                      <path d={svgPaths.p3149000} fill="black" className="dark:fill-white" />
-                    </svg>
-                  </div>
-                  <div className="absolute inset-[68.2%_49.06%_0.82%_43.51%]">
-                    <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 8.7702 12.392">
-                      <path d={svgPaths.p37667600} fill="black" className="dark:fill-white" />
-                    </svg>
-                  </div>
-                  <div className="absolute inset-[68.2%_40.71%_9.29%_52.02%]">
-                    <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 8.5808 9.003">
-                      <path d={svgPaths.p3cfc2e80} fill="black" className="dark:fill-white" />
-                    </svg>
-                  </div>
-                  <div className="absolute inset-[68.11%_32.77%_9.68%_60.67%]">
-                    <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 7.74413 8.8842">
-                      <path d={svgPaths.p1e248880} fill="black" className="dark:fill-white" />
-                    </svg>
-                  </div>
-                  <div className="absolute inset-[59.97%_23.44%_9.27%_68.16%]">
-                    <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 9.91486 12.3026">
-                      <path d={svgPaths.p156d0f00} fill="black" className="dark:fill-white" />
-                    </svg>
-                  </div>
-                  <div className="absolute inset-[59.43%_15.64%_9.68%_77.8%]">
-                    <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 7.74249 12.3569">
-                      <path d={svgPaths.p1486fc00} fill="black" className="dark:fill-white" />
-                    </svg>
-                  </div>
-                  <div className="absolute inset-[59.73%_12.38%_9.68%_85.87%]">
-                    <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 2.06637 12.2368">
-                      <path d={svgPaths.p24ec5f00} fill="black" className="dark:fill-white" />
-                    </svg>
-                  </div>
-                  <div className="absolute inset-[58.23%_6.15%_9.68%_88.58%]">
-                    <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 6.21902 12.8363">
-                      <path d={svgPaths.p1e268b00} fill="black" className="dark:fill-white" />
-                    </svg>
-                  </div>
-                  <div className="absolute inset-[61.95%_0.33%_9.31%_94.49%]">
-                    <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 6.11361 11.4946">
-                      <path d={svgPaths.p7d1a200} fill="black" className="dark:fill-white" />
-                    </svg>
-                  </div>
-                  <div className="absolute inset-[0.82%_73.15%_39.93%_0.28%]">
-                    <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 31.3504 23.6969">
-                      <path d={svgPaths.p1ed3c680} fill="#EE0000" />
-                    </svg>
-                  </div>
-                  <div className="absolute inset-[17.94%_77.21%_56.61%_5.45%]">
-                    <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 20.4506 10.1798">
-                      <path d={svgPaths.p2a2f3d80} fill="black" className="dark:fill-white" />
-                    </svg>
-                  </div>
-                  <div className="absolute inset-[13.96%_14.32%_53.8%_31.75%]">
-                    <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 63.6313 12.8934">
-                      <path d={svgPaths.pd33a670} fill="black" className="dark:fill-white" />
-                    </svg>
-                  </div>
-                </div>
+                <NavItemLink
+                  to="/"
+                  style={{
+                    color: "var(--pf-t--global--text--Color--100)",
+                    textDecoration: "none",
+                  }}
+                >
+                  <Content
+                    component="span"
+                    style={{
+                      fontSize: "var(--pf-t--global--FontSize--md)",
+                      fontWeight: "var(--pf-t--global--font--weight--body--bold)",
+                    }}
+                  >
+                    OpenShift
+                  </Content>
+                </NavItemLink>
               </MastheadBrand>
             </ToolbarItem>
           </ToolbarContent>
@@ -529,7 +485,9 @@ export default function Layout() {
                   type="button"
                   onClick={() => setIsAIOpen(true)}
                   aria-label="Open OpenShift LightSpeed"
-                  className="!text-[var(--pf-color-blue-50)] [&_svg]:!text-[var(--pf-color-blue-50)] [&_span]:!text-[var(--pf-color-blue-50)] hover:!text-[var(--pf-color-blue-60)]"
+                  style={{
+                    color: "var(--pf-t--global--palette--blue--50)",
+                  }}
                 >
                   <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsCenter" }} display={{ default: "inlineFlex" }}>
                     <RobotIcon aria-hidden />
@@ -661,14 +619,23 @@ export default function Layout() {
   return (
     <>
       <div
-        style={{
-          height: "100%",
-          minHeight: 0,
-          display: "flex",
-          flexDirection: "column",
-        }}
+        className={css(
+          sizingStyles.h_100,
+          displayStyles.displayFlex,
+          flexStyles.flexDirectionColumn,
+          flexStyles.flexShrink_1
+        )}
+        style={{ minHeight: "var(--pf-t--global--spacer--0, 0px)" }}
       >
-        <div style={{ flex: "1 1 auto", minHeight: 0, display: "flex", flexDirection: "column" }}>
+        <div
+          className={css(
+            flexStyles.flex_1,
+            displayStyles.displayFlex,
+            flexStyles.flexDirectionColumn,
+            flexStyles.flexShrink_1
+          )}
+          style={{ minHeight: "var(--pf-t--global--spacer--0, 0px)" }}
+        >
           <Page
             className={css(sizingStyles.h_100)}
             isManagedSidebar
@@ -681,16 +648,25 @@ export default function Layout() {
             banner={impersonationBanner}
           >
             <div
-              className={css(sizingStyles.h_100)}
-              style={{
-                flex: "1 1 auto",
-                display: "flex",
-                flexDirection: "column",
-                minHeight: 0,
-                paddingInlineEnd: isAIOpen ? "420px" : undefined,
-                transition: "padding-inline-end 0.3s ease-in-out",
-                backgroundColor: "var(--pf-t--global--background--color--secondary--default)",
-              }}
+              className={css(
+                sizingStyles.h_100,
+                displayStyles.displayFlex,
+                flexStyles.flexDirectionColumn,
+                flexStyles.flexShrink_1,
+                flexStyles.flex_1
+              )}
+              style={
+                isAIOpen
+                  ? {
+                      paddingInlineEnd: "var(--pf-v6-c-drawer__panel--m-width, 26.25rem)",
+                      transition:
+                        "padding-inline-end var(--pf-t--global--transition--Duration, 0.3s) var(--pf-t--global--transition--TimingFunction, ease-in-out)",
+                    }
+                  : {
+                      transition:
+                        "padding-inline-end var(--pf-t--global--transition--Duration, 0.3s) var(--pf-t--global--transition--TimingFunction, ease-in-out)",
+                    }
+              }
             >
               <Outlet />
             </div>
