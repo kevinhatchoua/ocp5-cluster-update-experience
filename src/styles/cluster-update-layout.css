@@ -1,0 +1,39 @@
+/**
+ * Cluster update page: reduce nested panels on glass (card + bordered disclosure + per-row cards).
+ * PatternFly ExpandableSection displaySize="lg" uses .pf-m-display-lg (border + secondary fill).
+ */
+
+html:not(.no-glass) .pf-v6-c-expandable-section.ocp-cluster-expandable--plain.pf-m-display-lg {
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  padding-inline: 0;
+  padding-block-start: var(--pf-t--global--spacer--xs);
+  padding-block-end: var(--pf-t--global--spacer--xs);
+}
+
+html:not(.no-glass) .pf-v6-c-expandable-section.ocp-cluster-expandable--plain.pf-m-display-lg.pf-m-expanded {
+  padding-block-end: var(--pf-t--global--spacer--sm);
+}
+
+/* Available updates: rows separated by rules instead of stacked compact glass Cards */
+.ocp-version-line {
+  border-bottom: 1px solid var(--pf-t--global--border--color--default);
+}
+
+.ocp-version-line:last-child {
+  border-bottom: none;
+}
+
+.ocp-version-line--selected {
+  box-shadow: inset 4px 0 0 0 var(--pf-t--global--BorderColor--brand--default);
+}
+
+.ocp-version-line__body {
+  padding: var(--pf-t--global--spacer--md);
+}
+
+.ocp-version-line__footer {
+  border-top: 1px solid var(--pf-t--global--border--color--default);
+  padding: var(--pf-t--global--spacer--md);
+}

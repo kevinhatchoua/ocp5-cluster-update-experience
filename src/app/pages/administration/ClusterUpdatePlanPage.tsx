@@ -10,39 +10,57 @@ import {
   CardBody,
   CardFooter,
   CardHeader,
+  Checkbox,
   Content,
   Divider,
+  Dropdown,
+  DropdownItem,
+  ExpandableSection,
   Flex,
   FlexItem,
   FormGroup,
+  FormSelect,
   Grid,
   GridItem,
   HelperText,
   HelperTextItem,
   Icon,
   Label,
+  List,
+  ListItem,
   MenuToggle,
   Panel,
   PanelMain,
   PanelMainBody,
+  Popover,
   Progress,
+  Radio,
   Select,
   SelectList,
   SelectOption,
   Spinner,
+  Switch,
   Tab,
   Tabs,
   TabTitleText,
   Title,
+  ToggleGroup,
+  ToggleGroupItem,
 } from "@patternfly/react-core";
-import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
+import EllipsisVIcon from "@patternfly/react-icons/dist/esm/icons/ellipsis-v-icon";
+import { InnerScrollContainer, Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import { usePatternFlyGlassActive } from "@/lib/usePatternFlyGlassActive";
-import { ChevronDown, ChevronRight, ExternalLink, Sparkles, ArrowRight, CheckCircle, AlertTriangle, AlertCircle, HelpCircle, Info, X, Loader2, Shield, Bot, Settings, RotateCcw, Play, Pause, Calendar, Bell, Clock, FileText, User, Zap, Eye, RefreshCw, MoreVertical, Check } from "@/lib/pfIcons";
+import { ChevronDown, ChevronRight, ExternalLink, Sparkles, ArrowRight, CheckCircle, AlertTriangle, AlertCircle, HelpCircle, Info, X, Loader2, Shield, Bot, Settings, RotateCcw, Play, Pause, Calendar, Bell, Clock, FileText, User, Zap, Eye, RefreshCw, Check } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import FavoriteButton from "../../components/FavoriteButton";
 import { AiAssessmentSection } from "../../components/AiAssessmentSection";
 import { OlsChatbot } from "../../components/OlsChatbot";
 import { useClusterUpdateDemoVariant } from "../../contexts/ClusterUpdateDemoContext";
+
+/** Disclosure (displaySize lg) — strip secondary panel chrome inside glass surfaces; see cluster-update-layout.css */
+function clusterExpandablePlainClass(isGlass: boolean): string | undefined {
+  return isGlass ? "ocp-cluster-expandable--plain" : undefined;
+}
 
 type TabKey = "update-plan" | "active-update-plans" | "update-history";
 
@@ -80,21 +98,6 @@ export type VersionGroup = {
   versions: VersionEntry[];
 };
 
-
-/* ─── Collapsible Section Wrapper ─── */
-function CollapsibleSection({ title, children, defaultExpanded = true }: { title: string; children: React.ReactNode; defaultExpanded?: boolean }) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
-  return (
-    <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
-      <button onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-[8px] bg-transparent border-0 cursor-pointer p-0 hover:opacity-80 transition-opacity w-full text-left">
-        {expanded ? <ChevronDown className="size-[16px] text-[#151515] dark:text-white" /> : <ChevronRight className="size-[16px] text-[#151515] dark:text-white" />}
-        <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">{title}</h2>
-      </button>
-      {expanded && <div className="mt-[16px]">{children}</div>}
-    </div>
-  );
-}
 
 /* ─── Channel-specific version data ─── */
 export const channelVersions: Record<string, { groups: VersionGroup[]; banner?: { title: string; description: string; link: string } }> = {
@@ -296,6 +299,7 @@ const updateHistory: UpdateHistoryEntry[] = [
 export default function ClusterUpdatePlanPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const isGlass = usePatternFlyGlassActive();
 
   useEffect(() => {
     const stored = localStorage.getItem("clusterUpdateInProgress");
@@ -444,68 +448,157 @@ export default function ClusterUpdatePlanPage() {
 
           {/* Update Method — hidden in agent-only demo variant */}
           {demoVariant === "manual-and-agent" && (
-            <CollapsibleSection title="Update Method" defaultExpanded>
-              <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] mb-[16px]">
-                Choose how cluster updates are managed.
-              </p>
-              <div className="grid grid-cols-2 gap-[12px]">
-                <button
-                  type="button"
-                  onClick={() => setUpdateMode("manual")}
-                  className={`flex items-start gap-[12px] p-[16px] rounded-[12px] border-2 text-left cursor-pointer transition-all bg-transparent ${
-                    updateMode === "manual"
-                      ? "border-[#0066cc] dark:border-[#4dabf7] bg-[rgba(0,102,204,0.03)] dark:bg-[rgba(77,171,247,0.05)]"
-                      : "border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90]"
-                  }`}
-                >
-                  <div
-                    className={`mt-[2px] size-[36px] rounded-[8px] flex items-center justify-center shrink-0 ${
-                      updateMode === "manual" ? "bg-[#0066cc] text-white" : "bg-[#f0f0f0] dark:bg-[rgba(255,255,255,0.08)] text-[#6a6e73]"
-                    }`}
+            <Card
+              component="div"
+              isGlass={isGlass}
+              style={{ marginBottom: "var(--pf-t--global--spacer--md)" }}
+            >
+              <CardHeader>
+                <Title headingLevel="h2" size="xl">
+                  Update Method
+                </Title>
+              </CardHeader>
+              <CardBody>
+                <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
+                  <Content component="p">Choose how cluster updates are managed.</Content>
+                  <FormGroup
+                    fieldId="cluster-update-method"
+                    role="radiogroup"
+                    aria-label="Cluster update method"
                   >
-                    <Settings className="size-[18px]" />
-                  </div>
-                  <div>
-                    <p
-                      className={`text-[14px] font-semibold font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] ${updateMode === "manual" ? "text-[#0066cc] dark:text-[#4dabf7]" : "text-[#151515] dark:text-white"}`}
-                    >
-                      Manual
-                    </p>
-                    <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
-                      Review available updates, assess risks, and initiate updates yourself. Full control over timing and version selection.
-                    </p>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setUpdateMode("agent")}
-                  className={`flex items-start gap-[12px] p-[16px] rounded-[12px] border-2 text-left cursor-pointer transition-all bg-transparent ${
-                    updateMode === "agent"
-                      ? "border-[#6753ac] dark:border-[#b2a3e0] bg-[rgba(103,83,172,0.03)] dark:bg-[rgba(178,163,224,0.05)]"
-                      : "border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90]"
-                  }`}
-                >
-                  <div
-                    className={`mt-[2px] size-[36px] rounded-[8px] flex items-center justify-center shrink-0 ${
-                      updateMode === "agent" ? "bg-[#6753ac] text-white" : "bg-[#f0f0f0] dark:bg-[rgba(255,255,255,0.08)] text-[#6a6e73]"
-                    }`}
-                  >
-                    <Bot className="size-[18px]" />
-                  </div>
-                  <div>
-                    <p
-                      className={`text-[14px] font-semibold font-['Red_Hat_Text:Regular',sans-serif] mb-[4px] ${updateMode === "agent" ? "text-[#6753ac] dark:text-[#b2a3e0]" : "text-[#151515] dark:text-white"}`}
-                    >
-                      Agent-based
-                    </p>
-                    <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
-                      An AI agent handles pre-flight checks, scheduling, coordinated platform and catalog operator updates, and rollback
-                      automatically. Pre-checks and status span both layers holistically. You approve plans before execution.
-                    </p>
-                  </div>
-                </button>
-              </div>
-            </CollapsibleSection>
+                    <Grid hasGutter>
+                      <GridItem span={12} md={6}>
+                        <Card
+                          isCompact
+                          isFullHeight
+                          isSelectable
+                          isClickable
+                          isSelected={updateMode === "manual"}
+                          onClick={() => setUpdateMode("manual")}
+                          style={
+                            updateMode === "manual"
+                              ? {
+                                  boxShadow:
+                                    "inset 4px 0 0 0 var(--pf-t--global--BorderColor--brand--default), 0 0 0 1px var(--pf-t--global--BorderColor--brand--default)",
+                                }
+                              : undefined
+                          }
+                        >
+                          <CardBody>
+                            <Flex
+                              direction={{ default: "column" }}
+                              gap={{ default: "gapMd" }}
+                              alignItems={{ default: "alignItemsStretch" }}
+                            >
+                              <Flex
+                                justifyContent={{ default: "justifyContentSpaceBetween" }}
+                                alignItems={{ default: "alignItemsCenter" }}
+                              >
+                                <Radio
+                                  id="cluster-update-method-manual"
+                                  name="cluster-update-method"
+                                  isChecked={updateMode === "manual"}
+                                  onChange={() => setUpdateMode("manual")}
+                                  label="Manual"
+                                  aria-label="Manual update method"
+                                />
+                                {updateMode === "manual" ? (
+                                  <Label color="blue" isCompact>
+                                    Selected
+                                  </Label>
+                                ) : null}
+                              </Flex>
+                              <Flex gap={{ default: "gapMd" }} alignItems={{ default: "alignItemsFlexStart" }}>
+                                <FlexItem>
+                                  <Icon size="lg">
+                                    <Settings aria-hidden />
+                                  </Icon>
+                                </FlexItem>
+                                <FlexItem flex={{ default: "flex_1" }}>
+                                  <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+                                    <Title headingLevel="h4" size="md">
+                                      Manual updates
+                                    </Title>
+                                    <Content component="p">
+                                      Review available updates, assess risks, and initiate updates yourself. Full control over
+                                      timing and version selection.
+                                    </Content>
+                                  </Flex>
+                                </FlexItem>
+                              </Flex>
+                            </Flex>
+                          </CardBody>
+                        </Card>
+                      </GridItem>
+                      <GridItem span={12} md={6}>
+                        <Card
+                          isCompact
+                          isFullHeight
+                          isSelectable
+                          isClickable
+                          isSelected={updateMode === "agent"}
+                          onClick={() => setUpdateMode("agent")}
+                          style={
+                            updateMode === "agent"
+                              ? {
+                                  boxShadow:
+                                    "inset 4px 0 0 0 var(--pf-t--global--BorderColor--brand--default), 0 0 0 1px var(--pf-t--global--BorderColor--brand--default)",
+                                }
+                              : undefined
+                          }
+                        >
+                          <CardBody>
+                            <Flex
+                              direction={{ default: "column" }}
+                              gap={{ default: "gapMd" }}
+                              alignItems={{ default: "alignItemsStretch" }}
+                            >
+                              <Flex
+                                justifyContent={{ default: "justifyContentSpaceBetween" }}
+                                alignItems={{ default: "alignItemsCenter" }}
+                              >
+                                <Radio
+                                  id="cluster-update-method-agent"
+                                  name="cluster-update-method"
+                                  isChecked={updateMode === "agent"}
+                                  onChange={() => setUpdateMode("agent")}
+                                  label="Agent-based"
+                                  aria-label="Agent-based update method"
+                                />
+                                {updateMode === "agent" ? (
+                                  <Label color="blue" isCompact>
+                                    Selected
+                                  </Label>
+                                ) : null}
+                              </Flex>
+                              <Flex gap={{ default: "gapMd" }} alignItems={{ default: "alignItemsFlexStart" }}>
+                                <FlexItem>
+                                  <Icon size="lg" status="custom">
+                                    <Bot aria-hidden />
+                                  </Icon>
+                                </FlexItem>
+                                <FlexItem flex={{ default: "flex_1" }}>
+                                  <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+                                    <Title headingLevel="h4" size="md">
+                                      Agent-based updates
+                                    </Title>
+                                    <Content component="p">
+                                      An AI agent handles pre-flight checks, scheduling, coordinated platform and catalog operator
+                                      updates, and rollback automatically. Pre-checks and status span both layers holistically. You
+                                      approve plans before execution.
+                                    </Content>
+                                  </Flex>
+                                </FlexItem>
+                              </Flex>
+                            </Flex>
+                          </CardBody>
+                        </Card>
+                      </GridItem>
+                    </Grid>
+                  </FormGroup>
+                </Flex>
+              </CardBody>
+            </Card>
           )}
 
           {demoVariant === "manual-and-agent" && updateMode === "manual" ? (
@@ -1694,73 +1787,67 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
   );
 }
 
-/* ─── Tooltip component ─── */
+/* ─── Help popovers (PatternFly) ─── */
 function InfoTooltip() {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open]);
-
   return (
-    <div className="relative inline-flex" ref={ref}>
-      <button onClick={() => setOpen(!open)} className="bg-transparent border-0 cursor-pointer p-[2px] text-[#6a6e73] dark:text-[#b0b0b0] hover:text-[#0066cc] dark:hover:text-[#4dabf7] transition-colors" aria-label="Learn more about available updates">
-        <HelpCircle className="size-[16px]" />
-      </button>
-      {open && (
-        <div className="absolute top-[28px] left-1/2 -translate-x-1/2 z-50 w-[320px] bg-white dark:bg-[#1a1a1a] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] rounded-[8px] shadow-[0_4px_16px_rgba(0,0,0,0.12)] p-[16px]">
-          <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-[12px] h-[12px] bg-white dark:bg-[#1a1a1a] border-l border-t border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] rotate-45" />
-          <p className="text-[#151515] dark:text-white text-[13px] font-['Red_Hat_Text:Regular',sans-serif] mb-[8px]">
-            Available updates are determined by your selected channel and the cluster's current version. Versions are tested for upgrade compatibility and risk is assessed based on known issues.
-          </p>
-          <a href="https://docs.openshift.com/container-platform/latest/updating/understanding_updates/intro-to-updates.html" target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[13px] no-underline hover:underline font-['Red_Hat_Text:Regular',sans-serif]">
-            View documentation <ExternalLink className="size-[11px]" />
-          </a>
-        </div>
-      )}
-    </div>
+    <Popover
+      aria-label="About available updates"
+      headerContent={<Title headingLevel="h4">Available updates</Title>}
+      bodyContent={
+        <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
+          <Content component="p">
+            Available updates are determined by your selected channel and the cluster&apos;s current version. Versions are
+            tested for upgrade compatibility and risk is assessed based on known issues.
+          </Content>
+          <Button
+            variant="link"
+            component="a"
+            href="https://docs.openshift.com/container-platform/latest/updating/understanding_updates/intro-to-updates.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            icon={<ExternalLink aria-hidden />}
+            iconPosition="end"
+            isInline
+          >
+            View documentation
+          </Button>
+        </Flex>
+      }
+    >
+      <Button variant="plain" aria-label="Learn more about available updates" icon={<HelpCircle />} />
+    </Popover>
   );
 }
 
 function ChannelTooltip() {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open]);
-
   return (
-    <div className="relative inline-flex" ref={ref}>
-      <button onClick={() => setOpen(!open)} className="bg-transparent border-0 cursor-pointer p-[2px] text-[#6a6e73] dark:text-[#b0b0b0] hover:text-[#0066cc] dark:hover:text-[#4dabf7] transition-colors" aria-label="Learn more about update channels">
-        <HelpCircle className="size-[16px]" />
-      </button>
-      {open && (
-        <div className="absolute top-[28px] left-1/2 -translate-x-1/2 z-50 w-[320px] bg-white dark:bg-[#1a1a1a] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] rounded-[8px] shadow-[0_4px_16px_rgba(0,0,0,0.12)] p-[16px]">
-          <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-[12px] h-[12px] bg-white dark:bg-[#1a1a1a] border-l border-t border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] rotate-45" />
-          <p className="text-[#151515] dark:text-white text-[13px] font-['Red_Hat_Text:Regular',sans-serif] font-medium mb-[4px]">Update channels</p>
-          <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] mb-[8px]">
-            Channels determine which versions are available for update. <strong>fast</strong> delivers updates as soon as they pass CI, <strong>stable</strong> waits for broader adoption, <strong>eus</strong> provides extended update support for select minor versions, and <strong>candidate</strong> includes pre-release builds for early testing.
-          </p>
-          <a href="https://docs.openshift.com/container-platform/latest/updating/understanding_updates/understanding-update-channels-releases.html" target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[13px] no-underline hover:underline font-['Red_Hat_Text:Regular',sans-serif]">
-            Learn more about channels <ExternalLink className="size-[11px]" />
-          </a>
-        </div>
-      )}
-    </div>
+    <Popover
+      aria-label="About update channels"
+      headerContent={<Title headingLevel="h4">Update channels</Title>}
+      bodyContent={
+        <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
+          <Content component="p">
+            Channels determine which versions are available for update. <strong>fast</strong> delivers updates as soon as
+            they pass CI, <strong>stable</strong> waits for broader adoption, <strong>eus</strong> provides extended update
+            support for select minor versions, and <strong>candidate</strong> includes pre-release builds for early testing.
+          </Content>
+          <Button
+            variant="link"
+            component="a"
+            href="https://docs.openshift.com/container-platform/latest/updating/understanding_updates/understanding-update-channels-releases.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            icon={<ExternalLink aria-hidden />}
+            iconPosition="end"
+            isInline
+          >
+            Learn more about channels
+          </Button>
+        </Flex>
+      }
+    >
+      <Button variant="plain" aria-label="Learn more about update channels" icon={<HelpCircle />} />
+    </Popover>
   );
 }
 
@@ -2973,66 +3060,98 @@ const WORKER_NODE_POOLS = [
 function WorkerNodesSection() {
   const [sectionExpanded, setSectionExpanded] = useState(true);
   const [updateAll, setUpdateAll] = useState(false);
-  const poolsNeedingUpdate = WORKER_NODE_POOLS.filter(p => p.status === "Update required").length;
+  const poolsNeedingUpdate = WORKER_NODE_POOLS.filter((p) => p.status === "Update required").length;
+  const isGlass = usePatternFlyGlassActive();
 
   return (
-    <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
-      <button onClick={() => setSectionExpanded(!sectionExpanded)}
-        className="flex items-center gap-[8px] bg-transparent border-0 cursor-pointer p-0 hover:opacity-80 transition-opacity w-full text-left">
-        {sectionExpanded ? <ChevronDown className="size-[16px] text-[#151515] dark:text-white" /> : <ChevronRight className="size-[16px] text-[#151515] dark:text-white" />}
-        <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Worker nodes on this cluster</h2>
-      </button>
+    <Card isGlass={isGlass} component="div" style={{ marginBottom: "var(--pf-t--global--spacer--md)" }}>
+      <CardBody>
+        <ExpandableSection
+          className={clusterExpandablePlainClass(isGlass)}
+          isExpanded={sectionExpanded}
+          onToggle={(_event, expanded) => setSectionExpanded(expanded)}
+          displaySize="lg"
+          toggleContent={
+            <Title headingLevel="h2" size="xl">
+              Worker nodes on this cluster
+            </Title>
+          }
+        >
+          <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
+            {poolsNeedingUpdate > 0 && (
+              <Alert variant="warning" isInline title="Node pools need attention" icon={<AlertTriangle aria-hidden />}>
+                <Content component="p">
+                  {poolsNeedingUpdate} node pool{poolsNeedingUpdate !== 1 ? "s" : ""} require
+                  {poolsNeedingUpdate === 1 ? "s" : ""} an update
+                </Content>
+              </Alert>
+            )}
 
-      {sectionExpanded && <div className="mt-[16px]">
-      {poolsNeedingUpdate > 0 && (
-        <div className="flex items-center gap-[8px] bg-[#fdf7e7] dark:bg-[rgba(240,171,0,0.06)] border border-[#f0ab00] rounded-[8px] px-[14px] py-[10px] mb-[16px]">
-          <AlertTriangle className="size-[16px] text-[#f0ab00] shrink-0" />
-          <p className="text-[13px] text-[#795600] dark:text-[#dca614] font-['Red_Hat_Text:Regular',sans-serif]">
-            {poolsNeedingUpdate} node pool{poolsNeedingUpdate !== 1 ? "s" : ""} require{poolsNeedingUpdate === 1 ? "s" : ""} an update
-          </p>
-        </div>
-      )}
+            <InnerScrollContainer>
+              <Table aria-label="Worker node pools" variant="compact">
+                <Thead>
+                  <Tr>
+                    <Th>Pool</Th>
+                    <Th>Status</Th>
+                    <Th>Version</Th>
+                    <Th>Nodes</Th>
+                    <Th>Cluster compatibility</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {WORKER_NODE_POOLS.map((pool) => (
+                    <Tr key={pool.pool}>
+                      <Td dataLabel="Pool">
+                        <Content component="p">
+                          <strong>{pool.pool}</strong>
+                        </Content>
+                      </Td>
+                      <Td dataLabel="Status">
+                        {pool.status === "Update required" ? (
+                          <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                            <Icon status="warning">
+                              <AlertTriangle />
+                            </Icon>
+                            {pool.status}
+                          </Flex>
+                        ) : (
+                          <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                            <Icon status="success">
+                              <CheckCircle />
+                            </Icon>
+                            {pool.status}
+                          </Flex>
+                        )}
+                      </Td>
+                      <Td dataLabel="Version">
+                        <Content component="small">
+                          <code>{pool.version}</code>
+                        </Content>
+                      </Td>
+                      <Td dataLabel="Nodes">
+                        {pool.readyNodes}/{pool.nodes} ready
+                      </Td>
+                      <Td dataLabel="Cluster compatibility">
+                        <Label color="green" isCompact>
+                          Compatible
+                        </Label>
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </InnerScrollContainer>
 
-      <div className="rounded-[8px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] overflow-hidden">
-        <table className="w-full text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">
-          <thead>
-            <tr className="border-b border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)] text-left text-[11px] text-[#6a6e73] dark:text-[#8a8d90] uppercase tracking-wide">
-              <th className="px-[16px] py-[10px] font-medium">Pool</th>
-              <th className="px-[16px] py-[10px] font-medium">Status</th>
-              <th className="px-[16px] py-[10px] font-medium">Version</th>
-              <th className="px-[16px] py-[10px] font-medium">Nodes</th>
-              <th className="px-[16px] py-[10px] font-medium">Cluster compatibility</th>
-            </tr>
-          </thead>
-          <tbody>
-            {WORKER_NODE_POOLS.map((pool) => (
-              <tr key={pool.pool} className="border-b border-[rgba(0,0,0,0.05)] dark:border-[rgba(255,255,255,0.05)] last:border-0 hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)] transition-colors">
-                <td className="px-[16px] py-[10px] font-medium text-[#151515] dark:text-white">{pool.pool}</td>
-                <td className="px-[16px] py-[10px]">
-                  <span className={`inline-flex items-center gap-[4px] text-[12px] ${pool.status === "Update required" ? "text-[#f0ab00]" : "text-[#3e8635]"}`}>
-                    {pool.status === "Update required" ? <><AlertTriangle className="size-[12px]" /> {pool.status}</> : <><CheckCircle className="size-[12px]" /> {pool.status}</>}
-                  </span>
-                </td>
-                <td className="px-[16px] py-[10px] font-mono text-[#4d4d4d] dark:text-[#b0b0b0]">{pool.version}</td>
-                <td className="px-[16px] py-[10px] text-[#4d4d4d] dark:text-[#b0b0b0]">{pool.readyNodes}/{pool.nodes} ready</td>
-                <td className="px-[16px] py-[10px]">
-                  <span className="text-[12px] text-[#3e8635]">Compatible</span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="flex items-center gap-[8px] mt-[16px] pt-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
-        <button onClick={() => setUpdateAll(!updateAll)}
-          className={`relative w-[36px] h-[20px] rounded-full border-0 cursor-pointer transition-colors ${updateAll ? "bg-[#0066cc]" : "bg-[#8a8d90]"}`}>
-          <div className={`absolute top-[2px] size-[16px] rounded-full bg-white transition-transform ${updateAll ? "left-[18px]" : "left-[2px]"}`} />
-        </button>
-        <span className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">Update all worker nodes</span>
-      </div>
-      </div>}
-    </div>
+            <Switch
+              id="cluster-update-all-worker-nodes"
+              label="Update all worker nodes"
+              isChecked={updateAll}
+              onChange={(_e, c) => setUpdateAll(c)}
+            />
+          </Flex>
+        </ExpandableSection>
+      </CardBody>
+    </Card>
   );
 }
 
@@ -3057,121 +3176,125 @@ function shouldShowBugfixPathCallout(groups: VersionGroup[]): boolean {
 /* ─── Available Updates Section ─── */
 export function AvailableUpdatesSection({
   channelData,
-  expandedGroups, setExpandedGroups,
-  selectedVersion, setSelectedVersion, navigate, setActiveTab, openChatbot,
-  selectedChannel, handleChannelChange,
+  expandedGroups,
+  setExpandedGroups,
+  selectedVersion,
+  setSelectedVersion,
+  navigate,
+  setActiveTab,
+  openChatbot: _openChatbot,
+  selectedChannel,
+  handleChannelChange,
 }: any) {
   const [sectionExpanded, setSectionExpanded] = useState(true);
   const groups = channelData.groups as VersionGroup[];
   const showBugfixHint = shouldShowBugfixPathCallout(groups);
+  const isGlass = usePatternFlyGlassActive();
 
   return (
-    <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]">
-      <button onClick={() => setSectionExpanded(!sectionExpanded)}
-        className="flex items-center gap-[8px] bg-transparent border-0 cursor-pointer p-0 hover:opacity-80 transition-opacity w-full text-left">
-        {sectionExpanded ? <ChevronDown className="size-[16px] text-[#151515] dark:text-white" /> : <ChevronRight className="size-[16px] text-[#151515] dark:text-white" />}
-        <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Available Updates</h2>
-        <InfoTooltip />
-      </button>
-
-      {sectionExpanded && <div className="mt-[16px]">
-      {/* Channel selector */}
-      <div className="flex items-center gap-[12px] mb-[16px] pb-[16px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
-        <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif] font-medium">Channel</p>
-        <select value={selectedChannel} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleChannelChange(e.target.value)}
-          className="bg-white dark:bg-[rgba(255,255,255,0.05)] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] rounded-[999px] px-[10px] py-[5px] text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif] cursor-pointer">
-          <option value="fast-5.1">fast-5.1</option>
-          <option value="stable-5.1">stable-5.1</option>
-          <option value="candidate-5.1">candidate-5.1</option>
-          <option value="eus-5.0">eus-5.0</option>
-        </select>
-        <ChannelTooltip />
-      </div>
-
-      {showBugfixHint && (
-        <div
-          className="flex gap-[10px] items-start rounded-[8px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.12)] bg-[#fafafa] dark:bg-[rgba(255,255,255,0.04)] px-[14px] py-[12px] mb-[16px]"
-          role="note"
-        >
-          <Info className="size-[18px] text-[#0066cc] dark:text-[#4dabf7] shrink-0 mt-[1px]" />
-          <p className="text-[13px] text-[#151515] dark:text-[#e0e0e0] font-['Red_Hat_Text:Regular',sans-serif] leading-[1.45] m-0">
-            Not interested in addressing <span className="font-['Red_Hat_Mono:Regular',monospace] font-semibold text-[#151515] dark:text-white">ClusterLoggingMaxVersion</span> today?
-            You still have bugfix options — use the <span className="font-medium">5.0</span> (and older) update lines below for z-stream releases without taking the minor bump.
-          </p>
-        </div>
-      )}
-
-      {groups.length === 0 && (
-        <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[14px] font-['Red_Hat_Text:Regular',sans-serif] py-[20px]">No updates available for this channel.</p>
-      )}
-
-      {groups.map((group: VersionGroup) => (
-        <VersionGroupComponent key={group.label} label={group.label} versions={group.versions}
-          expanded={!!expandedGroups[group.label]}
-          setExpanded={(val: boolean) =>
-            setExpandedGroups((prev: Record<string, boolean>) => {
-              if (val) {
-                const next: Record<string, boolean> = {};
-                for (const g of groups) {
-                  next[g.label] = g.label === group.label;
-                }
-                return next;
-              }
-              return { ...prev, [group.label]: false };
-            })
+    <Card
+      isGlass={isGlass}
+      component="div"
+      style={{ marginBottom: "var(--pf-t--global--spacer--md)" }}
+    >
+      <CardBody>
+        <ExpandableSection
+          className={clusterExpandablePlainClass(isGlass)}
+          isExpanded={sectionExpanded}
+          onToggle={(_event, expanded) => setSectionExpanded(expanded)}
+          displaySize="lg"
+          toggleContent={
+            <Flex gap={{ default: "gapMd" }} alignItems={{ default: "alignItemsCenter" }} flexWrap={{ default: "wrap" }}>
+              <Title headingLevel="h2" size="xl">
+                Available updates
+              </Title>
+              <span onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+                <InfoTooltip />
+              </span>
+            </Flex>
           }
-          selectedVersion={selectedVersion} setSelectedVersion={setSelectedVersion} navigate={navigate} setActiveTab={setActiveTab} />
-      ))}
+        >
+          <Flex direction={{ default: "column" }} gap={{ default: "gapLg" }}>
+            <Flex
+              direction={{ default: "column" }}
+              gap={{ default: "gapMd" }}
+              style={{
+                paddingBottom: "var(--pf-t--global--spacer--lg)",
+                borderBottom: "1px solid var(--pf-t--global--border--color--default)",
+              }}
+            >
+              <Flex
+                gap={{ default: "gapMd" }}
+                alignItems={{ default: "alignItemsFlexEnd" }}
+                flexWrap={{ default: "wrap" }}
+              >
+                <FormGroup label="Channel" fieldId="cluster-update-channel">
+                  <FormSelect
+                    id="cluster-update-channel"
+                    value={selectedChannel}
+                    onChange={(_e, value) => handleChannelChange(value)}
+                    aria-label="Update channel"
+                  >
+                    <option value="fast-5.1">fast-5.1</option>
+                    <option value="stable-5.1">stable-5.1</option>
+                    <option value="candidate-5.1">candidate-5.1</option>
+                    <option value="eus-5.0">eus-5.0</option>
+                  </FormSelect>
+                </FormGroup>
+                <span onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+                  <ChannelTooltip />
+                </span>
+              </Flex>
+            </Flex>
 
-      </div>}
-    </div>
-  );
-}
+            {showBugfixHint && (
+              <Alert
+                variant="info"
+                isInline
+                isPlain
+                title="Bugfix path"
+                icon={<Info aria-hidden />}
+              >
+                <Content component="p">
+                  Not interested in addressing <strong>ClusterLoggingMaxVersion</strong> today? You still have bugfix
+                  options — use the <strong>5.0</strong> (and older) update lines below for z-stream releases without taking
+                  the minor bump.
+                </Content>
+              </Alert>
+            )}
 
-/* ─── Kebab Menu (portaled to escape overflow clipping) ─── */
-function KebabMenu({ isOpen, onToggle, onClose, items }: { isOpen: boolean; onToggle: () => void; onClose: () => void; items: { label: string; onClick: () => void }[] }) {
-  const btnRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState({ top: 0, left: 0 });
-
-  useEffect(() => {
-    if (isOpen && btnRef.current) {
-      const rect = btnRef.current.getBoundingClientRect();
-      const menuHeight = (items.length * 36) + 8;
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const opensUp = spaceBelow < menuHeight + 8;
-      setPos({
-        top: opensUp ? rect.top - menuHeight - 4 : rect.bottom + 4,
-        left: rect.right - 200,
-      });
-    }
-  }, [isOpen, items.length]);
-
-  return (
-    <>
-      <button
-        ref={btnRef}
-        className="p-[4px] hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[4px] transition-colors bg-transparent border-0 cursor-pointer"
-        onClick={(e) => { e.stopPropagation(); onToggle(); }}
-      >
-        <MoreVertical className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" />
-      </button>
-      {isOpen && createPortal(
-        <>
-          <div className="fixed inset-0 z-[9998]" onClick={onClose} />
-          <div ref={menuRef} className="fixed z-[9999] w-[200px] app-glass-panel app-glass-panel--radius-sm py-[4px]"
-            style={{ top: pos.top, left: pos.left }}>
-            {items.map((item, idx) => (
-              <button key={idx} className="w-full text-left px-[16px] py-[8px] text-[14px] text-[#151515] dark:text-white hover:bg-[rgba(0,0,0,0.03)] dark:hover:bg-[rgba(255,255,255,0.05)] transition-colors bg-transparent border-0 cursor-pointer"
-                onClick={() => { item.onClick(); onClose(); }}>
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </>,
-        document.body
-      )}
-    </>
+            {groups.length === 0 ? (
+              <Content component="p">No updates available for this channel.</Content>
+            ) : (
+              groups.map((group: VersionGroup) => (
+                <VersionGroupComponent
+                  key={group.label}
+                  label={group.label}
+                  versions={group.versions}
+                  expanded={!!expandedGroups[group.label]}
+                  setExpanded={(val: boolean) =>
+                    setExpandedGroups((prev: Record<string, boolean>) => {
+                      if (val) {
+                        const next: Record<string, boolean> = {};
+                        for (const g of groups) {
+                          next[g.label] = g.label === group.label;
+                        }
+                        return next;
+                      }
+                      return { ...prev, [group.label]: false };
+                    })
+                  }
+                  selectedVersion={selectedVersion}
+                  setSelectedVersion={setSelectedVersion}
+                  navigate={navigate}
+                  setActiveTab={setActiveTab}
+                />
+              ))
+            )}
+          </Flex>
+        </ExpandableSection>
+      </CardBody>
+    </Card>
   );
 }
 
@@ -3182,6 +3305,7 @@ function InstalledOperatorsSection({ selectedVersion, operators, navigate }: { s
   const [selectedOperators, setSelectedOperators] = useState<string[]>([]);
   const [openKebabFor, setOpenKebabFor] = useState<string | null>(null);
   const [updateAll, setUpdateAll] = useState(false);
+  const isGlass = usePatternFlyGlassActive();
 
   const operatorsWithCompat = operators.map((op) => {
     const { compatibility, message } = getOperatorCompatibility(op, selectedVersion);
@@ -3197,215 +3321,311 @@ function InstalledOperatorsSection({ selectedVersion, operators, navigate }: { s
   const updateAvailableCount = operatorsWithCompat.filter((op) => op.updateAvailable).length;
   const upgradeableFalse = incompatibleCount > 0;
 
-  const navigateToUpdate = (op: typeof operatorsWithCompat[0]) => {
+  const navigateToUpdate = (op: (typeof operatorsWithCompat)[0]) => {
     navigate(`/ecosystem/installed-operators/${encodeURIComponent(op.name)}/update`, {
-      state: { returnTo: '/administration/cluster-update', operatorName: op.name, operatorData: op }
+      state: { returnTo: "/administration/cluster-update", operatorName: op.name, operatorData: op },
     });
   };
 
-  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.checked) {
+  const handleSelectAll = (_event: React.FormEvent<HTMLInputElement>, checked: boolean) => {
+    if (checked) {
       setSelectedOperators(filtered.map((op) => op.name));
     } else {
       setSelectedOperators([]);
     }
   };
 
-  const handleSelectOperator = (name: string) => {
-    if (selectedOperators.includes(name)) {
-      setSelectedOperators(selectedOperators.filter((n) => n !== name));
+  const handleSelectOperator = (name: string, checked: boolean) => {
+    if (checked) {
+      setSelectedOperators((prev) => (prev.includes(name) ? prev : [...prev, name]));
     } else {
-      setSelectedOperators([...selectedOperators, name]);
+      setSelectedOperators((prev) => prev.filter((n) => n !== name));
     }
   };
 
+  const supportLabelColor = (t?: InstalledOperator["supportBadgeType"]) => {
+    if (t === "danger") return "red";
+    if (t === "warning") return "orange";
+    return "green";
+  };
+
   return (
-    <div className="rounded-[16px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[24px] mb-[16px]" id="operators-section">
-      <button onClick={() => setSectionExpanded(!sectionExpanded)}
-        className="flex items-center gap-[8px] bg-transparent border-0 cursor-pointer p-0 hover:opacity-80 transition-opacity w-full text-left">
-        {sectionExpanded ? <ChevronDown className="size-[16px] text-[#151515] dark:text-white" /> : <ChevronRight className="size-[16px] text-[#151515] dark:text-white" />}
-        <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">Operators on this cluster</h2>
-        <InfoTooltip />
-      </button>
+    <Card id="operators-section" isGlass={isGlass} component="div" style={{ marginBottom: "var(--pf-t--global--spacer--md)" }}>
+      <CardBody>
+        <ExpandableSection
+          className={clusterExpandablePlainClass(isGlass)}
+          isExpanded={sectionExpanded}
+          onToggle={(_event, expanded) => setSectionExpanded(expanded)}
+          displaySize="lg"
+          toggleContent={
+            <Flex gap={{ default: "gapMd" }} alignItems={{ default: "alignItemsCenter" }} flexWrap={{ default: "wrap" }}>
+              <Title headingLevel="h2" size="xl">
+                Operators on this cluster
+              </Title>
+              <span onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+                <InfoTooltip />
+              </span>
+            </Flex>
+          }
+        >
+          <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
+            <Flex gap={{ default: "gapMd" }} alignItems={{ default: "alignItemsFlexStart" }} flexWrap={{ default: "wrap" }}>
+              <Content component="p">
+                {operators.length} catalog operators installed · Compatibility for <strong>{selectedVersion}</strong> —
+                assessed with platform operators in unified AI pre-checks.
+              </Content>
+              <ToggleGroup aria-label="Filter operators by compatibility" isCompact>
+                <ToggleGroupItem
+                  text="All"
+                  isSelected={filterCompat === "all"}
+                  onChange={() => setFilterCompat("all")}
+                />
+                <ToggleGroupItem
+                  text={`Incompatible (${incompatibleCount})`}
+                  isSelected={filterCompat === "incompatible"}
+                  onChange={() => setFilterCompat("incompatible")}
+                />
+                <ToggleGroupItem
+                  text={`Updates available (${updateAvailableCount})`}
+                  isSelected={filterCompat === "update-available"}
+                  onChange={() => setFilterCompat("update-available")}
+                />
+              </ToggleGroup>
+            </Flex>
 
-      {sectionExpanded && <div className="mt-[16px]">
-      <div className="flex items-center gap-[8px] mb-[12px] flex-wrap">
-        <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">
-          {operators.length} catalog operators installed · Compatibility for <span className="font-medium text-[#151515] dark:text-white">{selectedVersion}</span>
-          {" "}
-          <span className="text-[#6a6e73] dark:text-[#8a8d90]">— assessed with platform operators in unified AI pre-checks.</span>
-        </p>
-        <span className="text-[#d2d2d2] dark:text-[rgba(255,255,255,0.15)]">|</span>
-        <div className="flex items-center gap-[6px]">
-          {(["all", "incompatible", "update-available"] as const).map((f) => (
-            <button key={f} onClick={() => setFilterCompat(f)}
-              className={`text-[12px] px-[10px] py-[4px] rounded-[999px] border cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] ${filterCompat === f ? "bg-[#0066cc] text-white border-[#0066cc]" : "bg-transparent text-[#4d4d4d] dark:text-[#b0b0b0] border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] hover:border-[#8a8d90]"}`}>
-              {f === "all" ? "All" : f === "incompatible" ? `Incompatible (${incompatibleCount})` : `Updates available (${updateAvailableCount})`}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {upgradeableFalse && filterCompat !== "update-available" && (
-        <div className="mb-[12px] rounded-[16px] border-l-[2px] border-l-[#b1380b] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] bg-white dark:bg-[#1a1a1a] p-[16px]">
-          <div className="flex items-start gap-[8px]">
-            <AlertCircle className="size-[14px] text-[#b1380b] shrink-0 mt-[2px]" />
-            <div className="flex-1">
-              <p className="font-['Red_Hat_Text',sans-serif] font-medium text-[#151515] dark:text-white text-[14px] mb-[4px] flex items-center gap-[6px]">
-                Cluster upgrade blocked
-                <span className="text-[10px] px-[6px] py-[1px] rounded-[3px] font-semibold bg-[rgba(177,56,11,0.1)] text-[#b1380b] font-['Red_Hat_Mono',sans-serif]">upgradeable=False</span>
-              </p>
-              <p className="text-[14px] font-['Red_Hat_Text',sans-serif] text-[#4d4d4d] dark:text-[#b0b0b0] mb-[8px]">
-                {incompatibleCount} operator{incompatibleCount !== 1 ? "s are" : " is"} incompatible with the target cluster version. Update these operators or accept the associated risks before proceeding with the cluster upgrade.
-              </p>
-              <ul className="list-disc pl-[18px] space-y-[3px] text-[14px] font-['Red_Hat_Text',sans-serif] text-[#4d4d4d] dark:text-[#b0b0b0]">
-                {operatorsWithCompat.filter(op => op.clusterCompatibility === "Incompatible").map((op, i) => (
-                  <li key={i}><span className="text-[#151515] dark:text-white font-medium">{op.name} ({op.version})</span>: {op.compatibilityMessage} {op.updateAvailable && <button onClick={() => navigateToUpdate(op)} className="inline-flex items-center gap-[2px] text-[#0066cc] dark:text-[#4dabf7] bg-transparent border-0 cursor-pointer p-0 text-[14px] font-['Red_Hat_Text',sans-serif] font-medium hover:underline">→ Update to {op.updateAvailable}</button>}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="bg-[rgba(255,255,255,0.5)] dark:bg-[rgba(255,255,255,0.05)] rounded-[16px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.04)] overflow-hidden border border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]">
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="border-b-2 border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)]">
-                <th className="text-left py-[12px] pl-[16px] pr-[8px] w-[48px]">
-                  <input
-                    type="checkbox"
-                    checked={
-                      filtered.length > 0 && selectedOperators.length === filtered.length
-                    }
-                    onChange={handleSelectAll}
-                    className="size-[16px] cursor-pointer"
-                    title="Select all in view"
-                    aria-label="Select all in view"
-                  />
-                </th>
-                <th className="text-left py-[12px] px-[16px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">Operator</th>
-                <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">Version</th>
-                <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">Cluster compatibility</th>
-                <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">Update plan</th>
-                <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">Support</th>
-                <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">Status</th>
-                <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">Last updated</th>
-                <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px]">Managed namespaces</th>
-                <th className="text-left py-[12px] px-[12px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[13px] w-[60px]">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={10} className="px-[16px] py-[24px] text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
-                    No operators match your filter.
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((op, i) => (
-                  <tr key={op.name} className={`border-b border-[rgba(0,0,0,0.05)] dark:border-[rgba(255,255,255,0.05)] hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)] transition-colors ${i === filtered.length - 1 ? "border-b-0" : ""}`}>
-                    <td className="py-[14px] pl-[16px] pr-[8px] align-top">
-                      <input
-                        type="checkbox"
-                        checked={selectedOperators.includes(op.name)}
-                        onChange={() => handleSelectOperator(op.name)}
-                        className="size-[16px] cursor-pointer mt-[2px]"
-                        aria-label={`Select ${op.name}`}
-                      />
-                    </td>
-                    <td className="py-[14px] px-[16px]">
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-[8px] gap-y-[2px]">
-                          <Link
-                            to={`/ecosystem/installed-operators/${encodeURIComponent(op.name)}`}
-                            className="text-[#0066cc] dark:text-[#4dabf7] text-[13px] font-['Red_Hat_Text:Medium',sans-serif] font-medium hover:underline no-underline"
-                          >
-                            {op.name}
-                          </Link>
-                          {op.requiredBeforeClusterUpdate ? (
-                            <span className="px-[6px] py-[1px] bg-[#f0ab00] text-white rounded-[4px] text-[10px] font-semibold shrink-0">
-                              Required
-                            </span>
+            {upgradeableFalse && filterCompat !== "update-available" && (
+              <Alert variant="danger" isInline title="Cluster upgrade blocked" icon={<AlertCircle aria-hidden />}>
+                <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+                  <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsCenter" }} flexWrap={{ default: "wrap" }}>
+                    <Content component="p">
+                      {incompatibleCount} operator{incompatibleCount !== 1 ? "s are" : " is"} incompatible with the target
+                      cluster version. Update these operators or accept the associated risks before proceeding with the
+                      cluster upgrade.
+                    </Content>
+                    <Label color="red" isCompact>
+                      upgradeable=False
+                    </Label>
+                  </Flex>
+                  <List isPlain>
+                    {operatorsWithCompat
+                      .filter((op) => op.clusterCompatibility === "Incompatible")
+                      .map((op) => (
+                        <ListItem key={op.name}>
+                          <strong>{op.name}</strong> ({op.version}): {op.compatibilityMessage}{" "}
+                          {op.updateAvailable ? (
+                            <Button variant="link" isInline onClick={() => navigateToUpdate(op)}>
+                              Update to {op.updateAvailable}
+                            </Button>
                           ) : null}
-                        </div>
-                        <p className="text-[11px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Mono:Regular',sans-serif] truncate mt-[1px]">{op.namespace}</p>
-                      </div>
-                    </td>
-                    <td className="py-[14px] px-[12px]">
-                      <span className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Mono:Regular',sans-serif]">{op.version}</span>
-                    </td>
-                    <td className="py-[14px] px-[12px]">
-                      {op.clusterCompatibility === "Compatible" ? (
-                        <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]"><CheckCircle className="size-[14px] text-[#3d7317]" /> Compatible</span>
-                      ) : op.clusterCompatibility === "Incompatible" ? (
-                        <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]"><AlertCircle className="size-[14px] text-[#b1380b]" /> Incompatible</span>
-                      ) : (
-                        <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]"><AlertTriangle className="size-[14px] text-[#dca614]" /> Unknown</span>
-                      )}
-                    </td>
-                    <td className="py-[14px] px-[12px] text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0]">{op.autoUpdate ? "Automatic" : "Manual"}</td>
-                    <td className="py-[14px] px-[12px]">
-                      <div>
-                        <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0]">{op.supportEndDate || "—"}</p>
-                        {op.supportBadge && (
-                          <span className={`text-[12px] ${
-                            op.supportBadgeType === "danger" ? "text-[#f0ab00] dark:text-[#f4c145]"
-                            : op.supportBadgeType === "warning" ? "text-[#f0ab00] dark:text-[#f4c145]"
-                            : "text-[#3e8635] dark:text-[#5ba352]"
-                          }`}>
-                            {op.supportBadge}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-[14px] px-[12px]">
-                      {op.status === "Running" ? (
-                        <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]"><CheckCircle className="size-[14px] text-[#3d7317]" /> Running</span>
-                      ) : op.status === "Degraded" ? (
-                        <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]"><AlertCircle className="size-[14px] text-[#b1380b]" /> Degraded</span>
-                      ) : (
-                        <span className="flex items-center gap-[4px] text-[13px] text-[#151515] dark:text-[#e0e0e0]"><Clock className="size-[14px] text-[#dca614]" /> Pending</span>
-                      )}
-                    </td>
-                    <td className="py-[14px] px-[12px] text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] whitespace-nowrap">{op.lastUpdated || "—"}</td>
-                    <td className="py-[14px] px-[12px]">
-                      <div className="flex flex-wrap gap-[4px]">
-                        {(op.managedNamespaces || []).map((ns, idx) => (
-                          <span key={idx} className="text-[11px] px-[6px] py-[1px] rounded-[4px] bg-[rgba(0,0,0,0.04)] dark:bg-[rgba(255,255,255,0.06)] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Mono:Regular',sans-serif]">{ns}</span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="py-[14px] px-[12px]">
-                      <KebabMenu
-                        isOpen={openKebabFor === op.name}
-                        onToggle={() => setOpenKebabFor(openKebabFor === op.name ? null : op.name)}
-                        onClose={() => setOpenKebabFor(null)}
-                        items={[
-                          { label: "View details", onClick: () => navigate(`/ecosystem/installed-operators/${encodeURIComponent(op.name)}`) },
-                          ...(op.updateAvailable ? [{ label: `Update to ${op.updateAvailable}`, onClick: () => navigateToUpdate(op) }] : []),
-                          { label: "Edit subscription", onClick: () => navigate(`/ecosystem/installed-operators/${encodeURIComponent(op.name)}/subscription`) },
-                        ]}
-                      />
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                        </ListItem>
+                      ))}
+                  </List>
+                </Flex>
+              </Alert>
+            )}
 
-      <div className="flex items-center gap-[8px] mt-[16px] pt-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
-        <button onClick={() => setUpdateAll(!updateAll)}
-          className={`relative w-[36px] h-[20px] rounded-full border-0 cursor-pointer transition-colors ${updateAll ? "bg-[#0066cc]" : "bg-[#8a8d90]"}`}>
-          <div className={`absolute top-[2px] size-[16px] rounded-full bg-white transition-transform ${updateAll ? "left-[18px]" : "left-[2px]"}`} />
-        </button>
-        <span className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[13px] font-['Red_Hat_Text:Regular',sans-serif]">Update all operators</span>
-      </div>
-      </div>}
-    </div>
+            <InnerScrollContainer>
+              <Table aria-label="Operators on this cluster" variant="compact">
+                <Thead>
+                  <Tr>
+                    <Th dataLabel="Select all rows">
+                      <Checkbox
+                        id="cluster-update-select-all-operators-header"
+                        isChecked={
+                          filtered.length > 0 && selectedOperators.length === filtered.length
+                            ? true
+                            : selectedOperators.length > 0
+                              ? null
+                              : false
+                        }
+                        onChange={handleSelectAll}
+                        aria-label="Select all in view"
+                      />
+                    </Th>
+                    <Th>Operator</Th>
+                    <Th>Version</Th>
+                    <Th>Cluster compatibility</Th>
+                    <Th>Update plan</Th>
+                    <Th>Support</Th>
+                    <Th>Status</Th>
+                    <Th>Last updated</Th>
+                    <Th>Managed namespaces</Th>
+                    <Th screenReaderText="Actions" />
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {filtered.length === 0 ? (
+                    <Tr>
+                      <Td colSpan={10}>
+                        <Content component="p">No operators match your filter.</Content>
+                      </Td>
+                    </Tr>
+                  ) : (
+                    filtered.map((op) => (
+                      <Tr key={op.name}>
+                        <Td dataLabel="Select row">
+                          <Checkbox
+                            id={`sel-${op.name}`}
+                            isChecked={selectedOperators.includes(op.name)}
+                            onChange={(_e, c) => handleSelectOperator(op.name, c)}
+                            aria-label={`Select ${op.name}`}
+                          />
+                        </Td>
+                        <Td dataLabel="Operator">
+                          <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
+                            <Flex flexWrap={{ default: "flexWrapWrap" }} gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsCenter" }}>
+                              <Button
+                                variant="link"
+                                isInline
+                                component={Link}
+                                to={`/ecosystem/installed-operators/${encodeURIComponent(op.name)}`}
+                              >
+                                {op.name}
+                              </Button>
+                              {op.requiredBeforeClusterUpdate ? (
+                                <Label color="orange" isCompact>
+                                  Required
+                                </Label>
+                              ) : null}
+                            </Flex>
+                            <Content component="small">
+                              <code>{op.namespace}</code>
+                            </Content>
+                          </Flex>
+                        </Td>
+                        <Td dataLabel="Version">
+                          <Content component="small">
+                            <code>{op.version}</code>
+                          </Content>
+                        </Td>
+                        <Td dataLabel="Cluster compatibility">
+                          {op.clusterCompatibility === "Compatible" ? (
+                            <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                              <Icon status="success">
+                                <CheckCircle />
+                              </Icon>
+                              Compatible
+                            </Flex>
+                          ) : op.clusterCompatibility === "Incompatible" ? (
+                            <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                              <Icon status="danger">
+                                <AlertCircle />
+                              </Icon>
+                              Incompatible
+                            </Flex>
+                          ) : (
+                            <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                              <Icon status="warning">
+                                <AlertTriangle />
+                              </Icon>
+                              Unknown
+                            </Flex>
+                          )}
+                        </Td>
+                        <Td dataLabel="Update plan">{op.autoUpdate ? "Automatic" : "Manual"}</Td>
+                        <Td dataLabel="Support">
+                          <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
+                            <Content component="small">{op.supportEndDate || "—"}</Content>
+                            {op.supportBadge ? (
+                              <Label color={supportLabelColor(op.supportBadgeType)} isCompact>
+                                {op.supportBadge}
+                              </Label>
+                            ) : null}
+                          </Flex>
+                        </Td>
+                        <Td dataLabel="Status">
+                          {op.status === "Running" ? (
+                            <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                              <Icon status="success">
+                                <CheckCircle />
+                              </Icon>
+                              Running
+                            </Flex>
+                          ) : op.status === "Degraded" ? (
+                            <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                              <Icon status="danger">
+                                <AlertCircle />
+                              </Icon>
+                              Degraded
+                            </Flex>
+                          ) : (
+                            <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                              <Icon status="warning">
+                                <Clock />
+                              </Icon>
+                              Pending
+                            </Flex>
+                          )}
+                        </Td>
+                        <Td dataLabel="Last updated" modifier="nowrap">
+                          {op.lastUpdated || "—"}
+                        </Td>
+                        <Td dataLabel="Managed namespaces">
+                          <Flex gap={{ default: "gapXs" }} flexWrap={{ default: "flexWrapWrap" }}>
+                            {(op.managedNamespaces || []).map((ns, idx) => (
+                              <Label key={idx} isCompact variant="outline" color="grey">
+                                {ns}
+                              </Label>
+                            ))}
+                          </Flex>
+                        </Td>
+                        <Td dataLabel="Actions" isActionCell hasAction>
+                          <Dropdown
+                            isOpen={openKebabFor === op.name}
+                            onOpenChange={(open) => setOpenKebabFor(open ? op.name : null)}
+                            popperProps={{ position: "right-end" }}
+                            toggle={(toggleRef) => (
+                              <MenuToggle
+                                ref={toggleRef}
+                                variant="plain"
+                                aria-label={`Actions for ${op.name}`}
+                                icon={<EllipsisVIcon />}
+                                onClick={() => setOpenKebabFor(openKebabFor === op.name ? null : op.name)}
+                                isExpanded={openKebabFor === op.name}
+                              />
+                            )}
+                            onSelect={() => setOpenKebabFor(null)}
+                          >
+                            <DropdownItem
+                              itemId="view"
+                              onClick={() =>
+                                navigate(`/ecosystem/installed-operators/${encodeURIComponent(op.name)}`)
+                              }
+                            >
+                              View details
+                            </DropdownItem>
+                            {op.updateAvailable ? (
+                              <DropdownItem itemId="update" onClick={() => navigateToUpdate(op)}>
+                                Update to {op.updateAvailable}
+                              </DropdownItem>
+                            ) : null}
+                            <DropdownItem
+                              itemId="subscription"
+                              onClick={() =>
+                                navigate(`/ecosystem/installed-operators/${encodeURIComponent(op.name)}/subscription`)
+                              }
+                            >
+                              Edit subscription
+                            </DropdownItem>
+                          </Dropdown>
+                        </Td>
+                      </Tr>
+                    ))
+                  )}
+                </Tbody>
+              </Table>
+            </InnerScrollContainer>
+
+            <Switch
+              id="cluster-update-all-operators"
+              label="Update all operators"
+              isChecked={updateAll}
+              onChange={(_e, c) => setUpdateAll(c)}
+            />
+          </Flex>
+        </ExpandableSection>
+      </CardBody>
+    </Card>
   );
 }
 
@@ -3499,262 +3719,396 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
   // Per-version unique risks (not in shared set)
   const getUniqueRisks = (v: VersionEntry) => (v.operatorIssues || []).filter((i: OperatorIssue) => !sharedSlugs.includes(i.slug));
 
-  const severityColor = (sev: string) => sev === "critical" ? "bg-[rgba(177,56,11,0.08)] text-[#b1380b] border-[rgba(177,56,11,0.2)]" : "bg-[rgba(220,166,20,0.08)] text-[#795600] border-[rgba(220,166,20,0.25)]";
+  const isGlass = usePatternFlyGlassActive();
 
   return (
-    <div className="mb-[8px]">
-      <button onClick={() => setExpanded(!expanded)}
-        className="flex items-center flex-wrap gap-[8px] bg-transparent border-0 cursor-pointer p-[8px] -ml-[8px] hover:bg-[rgba(0,0,0,0.03)] dark:hover:bg-[rgba(255,255,255,0.03)] rounded-[12px] transition-colors w-full text-left">
-        {expanded ? <ChevronDown className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" /> : <ChevronRight className="size-[16px] text-[#4d4d4d] dark:text-[#b0b0b0]" />}
-        <span className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[15px]">{label}</span>
-        <span className="text-[11px] px-[8px] py-[2px] rounded-full bg-[#e7f1fa] dark:bg-[rgba(43,154,243,0.12)] text-[#0066cc] dark:text-[#4dabf7] font-semibold font-['Red_Hat_Text:Regular',sans-serif]">{versions.length} update{versions.length !== 1 ? "s" : ""}</span>
-        {sharedSlugs.length > 0 && (
-          <span className="text-[11px] text-[#795600] dark:text-[#dca614] font-['Red_Hat_Text:Regular',sans-serif]">
-            all exposed to <span className="font-['Red_Hat_Mono:Regular',sans-serif] font-semibold">{sharedSlugs.join(", ")}</span>
-          </span>
-        )}
-      </button>
-
-      {expanded && (
-        <div className="mt-[4px] ml-[24px]">
+    <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }} style={{ marginBottom: "var(--pf-t--global--spacer--sm)" }}>
+      <ExpandableSection
+        className={clusterExpandablePlainClass(isGlass)}
+        isExpanded={expanded}
+        onToggle={(_event, exp) => setExpanded(exp)}
+        displaySize="lg"
+        toggleContent={
+          <Flex gap={{ default: "gapMd" }} alignItems={{ default: "alignItemsCenter" }} flexWrap={{ default: "wrap" }}>
+            <Title headingLevel="h3" size="lg">
+              {label}
+            </Title>
+            <Label color="blue" isCompact>
+              {versions.length} update{versions.length !== 1 ? "s" : ""}
+            </Label>
+            {sharedSlugs.length > 0 ? (
+              <Content component="small">
+                All versions exposed to <code>{sharedSlugs.join(", ")}</code>
+              </Content>
+            ) : null}
+          </Flex>
+        }
+      >
+        <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
           {versions.map((v: VersionEntry) => {
             const isSelected = selectedVersion === v.version;
             const uniqueRisks = getUniqueRisks(v);
+            const selectThisVersion = () => {
+              setSelectedVersion(v.version);
+              setAcceptedSlugs(new Set());
+              setExpandedRiskSlug(null);
+            };
+            const showRiskReview = isSelected && selectedVer && selectedVer.version === v.version;
             return (
-              <div key={v.version}>
-                <div onClick={() => { setSelectedVersion(v.version); setAcceptedSlugs(new Set()); setExpandedRiskSlug(null); }}
-                  className={`flex items-start gap-[10px] px-[12px] py-[10px] cursor-pointer transition-colors border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] ${isSelected ? "bg-[#e7f1fa] dark:bg-[rgba(43,154,243,0.08)] rounded-t-[8px]" : "hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)]"}`}>
-                  <div className="flex items-center justify-center mt-[3px]">
-                    <div className={`size-[18px] rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected ? "border-[#0066cc] dark:border-[#4dabf7]" : "border-[#8a8d90]"}`}>
-                      {isSelected && <div className="size-[10px] rounded-full bg-[#0066cc] dark:bg-[#4dabf7]" />}
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-[8px] mb-[2px]">
-                      <Link to={`/administration/cluster-update/version/${v.version}`} onClick={(e) => e.stopPropagation()}
-                        className="text-[#0066cc] dark:text-[#4dabf7] text-[14px] no-underline hover:underline font-['Red_Hat_Mono:Regular',sans-serif]">{v.version}</Link>
-                      {v.recommended && <span className="bg-[#e7f1fa] dark:bg-[rgba(43,154,243,0.15)] text-[#0066cc] dark:text-[#4dabf7] text-[11px] px-[8px] py-[2px] rounded-full font-semibold">Recommended</span>}
-                      <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{v.date}</span>
-                    </div>
-                    <div className="flex items-center gap-[6px]">
-                      <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{v.features} features · {v.bugFixes} bug fixes</span>
-                      <a href="https://docs.openshift.com/container-platform/latest/release_notes/ocp-4-18-release-notes.html" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-[3px] text-[#0066cc] dark:text-[#4dabf7] text-[11px] no-underline hover:underline font-['Red_Hat_Text:Regular',sans-serif]">
-                        Release notes <ExternalLink className="size-[10px]" />
-                      </a>
-                    </div>
-                    {uniqueRisks.length > 0 && (
-                      <div className="flex flex-wrap gap-[4px] mt-[4px]">
+              <div
+                key={v.version}
+                className={`ocp-version-line${isSelected ? " ocp-version-line--selected" : ""}`}
+              >
+                <div
+                  className="ocp-version-line__body"
+                  onClick={selectThisVersion}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      selectThisVersion();
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={isSelected}
+                  aria-label={`Version ${v.version}${isSelected ? ", selected" : ""}`}
+                  style={{ cursor: "pointer" }}
+                >
+                  <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
+                    <Flex
+                      justifyContent={{ default: "justifyContentSpaceBetween" }}
+                      alignItems={{ default: "alignItemsCenter" }}
+                      flexWrap={{ default: "wrap" }}
+                      gap={{ default: "gapMd" }}
+                    >
+                      <Flex gap={{ default: "gapMd" }} alignItems={{ default: "alignItemsCenter" }} flexWrap={{ default: "wrap" }}>
+                        <Radio
+                          id={`cluster-update-version-${label}-${v.version.replace(/\./g, "-")}`}
+                          name={`cluster-update-version-choice-${label}`}
+                          isChecked={isSelected}
+                          onChange={selectThisVersion}
+                          onClick={(e) => e.stopPropagation()}
+                          aria-label={`Select version ${v.version}`}
+                        />
+                        <Button
+                          variant="link"
+                          isInline
+                          component={Link}
+                          to={`/administration/cluster-update/version/${v.version}`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <code>{v.version}</code>
+                        </Button>
+                        {v.recommended ? (
+                          <Label color="blue" isCompact>
+                            Recommended
+                          </Label>
+                        ) : null}
+                        <Content component="small">{v.date}</Content>
+                      </Flex>
+                      {isSelected ? (
+                        <Label color="blue" isCompact>
+                          Selected version
+                        </Label>
+                      ) : null}
+                    </Flex>
+                    <Content component="p">
+                      {v.features} features · {v.bugFixes} bug fixes{" "}
+                      <Button
+                        variant="link"
+                        isInline
+                        component="a"
+                        href="https://docs.openshift.com/container-platform/latest/release_notes/ocp-4-18-release-notes.html"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        icon={<ExternalLink aria-hidden />}
+                        iconPosition="end"
+                      >
+                        Release notes
+                      </Button>
+                    </Content>
+                    {uniqueRisks.length > 0 ? (
+                      <Flex gap={{ default: "gapSm" }} flexWrap={{ default: "flexWrapWrap" }}>
                         {uniqueRisks.map((risk: OperatorIssue) => (
-                          <button key={risk.slug} onClick={(e) => { e.stopPropagation(); setExpandedRiskSlug(expandedRiskSlug === `${v.version}:${risk.slug}` ? null : `${v.version}:${risk.slug}`); setSelectedVersion(v.version); }}
-                            className={`text-[11px] px-[6px] py-[2px] rounded-[4px] font-['Red_Hat_Mono:Regular',sans-serif] font-semibold border cursor-pointer transition-colors ${severityColor(risk.severity)} hover:opacity-80`}>
+                          <Button
+                            key={risk.slug}
+                            variant="secondary"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExpandedRiskSlug(expandedRiskSlug === `${v.version}:${risk.slug}` ? null : `${v.version}:${risk.slug}`);
+                              setSelectedVersion(v.version);
+                            }}
+                          >
                             {risk.slug}
-                          </button>
+                          </Button>
                         ))}
-                      </div>
+                      </Flex>
+                    ) : null}
+                    {uniqueRisks.map((risk: OperatorIssue) =>
+                      expandedRiskSlug === `${v.version}:${risk.slug}` ? (
+                        <Alert
+                          key={`detail-${risk.slug}`}
+                          variant="info"
+                          isInline
+                          isPlain
+                          title={risk.slug}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Content component="p">{risk.message}</Content>
+                          {risk.url ? (
+                            <Button
+                              variant="link"
+                              isInline
+                              component="a"
+                              href={risk.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              icon={<ExternalLink aria-hidden />}
+                              iconPosition="end"
+                            >
+                              View impact statement
+                            </Button>
+                          ) : null}
+                        </Alert>
+                      ) : null
                     )}
-                    {uniqueRisks.map((risk: OperatorIssue) => (
-                      expandedRiskSlug === `${v.version}:${risk.slug}` && (
-                        <div key={`detail-${risk.slug}`} className="mt-[8px] rounded-[8px] bg-[#fafafa] dark:bg-[rgba(255,255,255,0.03)] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] p-[12px]" onClick={(e) => e.stopPropagation()}>
-                          <p className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text',sans-serif] mb-[6px]">{risk.message}</p>
-                          {risk.url && (
-                            <a href={risk.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[12px] no-underline hover:underline font-['Red_Hat_Text',sans-serif]">
-                              View impact statement <ExternalLink className="size-[11px]" />
-                            </a>
-                          )}
-                        </div>
-                      )
-                    ))}
-                  </div>
+                  </Flex>
                 </div>
+                {showRiskReview ? (
+                    <div
+                      className="ocp-version-line__footer"
+                      onClick={(e) => e.stopPropagation()}
+                      style={{ display: "block" }}
+                    >
+                      <div ref={riskReviewRef}>
+                        {hasNoRisks ? (
+                          <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
+                            <Alert variant="success" isInline title={`No known risks for ${v.version}`} icon={<CheckCircle aria-hidden />}>
+                              Ready to update.
+                            </Alert>
+                            <Flex gap={{ default: "gapMd" }} flexWrap={{ default: "flexWrapWrap" }}>
+                              <Button
+                                variant="primary"
+                                isDisabled={isPreflightRunning}
+                                onClick={() => {
+                                  if (isPreflightRunning) return;
+                                  localStorage.setItem(
+                                    "clusterUpdateInProgress",
+                                    JSON.stringify({ version: selectedVersion, startedAt: Date.now() })
+                                  );
+                                  navigate("/administration/cluster-update/in-progress", { state: { version: selectedVersion } });
+                                }}
+                              >
+                                {isPreflightRunning ? "Update requested" : `Update to ${selectedVersion}`}
+                              </Button>
+                              <Button
+                                variant="secondary"
+                                onClick={runPreflight}
+                                isDisabled={isPreflightRunning}
+                                icon={
+                                  isPreflightRunning ? (
+                                    <Spinner size="sm" aria-label="Running pre-flight" />
+                                  ) : (
+                                    <Shield aria-hidden />
+                                  )
+                                }
+                              >
+                                {isPreflightRunning
+                                  ? preflightStepLabel[preflightStatus]
+                                  : preflightStatus === "complete" && preflightRisks.length === 0
+                                    ? `Pre-flight passed for ${selectedVersion}`
+                                    : preflightStatus === "complete" && preflightRisks.length > 0
+                                      ? `${preflightRisks.length} concern${preflightRisks.length !== 1 ? "s" : ""} found for ${selectedVersion}`
+                                      : `Run pre-flight for ${selectedVersion} release`}
+                              </Button>
+                            </Flex>
+                          </Flex>
+                        ) : (
+                          <Flex direction={{ default: "column" }} gap={{ default: "gapLg" }}>
+                            <Flex
+                              justifyContent={{ default: "justifyContentSpaceBetween" }}
+                              alignItems={{ default: "alignItemsFlexStart" }}
+                              gap={{ default: "gapMd" }}
+                            >
+                              <Title headingLevel="h3" size="lg">
+                                Review risks for {v.version}
+                              </Title>
+                              <Content component="small">
+                                {addressedCount} of {allRisks.length} risk{allRisks.length !== 1 ? "s" : ""} addressed
+                              </Content>
+                            </Flex>
+                            <Progress
+                              value={allRisks.length > 0 ? (addressedCount / allRisks.length) * 100 : 0}
+                              title="Risk review progress"
+                              measureLocation="none"
+                            />
+                            <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+                              {allRisks.map((risk) => {
+                                const isAccepted = acceptedSlugs.has(risk.slug);
+                                const isResolved = !!risk.resolved;
+                                const statusLabel = isResolved ? "resolved" : isAccepted ? "accepted" : risk.severity;
+                                const resolution = risk.resolution;
+                                const isDetailOpen = expandedRiskDetail === risk.slug;
+                                const statusLabelColor =
+                                  isResolved || isAccepted ? "green" : risk.severity === "critical" ? "red" : "orange";
+                                return (
+                                  <ExpandableSection
+                                    key={risk.slug}
+                                    isExpanded={isDetailOpen}
+                                    onToggle={(_e, open) => setExpandedRiskDetail(open ? risk.slug : null)}
+                                    isIndented
+                                    toggleContent={
+                                      <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsCenter" }} flexWrap={{ default: "wrap" }}>
+                                        <code>{risk.slug}</code>
+                                        <Label color={statusLabelColor} isCompact>
+                                          {statusLabel}
+                                        </Label>
+                                        {(isResolved || isAccepted) && (
+                                          <Icon status="success">
+                                            <CheckCircle />
+                                          </Icon>
+                                        )}
+                                      </Flex>
+                                    }
+                                  >
+                                    <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
+                                      <Content component="p">{risk.message}</Content>
+                                      {risk.url ? (
+                                        <Button
+                                          variant="link"
+                                          isInline
+                                          component="a"
+                                          href={risk.url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          icon={<ExternalLink aria-hidden />}
+                                          iconPosition="end"
+                                        >
+                                          View impact statement
+                                        </Button>
+                                      ) : null}
+                                      {!isResolved && !isAccepted && resolution ? (
+                                        <Panel variant="bordered">
+                                          <PanelMain>
+                                            <PanelMainBody>
+                                              <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsFlexStart" }}>
+                                                {resolution.type === "update-operator" && resolution.actionAvailable ? (
+                                                  <Icon>
+                                                    <ArrowRight />
+                                                  </Icon>
+                                                ) : null}
+                                                {resolution.type === "update-operator" && !resolution.actionAvailable ? (
+                                                  <Icon status="warning">
+                                                    <Clock />
+                                                  </Icon>
+                                                ) : null}
+                                                {resolution.type === "wait-for-fix" ? (
+                                                  <Icon status="warning">
+                                                    <Clock />
+                                                  </Icon>
+                                                ) : null}
+                                                {resolution.type === "update-z-stream" ? (
+                                                  <Icon status="info">
+                                                    <Info />
+                                                  </Icon>
+                                                ) : null}
+                                                {resolution.type === "accept-only" ? (
+                                                  <Icon>
+                                                    <Info />
+                                                  </Icon>
+                                                ) : null}
+                                                <Content component="small">{resolution.description}</Content>
+                                              </Flex>
+                                            </PanelMainBody>
+                                          </PanelMain>
+                                        </Panel>
+                                      ) : null}
+                                      <Flex gap={{ default: "gapMd" }} flexWrap={{ default: "flexWrapWrap" }}>
+                                        {isResolved ? (
+                                          <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                                            <Icon status="success">
+                                              <CheckCircle />
+                                            </Icon>
+                                            Risk resolved
+                                          </Flex>
+                                        ) : (
+                                          <>
+                                            {resolution?.type === "update-operator" && resolution.actionAvailable && !isAccepted ? (
+                                              <Button
+                                                variant="primary"
+                                                onClick={() => navigate("/administration/installed-operators")}
+                                                icon={<ArrowRight aria-hidden />}
+                                              >
+                                                Update operator
+                                              </Button>
+                                            ) : null}
+                                            <Button
+                                              variant={isAccepted ? "primary" : "secondary"}
+                                              onClick={() => toggleAccept(risk.slug)}
+                                            >
+                                              {isAccepted ? "Accepted" : "Accept risk"}
+                                            </Button>
+                                          </>
+                                        )}
+                                      </Flex>
+                                    </Flex>
+                                  </ExpandableSection>
+                                );
+                              })}
+                            </Flex>
+                            <Divider />
+                            <Flex gap={{ default: "gapMd" }} flexWrap={{ default: "flexWrapWrap" }} alignItems={{ default: "alignItemsCenter" }}>
+                              <Button
+                                variant="primary"
+                                isDisabled={!canUpdate || isPreflightRunning}
+                                onClick={() => {
+                                  if (isPreflightRunning || !canUpdate) return;
+                                  localStorage.setItem(
+                                    "clusterUpdateInProgress",
+                                    JSON.stringify({ version: selectedVersion, startedAt: Date.now() })
+                                  );
+                                  navigate("/administration/cluster-update/in-progress", { state: { version: selectedVersion } });
+                                }}
+                              >
+                                {isPreflightRunning ? "Update requested" : `Update to ${selectedVersion}`}
+                              </Button>
+                              <Button
+                                variant="secondary"
+                                onClick={runPreflight}
+                                isDisabled={isPreflightRunning}
+                                icon={
+                                  isPreflightRunning ? (
+                                    <Spinner size="sm" aria-label="Running pre-flight" />
+                                  ) : (
+                                    <Shield aria-hidden />
+                                  )
+                                }
+                              >
+                                {isPreflightRunning
+                                  ? preflightStepLabel[preflightStatus]
+                                  : preflightStatus === "complete" && preflightRisks.length === 0
+                                    ? `Pre-flight passed for ${selectedVersion}`
+                                    : preflightStatus === "complete" && preflightRisks.length > 0
+                                      ? `${preflightRisks.length} concern${preflightRisks.length !== 1 ? "s" : ""} found for ${selectedVersion}`
+                                      : `Run pre-flight for ${selectedVersion} release`}
+                              </Button>
+                              {!canUpdate && !isPreflightRunning ? (
+                                <Content component="small">Address all risks to proceed</Content>
+                              ) : null}
+                            </Flex>
+                          </Flex>
+                        )}
+                      </div>
+                    </div>
+                ) : null}
               </div>
             );
           })}
-
-          {/* Inline Risk Review Panel */}
-          {selectedVersion && selectedVer && (
-            <div ref={riskReviewRef}>
-              {hasNoRisks ? (
-                <div className="rounded-[16px] border-l-[3px] border-l-[#3d7317] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] bg-white dark:bg-[#1a1a1a] p-[20px]">
-                  <div className="flex items-center gap-[10px] mb-[16px]">
-                    <CheckCircle className="size-[18px] text-[#3d7317]" />
-                    <div>
-                      <p className="font-['Red_Hat_Text',sans-serif] font-medium text-[#151515] dark:text-white text-[14px]">
-                        No known risks for {selectedVersion}
-                      </p>
-                      <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif]">Ready to update.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-[10px]">
-                    <button
-                      disabled={isPreflightRunning}
-                      onClick={() => { if (isPreflightRunning) return; localStorage.setItem("clusterUpdateInProgress", JSON.stringify({ version: selectedVersion, startedAt: Date.now() })); navigate("/administration/cluster-update/in-progress", { state: { version: selectedVersion } }); }}
-                      className={`text-[14px] px-[20px] py-[9px] rounded-[999px] border-0 transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium ${isPreflightRunning ? "bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed" : "bg-[#0066cc] hover:bg-[#004080] text-white cursor-pointer"}`}>
-                      {isPreflightRunning ? "Update requested" : `Update to ${selectedVersion}`}
-                    </button>
-                    <button
-                      onClick={runPreflight}
-                      disabled={isPreflightRunning}
-                      className={`text-[14px] px-[20px] py-[9px] rounded-[999px] border cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium flex items-center gap-[6px] ${isPreflightRunning ? "border-[#d2d2d2] bg-transparent text-[#6a6e73] cursor-wait" : preflightStatus === "complete" && preflightRisks.length === 0 ? "border-[#3d7317] bg-[rgba(61,115,23,0.04)] text-[#3d7317]" : preflightStatus === "complete" && preflightRisks.length > 0 ? "border-[#dca614] bg-[rgba(220,166,20,0.04)] text-[#795600]" : "border-[#0066cc] dark:border-[#4dabf7] bg-transparent text-[#0066cc] dark:text-[#4dabf7] hover:bg-[#0066cc]/5"}`}>
-                      {isPreflightRunning ? (
-                        <><Loader2 className="size-[14px] animate-spin" /> {preflightStepLabel[preflightStatus]}</>
-                      ) : preflightStatus === "complete" && preflightRisks.length === 0 ? (
-                        <><CheckCircle className="size-[14px]" /> Pre-flight passed for {selectedVersion}</>
-                      ) : preflightStatus === "complete" && preflightRisks.length > 0 ? (
-                        <><Shield className="size-[14px]" /> {preflightRisks.length} concern{preflightRisks.length !== 1 ? "s" : ""} found for {selectedVersion}</>
-                      ) : (
-                        <><Shield className="size-[14px]" /> Run pre-flight for {selectedVersion} release</>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="rounded-[16px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)] bg-white dark:bg-[#1a1a1a] p-[20px]">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-['Red_Hat_Display',sans-serif] font-semibold text-[#151515] dark:text-white text-[16px] m-0">
-                      Review risks for {selectedVersion}
-                    </h3>
-                    <span className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif]">
-                      {addressedCount} of {allRisks.length} risk{allRisks.length !== 1 ? "s" : ""} addressed
-                    </span>
-                  </div>
-
-                  <div className="h-[4px] bg-[#e0e0e0] dark:bg-[rgba(255,255,255,0.1)] rounded-full mt-[16px] overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-300"
-                      style={{
-                        width: `${allRisks.length > 0 ? (addressedCount / allRisks.length) * 100 : 0}%`,
-                        backgroundColor: allAddressed ? "#3d7317" : "#0066cc",
-                      }}
-                    />
-                  </div>
-
-                  <div className="space-y-[6px] mt-[16px] mb-[16px]">
-                    {allRisks.map((risk) => {
-                      const isAccepted = acceptedSlugs.has(risk.slug);
-                      const isResolved = !!risk.resolved;
-                      const statusLabel = isResolved ? "resolved" : isAccepted ? "accepted" : risk.severity;
-                      const statusColor = isResolved
-                        ? "bg-[rgba(61,115,23,0.1)] text-[#3d7317]"
-                        : isAccepted ? "bg-[rgba(61,115,23,0.1)] text-[#3d7317]"
-                        : risk.severity === "critical" ? "bg-[rgba(177,56,11,0.1)] text-[#b1380b]"
-                        : "bg-[rgba(220,166,20,0.1)] text-[#795600]";
-                      const borderColor = isResolved || isAccepted
-                        ? "border-[#3d7317] bg-[rgba(61,115,23,0.03)]"
-                        : "border-[#d2d2d2] dark:border-[rgba(255,255,255,0.15)]";
-                      const resolution = risk.resolution;
-                      const isDetailOpen = expandedRiskDetail === risk.slug;
-                      return (
-                        <div key={risk.slug}
-                          className={`rounded-[10px] border transition-colors ${borderColor}`}>
-                          {/* Compact header row — always visible */}
-                          <button
-                            onClick={() => setExpandedRiskDetail(isDetailOpen ? null : risk.slug)}
-                            className="flex items-center gap-[8px] w-full bg-transparent border-0 cursor-pointer px-[14px] py-[10px] text-left"
-                          >
-                            {isDetailOpen ? <ChevronDown className="size-[12px] text-[#4d4d4d] shrink-0" /> : <ChevronRight className="size-[12px] text-[#4d4d4d] shrink-0" />}
-                            <span className="text-[13px] text-[#151515] dark:text-white font-semibold font-['Red_Hat_Mono:Regular',sans-serif]">{risk.slug}</span>
-                            <span className={`text-[11px] px-[6px] py-[1px] rounded-[4px] font-semibold ${statusColor}`}>
-                              {statusLabel}
-                            </span>
-                            <span className="flex-1" />
-                            {(isResolved || isAccepted) && <CheckCircle className="size-[14px] text-[#3d7317] shrink-0" />}
-                          </button>
-
-                          {/* Expanded detail — message, resolution, actions */}
-                          {isDetailOpen && (
-                            <div className="px-[14px] pb-[14px] pt-0 ml-[20px]">
-                              <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif] mb-[8px]">{risk.message}</p>
-                              {risk.url && (
-                                <a href={risk.url} target="_blank" rel="noopener noreferrer"
-                                  className="flex items-center gap-[4px] text-[#0066cc] dark:text-[#4dabf7] text-[12px] no-underline hover:underline font-['Red_Hat_Text',sans-serif] mb-[10px]">
-                                  View impact statement <ExternalLink className="size-[11px]" />
-                                </a>
-                              )}
-
-                              {!isResolved && !isAccepted && resolution && (
-                                <div className="rounded-[8px] bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] px-[12px] py-[8px] mb-[10px]">
-                                  <div className="flex items-start gap-[6px]">
-                                    {(resolution.type === "update-operator" && resolution.actionAvailable) && <ArrowRight className="size-[12px] text-[#0066cc] mt-[2px] shrink-0" />}
-                                    {(resolution.type === "update-operator" && !resolution.actionAvailable) && <Clock className="size-[12px] text-[#795600] mt-[2px] shrink-0" />}
-                                    {resolution.type === "wait-for-fix" && <Clock className="size-[12px] text-[#795600] mt-[2px] shrink-0" />}
-                                    {resolution.type === "update-z-stream" && <Info className="size-[12px] text-[#0066cc] mt-[2px] shrink-0" />}
-                                    {resolution.type === "accept-only" && <Info className="size-[12px] text-[#4d4d4d] mt-[2px] shrink-0" />}
-                                    <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif]">{resolution.description}</p>
-                                  </div>
-                                </div>
-                              )}
-
-                              <div className="flex items-center gap-[8px]">
-                                {isResolved ? (
-                                  <span className="text-[13px] text-[#3d7317] font-['Red_Hat_Text',sans-serif] font-medium flex items-center gap-[4px]">
-                                    <CheckCircle className="size-[12px]" /> Risk resolved
-                                  </span>
-                                ) : (
-                                  <>
-                                    {resolution?.type === "update-operator" && resolution.actionAvailable && !isAccepted && (
-                                      <button onClick={() => navigate('/administration/installed-operators')}
-                                        className="text-[13px] px-[12px] py-[5px] rounded-[999px] bg-[#0066cc] hover:bg-[#004080] text-white border-0 cursor-pointer transition-colors font-['Red_Hat_Text',sans-serif] font-medium flex items-center gap-[4px]">
-                                        Update operator <ArrowRight className="size-[12px]" />
-                                      </button>
-                                    )}
-                                    <button onClick={() => toggleAccept(risk.slug)}
-                                      className={`text-[13px] px-[12px] py-[5px] rounded-[999px] cursor-pointer transition-colors font-['Red_Hat_Text',sans-serif] font-medium ${
-                                        isAccepted
-                                          ? "bg-[rgba(61,115,23,0.08)] text-[#3d7317] border border-[#3d7317] hover:bg-[rgba(61,115,23,0.15)]"
-                                          : "bg-transparent text-[#0066cc] dark:text-[#4dabf7] border border-[#0066cc] dark:border-[#4dabf7] hover:bg-[#0066cc]/5"
-                                      }`}>
-                                      {isAccepted ? "Accepted" : "Accept risk"}
-                                    </button>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="flex items-center gap-[10px] pt-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
-                    <button
-                      disabled={!canUpdate || isPreflightRunning}
-                      onClick={() => { if (isPreflightRunning || !canUpdate) return; localStorage.setItem("clusterUpdateInProgress", JSON.stringify({ version: selectedVersion, startedAt: Date.now() })); navigate("/administration/cluster-update/in-progress", { state: { version: selectedVersion } }); }}
-                      className={`text-[14px] px-[20px] py-[9px] rounded-[999px] border-0 transition-colors font-['Red_Hat_Text',sans-serif] font-medium ${
-                        isPreflightRunning
-                          ? "bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed"
-                          : canUpdate
-                            ? "bg-[#0066cc] hover:bg-[#004080] text-white cursor-pointer"
-                            : "bg-[#d2d2d2] text-[#6a6e73] cursor-not-allowed"
-                      }`}>
-                      {isPreflightRunning ? "Update requested" : `Update to ${selectedVersion}`}
-                    </button>
-                    <button
-                      onClick={runPreflight}
-                      disabled={isPreflightRunning}
-                      className={`text-[14px] px-[20px] py-[9px] rounded-[999px] border cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium flex items-center gap-[6px] ${isPreflightRunning ? "border-[#d2d2d2] bg-transparent text-[#6a6e73] cursor-wait" : preflightStatus === "complete" && preflightRisks.length === 0 ? "border-[#3d7317] bg-[rgba(61,115,23,0.04)] text-[#3d7317]" : preflightStatus === "complete" && preflightRisks.length > 0 ? "border-[#dca614] bg-[rgba(220,166,20,0.04)] text-[#795600]" : "border-[#0066cc] dark:border-[#4dabf7] bg-transparent text-[#0066cc] dark:text-[#4dabf7] hover:bg-[#0066cc]/5"}`}>
-                      {isPreflightRunning ? (
-                        <><Loader2 className="size-[14px] animate-spin" /> {preflightStepLabel[preflightStatus]}</>
-                      ) : preflightStatus === "complete" && preflightRisks.length === 0 ? (
-                        <><CheckCircle className="size-[14px]" /> Pre-flight passed for {selectedVersion}</>
-                      ) : preflightStatus === "complete" && preflightRisks.length > 0 ? (
-                        <><Shield className="size-[14px]" /> {preflightRisks.length} concern{preflightRisks.length !== 1 ? "s" : ""} found for {selectedVersion}</>
-                      ) : (
-                        <><Shield className="size-[14px]" /> Run pre-flight for {selectedVersion} release</>
-                      )}
-                    </button>
-                    {!canUpdate && !isPreflightRunning && (
-                      <span className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text',sans-serif]">
-                        Address all risks to proceed
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+        </Flex>
+      </ExpandableSection>
+    </Flex>
   );
 }
 

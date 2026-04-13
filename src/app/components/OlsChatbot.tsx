@@ -251,7 +251,12 @@ export function OlsChatbot({
     >
       <DrawerContent
         panelContent={
-          <DrawerPanelContent defaultSize="400px" minSize="280px" maxSize="560px">
+          <DrawerPanelContent
+            className="ols-chatbot-panel"
+            defaultSize="400px"
+            minSize="280px"
+            maxSize="560px"
+          >
             <DrawerHead>
               <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
                 <Icon size="lg" status="danger">

@@ -39,6 +39,7 @@ import {
   PageSidebarContext,
   PageToggleButton,
   SkipToContent,
+  Switch,
   Toolbar,
   ToolbarContent,
   ToolbarGroup,
@@ -75,6 +76,7 @@ import ImpersonateUserModal from "./ImpersonateUserModal";
 import { usePermissions } from "../contexts/PermissionsContext";
 import { useChat } from "../contexts/ChatContext";
 import { useFavorites } from "../contexts/FavoritesContext";
+import { useClusterUpdateDemoVariant } from "../contexts/ClusterUpdateDemoContext";
 
 interface ImpersonatedUser {
   id: string;
@@ -97,6 +99,35 @@ const NavItemLink = forwardRef<HTMLAnchorElement, React.ComponentProps<typeof Li
 
 function MastheadIconButton({ label, icon }: { label: string; icon: React.ReactNode }) {
   return <Button variant="plain" type="button" aria-label={label} data-name={label} icon={icon} />;
+}
+
+/** Cluster Update prototype: Manual + Agent (5.1) vs Agent only (5.0). Persists via {@link ClusterUpdateDemoContext}. */
+function ClusterUpdateDemoMastheadSwitch() {
+  const { demoVariant, setDemoVariant } = useClusterUpdateDemoVariant();
+  const isManualAndAgent = demoVariant === "manual-and-agent";
+  return (
+    <Switch
+      id="cluster-update-demo-experience-switch"
+      isChecked={isManualAndAgent}
+      onChange={(_e, checked) => setDemoVariant(checked ? "manual-and-agent" : "agent-only")}
+      label={
+        isManualAndAgent ? (
+          <>
+            Manual + Agent <Content component="small">· OCP 5.1</Content>
+          </>
+        ) : (
+          <>
+            Agent only <Content component="small">· OCP 5.0</Content>
+          </>
+        )
+      }
+      aria-label={
+        isManualAndAgent
+          ? "Cluster update demo: Manual and agent mode, OpenShift 5.1"
+          : "Cluster update demo: Agent only mode, OpenShift 5.0"
+      }
+    />
+  );
 }
 
 type IconComponent = ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>;
@@ -514,6 +545,9 @@ export default function Layout() {
         <Toolbar id="layout-masthead-toolbar-end" ouiaId="layout-masthead-toolbar-end" isFullHeight>
           <ToolbarContent alignItems="center">
             <ToolbarGroup gap={{ default: "gapSm" }} align={{ default: "alignEnd" }} alignItems="center">
+              <ToolbarItem>
+                <ClusterUpdateDemoMastheadSwitch />
+              </ToolbarItem>
               <ToolbarItem>
                 <MastheadIconButton label="Help" icon={<QuestionCircleIcon aria-hidden />} />
               </ToolbarItem>

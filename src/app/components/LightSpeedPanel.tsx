@@ -167,9 +167,9 @@ export default function LightSpeedPanel({
     const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
     return parts.map((part, index) => {
       if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={index} className="font-semibold text-[#151515]">{part.slice(2, -2)}</strong>;
+        return <strong key={index} className="font-semibold text-[#151515] dark:text-[#f5f5f5]">{part.slice(2, -2)}</strong>;
       } else if (part.startsWith('`') && part.endsWith('`')) {
-        return <code key={index} className="bg-[#f0f0f0] px-[5px] py-[1px] rounded-[3px] text-[12px] font-['Red_Hat_Mono:Regular',monospace] text-[#151515]">{part.slice(1, -1)}</code>;
+        return <code key={index} className="bg-[#f0f0f0] dark:bg-[rgba(255,255,255,0.1)] px-[5px] py-[1px] rounded-[3px] text-[12px] font-['Red_Hat_Mono:Regular',monospace] text-[#151515] dark:text-[#f0f0f0]">{part.slice(1, -1)}</code>;
       }
       return part;
     });
@@ -245,17 +245,17 @@ export default function LightSpeedPanel({
         {/* ═══ HEADER ═══ */}
         <div className="flex items-center justify-between px-[20px] py-[14px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
           <div className="flex items-center gap-[10px]">
-            <div className="size-[36px] rounded-full bg-[#f5f5f5] flex items-center justify-center shrink-0">
+            <div className="size-[36px] rounded-full bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.08)] flex items-center justify-center shrink-0">
               <Sparkles className="size-[18px] text-[#ee0000]" />
             </div>
-            <span className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] text-[15px]">
+            <span className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-[#f5f5f5] text-[15px]">
               OpenShift LightSpeed
             </span>
           </div>
           <button onClick={onClose}
-            className="p-[6px] hover:bg-[#f0f0f0] rounded-[6px] bg-transparent border-0 cursor-pointer transition-colors"
+            className="p-[6px] hover:bg-[#f0f0f0] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[6px] bg-transparent border-0 cursor-pointer transition-colors"
             title="Close">
-            <X className="size-[18px] text-[#6a6e73]" />
+            <X className="size-[18px] text-[#6a6e73] dark:text-[#e0e0e0]" />
           </button>
         </div>
 
@@ -276,8 +276,8 @@ export default function LightSpeedPanel({
                     <div className="size-[28px] rounded-full bg-[#e0e0e0] flex items-center justify-center shrink-0">
                       <span className="text-[12px] text-[#6a6e73] font-semibold">K</span>
                     </div>
-                    <span className="text-[13px] text-[#151515] font-['Red_Hat_Text:Regular',sans-serif] font-medium">User</span>
-                    <span className="text-[13px] text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif]">{formatTimestamp(message.timestamp)}</span>
+                    <span className="text-[13px] text-[#151515] dark:text-[#f0f0f0] font-['Red_Hat_Text:Regular',sans-serif] font-medium">User</span>
+                    <span className="text-[13px] text-[#8a8d90] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{formatTimestamp(message.timestamp)}</span>
                   </div>
                   <div className="ml-[36px]">
                     <div className="inline-block bg-[#0066cc] text-white dark:text-white !text-white rounded-[20px] px-[16px] py-[10px] max-w-[90%] [&_p]:!text-white">
@@ -289,11 +289,11 @@ export default function LightSpeedPanel({
                 /* ── Bot message ── */
                 <div>
                   <div className="flex items-center gap-[6px] mb-[6px]">
-                    <span className="text-[13px] text-[#151515] font-['Red_Hat_Text:Regular',sans-serif] font-medium">OpenShift LightSpeed</span>
-                    <span className="text-[11px] font-semibold text-[#6a6e73] bg-[#f0f0f0] rounded-[4px] px-[6px] py-[1px] uppercase tracking-wider font-['Red_Hat_Text:Regular',sans-serif]">AI</span>
-                    <span className="text-[13px] text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif]">{formatTimestamp(message.timestamp)}</span>
+                    <span className="text-[13px] text-[#151515] dark:text-[#f0f0f0] font-['Red_Hat_Text:Regular',sans-serif] font-medium">OpenShift LightSpeed</span>
+                    <span className="text-[11px] font-semibold text-[#6a6e73] dark:text-[#d0d0d0] bg-[#f0f0f0] dark:bg-[rgba(255,255,255,0.12)] rounded-[4px] px-[6px] py-[1px] uppercase tracking-wider font-['Red_Hat_Text:Regular',sans-serif]">AI</span>
+                    <span className="text-[13px] text-[#8a8d90] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{formatTimestamp(message.timestamp)}</span>
                   </div>
-                  <div className="text-[14px] text-[#333] leading-[22px] font-['Red_Hat_Text:Regular',sans-serif] whitespace-pre-wrap">
+                  <div className="text-[14px] text-[#333] dark:text-[#e8e8e8] leading-[22px] font-['Red_Hat_Text:Regular',sans-serif] whitespace-pre-wrap">
                     {formatText(message.content || '')}
                   </div>
 
@@ -317,21 +317,21 @@ export default function LightSpeedPanel({
 
                   {/* Message actions row */}
                   <div className="flex items-center gap-[4px] mt-[12px]">
-                    <button className="p-[6px] hover:bg-[#f0f0f0] rounded-[6px] bg-transparent border-0 cursor-pointer transition-colors" title="Good response">
-                      <ThumbsUp className="size-[16px] text-[#b0b0b0]" />
+                    <button className="p-[6px] hover:bg-[#f0f0f0] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[6px] bg-transparent border-0 cursor-pointer transition-colors" title="Good response">
+                      <ThumbsUp className="size-[16px] text-[#b0b0b0] dark:text-[#d0d0d0]" />
                     </button>
-                    <button className="p-[6px] hover:bg-[#f0f0f0] rounded-[6px] bg-transparent border-0 cursor-pointer transition-colors" title="Bad response">
-                      <ThumbsDown className="size-[16px] text-[#b0b0b0]" />
+                    <button className="p-[6px] hover:bg-[#f0f0f0] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[6px] bg-transparent border-0 cursor-pointer transition-colors" title="Bad response">
+                      <ThumbsDown className="size-[16px] text-[#b0b0b0] dark:text-[#d0d0d0]" />
                     </button>
-                    <button className="p-[6px] hover:bg-[#f0f0f0] rounded-[6px] bg-transparent border-0 cursor-pointer transition-colors" title="Copy"
+                    <button className="p-[6px] hover:bg-[#f0f0f0] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[6px] bg-transparent border-0 cursor-pointer transition-colors" title="Copy"
                       onClick={() => navigator.clipboard?.writeText(message.content || '')}>
-                      <Copy className="size-[16px] text-[#b0b0b0]" />
+                      <Copy className="size-[16px] text-[#b0b0b0] dark:text-[#d0d0d0]" />
                     </button>
-                    <button className="p-[6px] hover:bg-[#f0f0f0] rounded-[6px] bg-transparent border-0 cursor-pointer transition-colors" title="Bookmark">
-                      <Bookmark className="size-[16px] text-[#b0b0b0]" />
+                    <button className="p-[6px] hover:bg-[#f0f0f0] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[6px] bg-transparent border-0 cursor-pointer transition-colors" title="Bookmark">
+                      <Bookmark className="size-[16px] text-[#b0b0b0] dark:text-[#d0d0d0]" />
                     </button>
-                    <button className="p-[6px] hover:bg-[#f0f0f0] rounded-[6px] bg-transparent border-0 cursor-pointer transition-colors" title="Listen">
-                      <Volume2 className="size-[16px] text-[#b0b0b0]" />
+                    <button className="p-[6px] hover:bg-[#f0f0f0] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[6px] bg-transparent border-0 cursor-pointer transition-colors" title="Listen">
+                      <Volume2 className="size-[16px] text-[#b0b0b0] dark:text-[#d0d0d0]" />
                     </button>
                   </div>
                 </div>
@@ -343,8 +343,8 @@ export default function LightSpeedPanel({
           {isTyping && (
             <div className="mb-[20px]">
               <div className="flex items-center gap-[6px] mb-[6px]">
-                <span className="text-[13px] text-[#151515] font-['Red_Hat_Text:Regular',sans-serif] font-medium">OpenShift LightSpeed</span>
-                <span className="text-[11px] font-semibold text-[#6a6e73] bg-[#f0f0f0] rounded-[4px] px-[6px] py-[1px] uppercase tracking-wider font-['Red_Hat_Text:Regular',sans-serif]">AI</span>
+                <span className="text-[13px] text-[#151515] dark:text-[#f0f0f0] font-['Red_Hat_Text:Regular',sans-serif] font-medium">OpenShift LightSpeed</span>
+                <span className="text-[11px] font-semibold text-[#6a6e73] dark:text-[#d0d0d0] bg-[#f0f0f0] dark:bg-[rgba(255,255,255,0.12)] rounded-[4px] px-[6px] py-[1px] uppercase tracking-wider font-['Red_Hat_Text:Regular',sans-serif]">AI</span>
               </div>
               <div className="flex gap-[5px] items-center h-[22px]">
                 <div className="size-[7px] bg-[#b0b0b0] rounded-full animate-bounce" style={{ animationDelay: '0ms', animationDuration: '1.2s' }} />
@@ -366,10 +366,10 @@ export default function LightSpeedPanel({
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
               placeholder="Send a message..."
-              className="flex-1 bg-transparent border-0 outline-none text-[14px] text-[#151515] font-['Red_Hat_Text:Regular',sans-serif] placeholder:text-[#b0b0b0] py-[4px]"
+              className="flex-1 bg-transparent border-0 outline-none text-[14px] text-[#151515] dark:text-[#f0f0f0] font-['Red_Hat_Text:Regular',sans-serif] placeholder:text-[#b0b0b0] dark:placeholder:text-[#8a8d90] py-[4px]"
             />
-            <button className="p-[6px] hover:bg-[#f0f0f0] rounded-[6px] bg-transparent border-0 cursor-pointer transition-colors" title="Attach file">
-              <Paperclip className="size-[18px] text-[#6a6e73]" />
+            <button className="p-[6px] hover:bg-[#f0f0f0] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-[6px] bg-transparent border-0 cursor-pointer transition-colors" title="Attach file">
+              <Paperclip className="size-[18px] text-[#6a6e73] dark:text-[#d0d0d0]" />
             </button>
             <button
               onClick={handleSendMessage}
