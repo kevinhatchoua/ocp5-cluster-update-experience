@@ -472,6 +472,7 @@ export default function ClusterUpdatePlanPage() {
         }}
       >
         <Tab eventKey="update-plan" title={<TabTitleText>Update plan</TabTitleText>}>
+          <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
           <AiAssessmentSection
             openChatbot={openChatbot}
             selectedVersion={selectedVersion}
@@ -661,6 +662,7 @@ export default function ClusterUpdatePlanPage() {
               channelGroups={channelData.groups}
             />
           )}
+          </Flex>
         </Tab>
 
         <Tab eventKey="active-update-plans" title={<TabTitleText>Active update plans</TabTitleText>}>
@@ -2440,13 +2442,22 @@ function UpdateAgentTab({
           </Flex>
         </CardHeader>
         <CardBody>
-          <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
+          <Flex direction={{ default: "column" }}>
             {steps.map((step, i) => (
-              <Flex key={i} direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+              <Flex
+                key={i}
+                direction={{ default: "column" }}
+                gap={{ default: "gapSm" }}
+                style={
+                  i < steps.length - 1
+                    ? { paddingBottom: "var(--pf-t--global--spacer--md)" }
+                    : undefined
+                }
+              >
                 <Flex
                   flexWrap={{ default: "wrap" }}
                   alignItems={{ default: "alignItemsCenter" }}
-                  gap={{ default: "gapMd" }}
+                  gap={{ default: "gapSm" }}
                   justifyContent={{ default: "justifyContentFlexStart" }}
                 >
                   <StepIcon status={step.status} />
@@ -2491,40 +2502,35 @@ function UpdateAgentTab({
                 )}
 
                 {i === 2 && (
-                  <div>
-                    <Card isCompact>
-                      <CardHeader>
-                        <Flex
-                          justifyContent={{ default: "justifyContentSpaceBetween" }}
-                          alignItems={{ default: "alignItemsCenter" }}
-                          gap={{ default: "gapMd" }}
-                          flexWrap={{ default: "wrap" }}
-                          style={{ width: "100%" }}
-                        >
-                          <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsCenter" }}>
-                            <Icon status="warning" iconSize="sm">
-                              <AlertTriangle />
-                            </Icon>
-                            <Title headingLevel="h4" size="md">
-                              Operator compatibility
-                            </Title>
-                          </Flex>
-                          <Flex gap={{ default: "gapSm" }} flexWrap={{ default: "wrap" }}>
-                            <Label isCompact color="green" variant="outline">
-                              {planProfile.compatCompatible} compatible
-                            </Label>
-                            <Label isCompact color="orange" variant="outline">
-                              {planProfile.compatRequired} require update
-                            </Label>
-                          </Flex>
-                        </Flex>
-                      </CardHeader>
-                      <Divider />
-                      <CardBody>
-                        <Content component="p" style={{ marginTop: 0, marginBottom: "var(--pf-t--global--spacer--md)" }}>
-                          {planProfile.compatRequired} operators must be updated before upgrading to {targetVersion}
-                        </Content>
-                        <Table aria-label="Operator compatibility with target version" variant="compact" borders>
+                  <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
+                    <Flex
+                      justifyContent={{ default: "justifyContentSpaceBetween" }}
+                      alignItems={{ default: "alignItemsCenter" }}
+                      gap={{ default: "gapSm" }}
+                      flexWrap={{ default: "wrap" }}
+                      style={{ width: "100%" }}
+                    >
+                      <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsCenter" }}>
+                        <Icon status="warning" iconSize="sm">
+                          <AlertTriangle />
+                        </Icon>
+                        <Title headingLevel="h4" size="md">
+                          Operator compatibility
+                        </Title>
+                      </Flex>
+                      <Flex gap={{ default: "gapSm" }} flexWrap={{ default: "wrap" }}>
+                        <Label isCompact color="green" variant="outline">
+                          {planProfile.compatCompatible} compatible
+                        </Label>
+                        <Label isCompact color="orange" variant="outline">
+                          {planProfile.compatRequired} require update
+                        </Label>
+                      </Flex>
+                    </Flex>
+                    <Content component="p" style={{ margin: 0 }}>
+                      {planProfile.compatRequired} operators must be updated before upgrading to {targetVersion}
+                    </Content>
+                    <Table aria-label="Operator compatibility with target version" variant="compact" borders>
                           <Thead>
                             <Tr>
                               <Th dataLabel="Operator">Operator</Th>
@@ -2632,9 +2638,7 @@ function UpdateAgentTab({
                             ))}
                           </Tbody>
                         </Table>
-                      </CardBody>
-                    </Card>
-                  </div>
+                  </Flex>
                 )}
               </Flex>
             ))}
