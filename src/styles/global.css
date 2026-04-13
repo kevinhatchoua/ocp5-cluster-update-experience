@@ -12,16 +12,3 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
-/** Main content column inside PatternFly Page (Outlet); reserves space when LightSpeed drawer is open. */
-.layout-page-outlet {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  transition: padding-inline-end 0.3s ease-in-out;
-}
-
-.layout-page-outlet--ai-open {
-  padding-inline-end: 420px;
-}

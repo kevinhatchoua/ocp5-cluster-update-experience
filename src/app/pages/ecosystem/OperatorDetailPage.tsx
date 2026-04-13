@@ -121,7 +121,7 @@ To use the guided installer to provision an environment, open the Installer link
             { label: "Installed Operators", path: "/ecosystem/installed-operators" },
             { label: operator.name },
           ]}
-        />
+        >
 
         <div className="mb-[24px]">
           <div className="flex items-center justify-between mb-[8px]">
@@ -550,6 +550,7 @@ spec:
             <p className="text-[14px] text-[#6a6e73] dark:text-[#a0a0a0]">No KubApp resources found for this operator.</p>
           </div>
         )}
+      </Breadcrumbs>
       </div>
     </div>
   );

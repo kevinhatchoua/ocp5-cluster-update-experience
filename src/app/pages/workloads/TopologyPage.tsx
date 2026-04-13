@@ -703,7 +703,7 @@ export default function TopologyPage() {
             { label: "Workloads", path: "/workloads" },
             { label: "Topology", path: "/workloads/topology" },
           ]}
-        />
+        >
         <div className="flex items-center justify-between mb-[16px]">
           <div>
             <h1 className="font-['Red_Hat_Display_VF:Medium',sans-serif] font-medium leading-[36.4px] text-[#151515] dark:text-white text-[28px]">
@@ -712,6 +712,7 @@ export default function TopologyPage() {
           </div>
           <FavoriteButton name="Topology" path="/workloads/topology" />
         </div>
+        </Breadcrumbs>
       </div>
 
       {/* Toolbar */}

@@ -65,7 +65,7 @@ export default function OperatorInstalledPage() {
             { label: "Ecosystem", path: "/ecosystem" },
             { label: "Software Catalog", path: "/ecosystem/software-catalog" },
           ]}
-        />
+        >
 
         <div className="max-w-[800px] mx-auto mt-[80px]">
           {/* Success Card */}
@@ -179,6 +179,7 @@ export default function OperatorInstalledPage() {
             </div>
           </div>
         </div>
+        </Breadcrumbs>
       </div>
     </div>
   );

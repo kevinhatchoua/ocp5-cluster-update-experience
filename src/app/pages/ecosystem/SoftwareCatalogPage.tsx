@@ -642,7 +642,7 @@ export default function SoftwareCatalogPage() {
             { label: "Ecosystem", path: "/ecosystem" },
             { label: "Software Catalog" },
           ]}
-        />
+        >
 
         <Content className="mb-6">
           <h1 id="main-title">Software Catalog</h1>
@@ -967,6 +967,7 @@ export default function SoftwareCatalogPage() {
             </div>
           </div>
         </div>
+        </Breadcrumbs>
       </div>
 
       {/* Side Panel */}

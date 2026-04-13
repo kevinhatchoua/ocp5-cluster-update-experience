@@ -11,7 +11,7 @@ export default function HelmPage() {
             { label: "Ecosystem", path: "/ecosystem" },
             { label: "Helm" },
           ]}
-        />
+        >
 
         <div className="mb-[24px]">
           <div className="flex items-center justify-between mb-[8px]">
@@ -30,6 +30,7 @@ export default function HelmPage() {
             Helm charts management coming soon
           </p>
         </div>
+        </Breadcrumbs>
       </div>
     </div>
   );

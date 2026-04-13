@@ -107,7 +107,7 @@ export default function BuildsPage() {
           { label: "Home", path: "/" },
           { label: "Builds", path: "/builds" },
         ]}
-      />
+      >
 
       <div className="flex items-center justify-between mb-[24px]">
         <div>
@@ -299,6 +299,7 @@ export default function BuildsPage() {
           </div>
         )}
       </div>
+      </Breadcrumbs>
     </div>
   );
 }

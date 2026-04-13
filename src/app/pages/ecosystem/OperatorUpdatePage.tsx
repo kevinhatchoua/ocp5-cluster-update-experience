@@ -89,7 +89,7 @@ export default function OperatorUpdatePage() {
             { label: "Installed Operators", path: "/ecosystem/installed-operators" },
             { label: operator.name, path: `/ecosystem/software-catalog/${operator.id}` },
           ]}
-        />
+        >
 
         <div className="mb-[24px]">
           <h1 className="font-['Red_Hat_Display_VF:Medium',sans-serif] font-medium leading-[36.4px] text-[#151515] dark:text-white text-[28px] mb-[8px]">
@@ -420,6 +420,7 @@ export default function OperatorUpdatePage() {
             Link
           </Link>
         </div>
+        </Breadcrumbs>
       </div>
     </div>
   );

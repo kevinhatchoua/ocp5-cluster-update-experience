@@ -88,7 +88,7 @@ export default function OperatorInstallingPage() {
             { label: "Ecosystem", path: "/ecosystem" },
             { label: "Software Catalog", path: "/ecosystem/software-catalog" },
           ]}
-        />
+        >
 
         <div className="max-w-[800px] mx-auto mt-[80px]">
           {/* Installation Card */}
@@ -211,6 +211,7 @@ export default function OperatorInstallingPage() {
             </div>
           </div>
         </div>
+        </Breadcrumbs>
       </div>
     </div>
   );

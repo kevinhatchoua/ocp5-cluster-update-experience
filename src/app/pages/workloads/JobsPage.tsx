@@ -77,7 +77,7 @@ export default function JobsPage() {
           { label: "Workloads", path: "/workloads" },
           { label: "Jobs", path: "/workloads/jobs" },
         ]}
-      />
+      >
 
       <div className="flex items-center justify-between mb-[24px]">
         <div>
@@ -211,6 +211,7 @@ export default function JobsPage() {
           </tbody>
         </table>
       </div>
+      </Breadcrumbs>
     </div>
   );
 }

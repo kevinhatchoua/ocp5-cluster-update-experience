@@ -208,7 +208,7 @@ spec:
             { label: "Cluster Settings", path: "/administration/cluster-settings" },
             { label: "Update History" },
           ]}
-        />
+        >
 
         <div className="mb-[24px]">
           <h1 className="font-['Red_Hat_Display_VF:Medium',sans-serif] font-medium leading-[36.4px] text-[#151515] dark:text-white text-[28px] mb-[16px]">
@@ -374,6 +374,7 @@ spec:
             </div>
           )}
         </div>
+        </Breadcrumbs>
       </div>
     </div>
   );

@@ -1,8 +1,45 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, Link, useLocation } from "react-router";
+import {
+  ActionList,
+  ActionListItem,
+  Alert,
+  Button,
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  Content,
+  Divider,
+  Flex,
+  FlexItem,
+  FormGroup,
+  Grid,
+  GridItem,
+  HelperText,
+  HelperTextItem,
+  Icon,
+  Label,
+  MenuToggle,
+  Panel,
+  PanelMain,
+  PanelMainBody,
+  Progress,
+  Select,
+  SelectList,
+  SelectOption,
+  Spinner,
+  Tab,
+  Tabs,
+  TabTitleText,
+  Title,
+} from "@patternfly/react-core";
+import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
+import { usePatternFlyGlassActive } from "@/lib/usePatternFlyGlassActive";
 import { ChevronDown, ChevronRight, ExternalLink, Sparkles, ArrowRight, CheckCircle, AlertTriangle, AlertCircle, HelpCircle, Info, X, Loader2, Shield, Bot, Settings, RotateCcw, Play, Pause, Calendar, Bell, Clock, FileText, User, Zap, Eye, RefreshCw, MoreVertical, Check } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
+import FavoriteButton from "../../components/FavoriteButton";
 import { AiAssessmentSection } from "../../components/AiAssessmentSection";
 import { OlsChatbot } from "../../components/OlsChatbot";
 import { useClusterUpdateDemoVariant } from "../../contexts/ClusterUpdateDemoContext";
@@ -357,12 +394,6 @@ export default function ClusterUpdatePlanPage() {
     }
   }, []);
 
-  const tabs: { key: TabKey; label: string }[] = [
-    { key: "update-plan", label: "Update plan" },
-    { key: "active-update-plans", label: "Active update plans" },
-    { key: "update-history", label: "Update history" },
-  ];
-
   return (
     <div className="flex h-full relative min-w-0">
       <OlsChatbot
@@ -377,33 +408,33 @@ export default function ClusterUpdatePlanPage() {
       <Breadcrumbs items={[
         { label: "Administration", path: "/administration/cluster-update" },
         { label: "Cluster Update" },
-      ]} />
+      ]}>
+      <Content className="mb-6">
+        <Flex
+          alignItems={{ default: "alignItemsCenter" }}
+          justifyContent={{ default: "justifyContentSpaceBetween" }}
+        >
+          <h1 id="main-title">Cluster Update</h1>
+          <FavoriteButton name="Cluster Update" path="/administration/cluster-update" />
+        </Flex>
+        <p>
+          Review available versions, assess operator compatibility, and plan how this cluster moves to newer OpenShift
+          releases. Use <strong>Update plan</strong> to prepare or start an update, <strong>Active update plans</strong>{" "}
+          for in-flight work, and <strong>Update history</strong> for completed runs.
+        </p>
+      </Content>
 
-      <h1 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[28px] mb-[12px]">
-        Cluster Update
-      </h1>
-
-      <div className="border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)] mb-[24px] flex gap-[0px]">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`px-[20px] py-[12px] text-[14px] font-['Red_Hat_Text:Regular',sans-serif] border-0 bg-transparent cursor-pointer transition-colors relative ${
-              activeTab === tab.key
-                ? "text-[#151515] dark:text-white font-medium"
-                : "text-[#4d4d4d] dark:text-[#b0b0b0] hover:text-[#151515] dark:hover:text-white"
-            }`}
-          >
-            {tab.label}
-            {activeTab === tab.key && (
-              <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#0066cc] dark:bg-[#4dabf7] rounded-t-[2px]" />
-            )}
-          </button>
-        ))}
-      </div>
-
-      {activeTab === "update-plan" && (
-        <>
+      <Tabs
+        id="cluster-update-page-tabs"
+        aria-label="Cluster update"
+        activeKey={activeTab}
+        onSelect={(_event, eventKey) => {
+          if (eventKey === "update-plan" || eventKey === "active-update-plans" || eventKey === "update-history") {
+            setActiveTab(eventKey);
+          }
+        }}
+      >
+        <Tab eventKey="update-plan" title={<TabTitleText>Update plan</TabTitleText>}>
           <AiAssessmentSection
             openChatbot={openChatbot}
             selectedVersion={selectedVersion}
@@ -504,12 +535,17 @@ export default function ClusterUpdatePlanPage() {
               channelGroups={channelData.groups}
             />
           )}
-        </>
-      )}
+        </Tab>
 
-      {activeTab === "active-update-plans" && <ActiveUpdatePlansTab />}
+        <Tab eventKey="active-update-plans" title={<TabTitleText>Active update plans</TabTitleText>}>
+          <ActiveUpdatePlansTab />
+        </Tab>
 
-      {activeTab === "update-history" && <UpdateHistoryTab />}
+        <Tab eventKey="update-history" title={<TabTitleText>Update history</TabTitleText>}>
+          <UpdateHistoryTab />
+        </Tab>
+      </Tabs>
+      </Breadcrumbs>
 
       </div>
       </OlsChatbot>
@@ -1754,17 +1790,45 @@ interface PlanStep {
 }
 
 function StepIcon({ status }: { status: PlanStepStatus }) {
-  if (status === "done") return <CheckCircle className="size-[20px] text-[#3e8635] shrink-0" />;
-  if (status === "warning") return <AlertTriangle className="size-[20px] text-[#f0ab00] shrink-0" />;
-  return <Clock className="size-[20px] text-[#6a6e73] shrink-0" />;
+  if (status === "done") {
+    return (
+      <Icon iconSize="lg" status="success">
+        <CheckCircle />
+      </Icon>
+    );
+  }
+  if (status === "warning") {
+    return (
+      <Icon iconSize="lg" status="warning">
+        <AlertTriangle />
+      </Icon>
+    );
+  }
+  return (
+    <Icon iconSize="lg" style={{ color: "var(--pf-t--global--icon--Color--disabled)" }}>
+      <Clock />
+    </Icon>
+  );
 }
 
-function BadgeLabel({ text, color }: { text: string; color: string }) {
+function StepStatusLabel({ text, color }: { text: string; color: string }) {
+  const labelColor: "green" | "orange" | "red" =
+    color === "#f0ab00" || color === "#c58c00" ? "orange" : color === "#c9190b" ? "red" : "green";
   return (
-    <span className="text-[11px] font-semibold px-[8px] py-[2px] rounded-[4px] text-white" style={{ backgroundColor: color }}>
+    <Label isCompact color={labelColor} variant="filled">
       {text}
-    </span>
+    </Label>
   );
+}
+
+function agentRiskProgressVariant(riskLabel: string): "success" | "warning" | "danger" {
+  if (/High|Critical/i.test(riskLabel)) {
+    return "danger";
+  }
+  if (/Moderate|Medium/i.test(riskLabel)) {
+    return "warning";
+  }
+  return "success";
 }
 
 function flattenChannelVersionOptions(groups: VersionGroup[]): string[] {
@@ -1891,7 +1955,6 @@ function UpdateAgentTab({
   const [activePlanVersion, setActivePlanVersion] = useState(selectedVersion);
   const [isPlanLoading, setIsPlanLoading] = useState(false);
   const [planDecision, setPlanDecision] = useState<"pending" | "scheduled" | "rejected">("pending");
-  const [expandedSteps, setExpandedSteps] = useState<Set<number>>(new Set([1, 2]));
   const [planSerial, setPlanSerial] = useState(13);
   const [planAgeLabel, setPlanAgeLabel] = useState("2 hours ago");
   const [maintenanceWindowLine, setMaintenanceWindowLine] = useState(() => getAgentPlanProfile(selectedVersion).defaultMaintenance);
@@ -1910,6 +1973,8 @@ function UpdateAgentTab({
   const [scheduleDate, setScheduleDate] = useState("2026-04-15");
   const [scheduleTime, setScheduleTime] = useState("02:00");
   const [scheduleTzLabel, setScheduleTzLabel] = useState("Eastern Time (ET)");
+  const [versionSelectOpen, setVersionSelectOpen] = useState(false);
+  const isGlass = usePatternFlyGlassActive();
 
   const planRegenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -1945,15 +2010,6 @@ function UpdateAgentTab({
   const planDiffersFromSelection = selectedVersion !== activePlanVersion;
   const targetVersion = activePlanVersion;
   const versionOptions = flattenChannelVersionOptions(channelGroups);
-
-  const toggleStep = (i: number) => {
-    setExpandedSteps(prev => {
-      const next = new Set(prev);
-      if (next.has(i)) next.delete(i);
-      else next.add(i);
-      return next;
-    });
-  };
 
   const avgDurationMin = Math.max(1, Math.round(metrics.totalDurationMin / metrics.updatesExecuted));
 
@@ -2042,361 +2098,581 @@ function UpdateAgentTab({
 
   return (
     <>
-    <div className="space-y-[24px]">
-      <div className="bg-[rgba(255,255,255,0.5)] dark:bg-[rgba(255,255,255,0.05)] rounded-[16px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.06)] p-[24px] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)]">
-        <div className="mb-[20px]">
-          <div className="flex items-center gap-[12px]">
-            <div className="size-[40px] rounded-[10px] bg-[#f0f0f0] dark:bg-[rgba(255,255,255,0.08)] flex items-center justify-center">
-              <Bot className="size-[22px] text-[#151515] dark:text-white" />
-            </div>
-            <div>
-              <h2 className="font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white text-[18px]">AI Update Agent</h2>
-              <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
-                Activity summary and the current proposed plan · {selectedChannel} channel
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="rounded-[8px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] px-[14px] py-[12px] mb-[16px] flex flex-col gap-[8px] sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-[12px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px]">Agent target version</p>
-            <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
-              Pick a target from your channel (updates AI Assessment), then click <span className="text-[#151515] dark:text-white font-medium">Generate plan</span> to build or refresh the proposed update below.
-            </p>
-          </div>
-          <div className="flex flex-col gap-[10px] sm:flex-row sm:items-end sm:gap-[12px] shrink-0 w-full sm:w-auto">
-            <label className="flex flex-col gap-[4px] flex-1 min-w-0 sm:min-w-[200px]">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif]">Target version</span>
-              <select
-                value={selectedVersion}
-                disabled={isPlanLoading}
-                onChange={(e) => onSelectedVersionChange(e.target.value)}
-                className="w-full rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-white dark:bg-[#1a1a1a] text-[#151515] dark:text-white text-[14px] px-[12px] py-[8px] font-['Red_Hat_Text:Regular',sans-serif] disabled:opacity-60"
-              >
-                {versionOptions.map((v) => (
-                  <option key={v} value={v}>
-                    {v}
-                  </option>
-                ))}
-              </select>
-              {planDiffersFromSelection && !isPlanLoading && (
-                <span className="text-[11px] text-[#795600] dark:text-[#f0ab00] font-['Red_Hat_Text:Regular',sans-serif]">
-                  Selection differs from the plan shown — generate to update.
-                </span>
-              )}
-            </label>
-            <button
-              type="button"
-              onClick={runGeneratePlan}
-              disabled={isPlanLoading}
-              className="flex items-center justify-center gap-[6px] shrink-0 bg-[var(--pf-color-blue-50)] hover:bg-[var(--pf-color-blue-60)] dark:bg-[var(--pf-color-blue-50)] dark:hover:bg-[var(--pf-color-blue-60)] text-white !text-white [&_svg]:text-white text-[14px] px-[20px] py-[9px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {isPlanLoading ? (
-                <>
-                  <Loader2 className="size-[14px] animate-spin" aria-hidden /> Generating…
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="size-[14px]" aria-hidden /> Generate plan
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-[12px]">
-          {stats.map(s => (
-            <div key={s.label} className="rounded-[8px] bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] px-[16px] py-[14px]">
-              <p className="text-[12px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px]">{s.label}</p>
-              <p className="text-[22px] font-semibold text-[#151515] dark:text-white font-['Red_Hat_Display:SemiBold',sans-serif]">{s.value}</p>
-            </div>
-          ))}
-        </div>
-      </div>
+    <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
+      <Card id="ai-update-agent-card" isGlass={isGlass}>
+        <CardBody>
+          <Flex direction={{ default: "column" }} gap={{ default: "gapLg" }}>
+            <Flex gap={{ default: "gapMd" }} alignItems={{ default: "alignItemsFlexStart" }}>
+              <Icon size="lg" status="custom">
+                <Bot />
+              </Icon>
+              <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+                <Title headingLevel="h2" size="xl">
+                  AI Update Agent
+                </Title>
+                <Content component="p">
+                  Activity summary and the current proposed plan · {selectedChannel} channel
+                </Content>
+              </Flex>
+            </Flex>
 
-      <div className="bg-[rgba(255,255,255,0.5)] dark:bg-[rgba(255,255,255,0.05)] rounded-[16px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.06)] border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)] overflow-hidden relative">
+            <Panel variant="bordered">
+              <PanelMain>
+                <PanelMainBody>
+                  <Flex
+                    direction={{ default: "column", lg: "row" }}
+                    gap={{ default: "gapLg" }}
+                    justifyContent={{ lg: "justifyContentSpaceBetween" }}
+                    alignItems={{ default: "alignItemsStretch", lg: "alignItemsFlexEnd" }}
+                  >
+                    <FlexItem flex={{ default: "flex_1" }}>
+                      <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+                        <Title headingLevel="h4" size="md">
+                          Agent target version
+                        </Title>
+                        <Content component="p">
+                          Pick a target from your channel (updates AI Assessment), then click{" "}
+                          <strong>Generate plan</strong> to build or refresh the proposed update below.
+                        </Content>
+                      </Flex>
+                    </FlexItem>
+                    <Flex
+                      direction={{ default: "column", sm: "row" }}
+                      gap={{ default: "gapMd" }}
+                      alignItems={{ default: "alignItemsStretch", sm: "alignItemsFlexEnd" }}
+                    >
+                      <FlexItem flex={{ default: "flex_1" }}>
+                        <FormGroup label="Target version" fieldId="ai-agent-target-version">
+                          <Select
+                            isOpen={versionSelectOpen}
+                            selected={selectedVersion}
+                            onSelect={(_event, value) => {
+                              onSelectedVersionChange(String(value));
+                              setVersionSelectOpen(false);
+                            }}
+                            onOpenChange={(open) => setVersionSelectOpen(open)}
+                            toggle={(toggleRef) => (
+                              <MenuToggle
+                                ref={toggleRef}
+                                id="ai-agent-target-version"
+                                onClick={() => setVersionSelectOpen((prev) => !prev)}
+                                isExpanded={versionSelectOpen}
+                                isDisabled={isPlanLoading}
+                                isFullWidth
+                              >
+                                {selectedVersion}
+                              </MenuToggle>
+                            )}
+                          >
+                            <SelectList>
+                              {versionOptions.map((v) => (
+                                <SelectOption key={v} value={v}>
+                                  {v}
+                                </SelectOption>
+                              ))}
+                            </SelectList>
+                          </Select>
+                        </FormGroup>
+                        {planDiffersFromSelection && !isPlanLoading && (
+                          <HelperText>
+                            <HelperTextItem variant="warning">
+                              Selection differs from the plan shown — generate to update.
+                            </HelperTextItem>
+                          </HelperText>
+                        )}
+                      </FlexItem>
+                      <FlexItem>
+                        <Button
+                          variant="primary"
+                          type="button"
+                          onClick={runGeneratePlan}
+                          isDisabled={isPlanLoading}
+                          icon={
+                            isPlanLoading ? (
+                              <Spinner size="sm" aria-label="Generating plan" />
+                            ) : (
+                              <RefreshCw aria-hidden />
+                            )
+                          }
+                        >
+                          {isPlanLoading ? "Generating…" : "Generate plan"}
+                        </Button>
+                      </FlexItem>
+                    </Flex>
+                  </Flex>
+                </PanelMainBody>
+              </PanelMain>
+            </Panel>
+
+            <Grid hasGutter>
+              {stats.map((s) => (
+                <GridItem key={s.label} span={12} md={4}>
+                  <Card isCompact variant="secondary">
+                    <CardBody>
+                      <Content component="small">{s.label}</Content>
+                      <Title headingLevel="h3" size="2xl">
+                        {s.value}
+                      </Title>
+                    </CardBody>
+                  </Card>
+                </GridItem>
+              ))}
+            </Grid>
+          </Flex>
+        </CardBody>
+      </Card>
+
+      <Card id="agent-proposed-plan-card" isGlass={isGlass} style={{ position: "relative" }}>
         {isPlanLoading && (
-          <div
-            className="absolute inset-0 z-[20] flex flex-col items-center justify-center gap-[12px] bg-white/90 dark:bg-[#1a1a1a]/92 backdrop-blur-[2px]"
+          <Flex
             role="status"
             aria-live="polite"
             aria-busy="true"
+            direction={{ default: "column" }}
+            alignItems={{ default: "alignItemsCenter" }}
+            justifyContent={{ default: "justifyContentCenter" }}
+            gap={{ default: "gapMd" }}
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 20,
+              padding: "var(--pf-t--global--spacer--lg)",
+              backgroundColor: "var(--pf-t--global--background--color--primary--default)",
+              opacity: 0.92,
+            }}
           >
-            <Loader2 className="size-[32px] animate-spin text-[#0066cc] dark:text-[#4dabf7]" aria-hidden />
-            <p className="text-[14px] font-medium text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif] px-[16px] text-center">
-              Generating plan for <span className="font-mono font-semibold">{selectedVersion}</span>…
-            </p>
-            <p className="text-[12px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif]">Recomputing steps, risk, and maintenance window</p>
-          </div>
+            <Spinner size="xl" aria-label="Generating plan" />
+            <Content component="p" style={{ margin: 0, textAlign: "center" }}>
+              Generating plan for{" "}
+              <Content component="span" style={{ fontFamily: "var(--pf-t--global--FontFamily--mono)", fontWeight: 600 }}>
+                {selectedVersion}
+              </Content>
+              …
+            </Content>
+            <Content component="small" style={{ margin: 0, textAlign: "center", color: "var(--pf-t--global--text--Color--200)" }}>
+              Recomputing steps, risk, and maintenance window
+            </Content>
+          </Flex>
         )}
-        <div className="px-[24px] py-[16px] border-b border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)] flex items-center justify-between">
-          <div>
-            <p className="text-[12px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px]">
-              PLAN #{planSerial} · Generated {planAgeLabel}
-            </p>
-            <p className="text-[16px] font-semibold text-[#151515] dark:text-white font-['Red_Hat_Display:SemiBold',sans-serif]">
-              Proposed Update: {AGENT_CLUSTER_CURRENT_VERSION} → {targetVersion}
-            </p>
-            <div className="flex flex-wrap gap-[6px] mt-[8px]">
-              {planProfile.tags.map(tag => (
-                <span key={tag} className="text-[11px] px-[8px] py-[3px] rounded-[999px] bg-[rgba(0,102,204,0.08)] text-[#0066cc] dark:bg-[rgba(77,171,247,0.12)] dark:text-[#4dabf7] font-['Red_Hat_Text:Regular',sans-serif] font-medium flex items-center gap-[4px]">
-                  <Shield className="size-[10px]" /> {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-          {planDecision === "pending" ? (
-            <div className="shrink-0 text-right sm:max-w-[220px]">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif] mb-[4px]">
-                Prerequisites
-              </p>
-              <p className="text-[13px] text-[#151515] dark:text-white font-medium font-['Red_Hat_Text:Regular',sans-serif] leading-[18px]">
-                {planProfile.compatRequired > 0 ? (
-                  <>
-                    {planProfile.compatRequired} operator {planProfile.compatRequired === 1 ? "update" : "updates"} required before this cluster upgrade
-                  </>
-                ) : (
-                  <>No operator blockers — review steps below to approve or schedule</>
-                )}
-              </p>
-            </div>
-          ) : (
-            <span
-              className={`shrink-0 text-[12px] font-semibold px-[12px] py-[5px] rounded-[999px] border ${
-                planDecision === "rejected"
-                  ? "border-[#c9190b] text-[#c9190b] bg-[rgba(201,25,11,0.05)]"
-                  : "border-[#0066cc] text-[#0066cc] bg-[rgba(0,102,204,0.05)]"
-              }`}
-            >
-              {planDecision === "rejected" ? "Rejected" : "Scheduled"}
-            </span>
-          )}
-        </div>
-
-        <div className="px-[24px] py-[20px] space-y-[0px]">
-          {steps.map((step, i) => (
-            <div key={i}>
-              <button
-                onClick={() => toggleStep(i)}
-                className="flex items-center gap-[10px] w-full text-left bg-transparent border-0 cursor-pointer py-[12px] px-0 hover:opacity-80 transition-opacity"
-              >
-                <StepIcon status={step.status} />
-                <span className="text-[14px] font-medium text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">{step.label}</span>
-                {step.badge && <BadgeLabel text={step.badge} color={step.badgeColor!} />}
-                <span className="flex-1" />
-                {expandedSteps.has(i)
-                  ? <ChevronDown className="size-[14px] text-[#6a6e73]" />
-                  : <ChevronRight className="size-[14px] text-[#6a6e73]" />}
-              </button>
-              <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif] ml-[30px] -mt-[6px] mb-[8px]">{step.detail}</p>
-
-              {expandedSteps.has(i) && i === 1 && (
-                <div className="ml-[30px] mb-[12px] grid grid-cols-2 gap-[10px]">
-                  {healthChecks.map(h => (
-                    <div key={h.label} className="flex items-center gap-[8px] rounded-[8px] border border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)] px-[14px] py-[10px]">
-                      <CheckCircle className="size-[16px] text-[#3e8635] shrink-0" />
-                      <div>
-                        <p className="text-[13px] font-medium text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">{h.label}</p>
-                        <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">{h.detail}</p>
-                      </div>
-                    </div>
+        <CardHeader>
+          <Flex
+            justifyContent={{ default: "justifyContentSpaceBetween" }}
+            alignItems={{ default: "alignItemsFlexStart" }}
+            gap={{ default: "gapMd" }}
+            flexWrap={{ default: "wrap" }}
+            style={{ width: "100%" }}
+          >
+            <FlexItem>
+              <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+                <Content
+                  component="p"
+                  style={{
+                    margin: 0,
+                    fontSize: "var(--pf-t--global--FontSize--xs)",
+                    color: "var(--pf-t--global--text--Color--200)",
+                  }}
+                >
+                  PLAN #{planSerial} · Generated {planAgeLabel}
+                </Content>
+                <Title headingLevel="h3" size="lg">
+                  Proposed Update: {AGENT_CLUSTER_CURRENT_VERSION} → {targetVersion}
+                </Title>
+                <Flex gap={{ default: "gapSm" }} flexWrap={{ default: "wrap" }}>
+                  {planProfile.tags.map((tag) => (
+                    <Label key={tag} color="blue" variant="outline" icon={<Shield aria-hidden />} isCompact>
+                      {tag}
+                    </Label>
                   ))}
-                </div>
+                </Flex>
+              </Flex>
+            </FlexItem>
+            <FlexItem>
+              {planDecision === "pending" ? (
+                <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }} style={{ maxWidth: "16rem", textAlign: "right" }}>
+                  <Content
+                    component="p"
+                    style={{
+                      margin: 0,
+                      fontSize: "var(--pf-t--global--FontSize--xs)",
+                      fontWeight: 600,
+                      textTransform: "uppercase",
+                      color: "var(--pf-t--global--text--Color--200)",
+                    }}
+                  >
+                    Prerequisites
+                  </Content>
+                  <Content component="p" style={{ margin: 0, fontWeight: 500 }}>
+                    {planProfile.compatRequired > 0 ? (
+                      <>
+                        {planProfile.compatRequired} operator {planProfile.compatRequired === 1 ? "update" : "updates"} required before this cluster upgrade
+                      </>
+                    ) : (
+                      <>No operator blockers — review steps below to approve or schedule</>
+                    )}
+                  </Content>
+                </Flex>
+              ) : (
+                <Label color={planDecision === "rejected" ? "red" : "blue"} variant="outline" isCompact>
+                  {planDecision === "rejected" ? "Rejected" : "Scheduled"}
+                </Label>
               )}
+            </FlexItem>
+          </Flex>
+        </CardHeader>
+        <CardBody>
+          <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
+            {steps.map((step, i) => (
+              <Flex key={i} direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+                <Flex
+                  flexWrap={{ default: "wrap" }}
+                  alignItems={{ default: "alignItemsCenter" }}
+                  gap={{ default: "gapMd" }}
+                  justifyContent={{ default: "justifyContentFlexStart" }}
+                >
+                  <StepIcon status={step.status} />
+                  <Title headingLevel="h4" size="md">
+                    {step.label}
+                  </Title>
+                  {step.badge && step.badgeColor ? <StepStatusLabel text={step.badge} color={step.badgeColor} /> : null}
+                </Flex>
+                <Content
+                  component="p"
+                  style={{
+                    margin: 0,
+                    fontSize: "var(--pf-t--global--FontSize--sm)",
+                    color: "var(--pf-t--global--text--Color--200)",
+                  }}
+                >
+                  {step.detail}
+                </Content>
 
-              {expandedSteps.has(i) && i === 2 && (
-                <div className="ml-[30px] mb-[12px]">
-                  <div className="rounded-[8px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)] overflow-hidden bg-white dark:bg-transparent">
-                    <div className="flex items-center justify-between px-[16px] py-[10px] bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)]">
-                      <div className="flex items-center gap-[6px]">
-                        <AlertTriangle className="size-[14px] text-[#f0ab00]" />
-                        <span className="text-[13px] font-medium text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">Operator compatibility</span>
-                      </div>
-                      <div className="flex gap-[6px]">
-                        <span className="text-[11px] px-[8px] py-[2px] rounded-[999px] bg-[rgba(62,134,53,0.1)] text-[#3e8635] font-semibold">{planProfile.compatCompatible} compatible</span>
-                        <span className="text-[11px] px-[8px] py-[2px] rounded-[999px] bg-[rgba(240,171,0,0.1)] text-[#795600] font-semibold">{planProfile.compatRequired} require update</span>
-                      </div>
-                    </div>
-                    <p className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] px-[16px] py-[10px] border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] bg-[#fafafa] dark:bg-[rgba(255,255,255,0.02)]">
-                      {planProfile.compatRequired} operators must be updated before upgrading to {targetVersion}
-                    </p>
-                    <table className="w-full text-[13px] font-['Red_Hat_Text:Regular',sans-serif] border-collapse">
-                      <thead>
-                        <tr className="bg-[#f5f5f5] dark:bg-[rgba(255,255,255,0.03)] border-b border-[#d2d2d2] dark:border-[rgba(255,255,255,0.1)] text-left">
-                          <th className="pl-[16px] pr-[16px] py-[10px] text-[12px] font-medium text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Operator</th>
-                          <th className="px-[16px] py-[10px] text-[12px] font-medium text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Current</th>
-                          <th className="px-[16px] py-[10px] text-[12px] font-medium text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Required version</th>
-                          <th className="px-[16px] py-[10px] text-[12px] font-medium text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">OCP {targetVersion} compat.</th>
-                          <th className="pl-[16px] pr-[16px] py-[10px] text-[12px] font-medium text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Action needed</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {AGENT_OPERATORS.map(op => (
-                          <tr key={op.name} className="border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] last:border-0 hover:bg-[rgba(0,0,0,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)] transition-colors">
-                            <td className="pl-[16px] pr-[16px] py-[12px] align-top">
-                              <span className={`font-medium ${!op.compatible ? "text-[#c9190b]" : "text-[#151515] dark:text-white"}`}>
-                                {!op.compatible && <span className="mr-[4px]">●</span>}{op.name}
-                              </span>
-                            </td>
-                            <td className="px-[16px] py-[12px] font-mono text-[#4d4d4d] dark:text-[#b0b0b0] align-top">{op.current}</td>
-                            <td className="px-[16px] py-[12px] align-top">
-                              {op.required ? (
-                                <span className={`font-mono font-semibold ${!op.compatible ? "text-[#c9190b]" : "text-[#151515] dark:text-white"}`}>{op.required}</span>
-                              ) : (
-                                <span className="text-[#6a6e73]">–</span>
-                              )}
-                            </td>
-                            <td className="px-[16px] py-[12px] align-top">
-                              {op.compatible ? (
-                                <span className="inline-flex items-center gap-[4px] text-[12px] text-[#3e8635]"><CheckCircle className="size-[12px]" /> Compatible</span>
-                              ) : (
-                                <span className="inline-flex items-center gap-[4px] text-[12px] text-[#f0ab00]"><AlertTriangle className="size-[12px]" /> Incompatible at {op.incompatibleAt}</span>
-                              )}
-                            </td>
-                            <td className="pl-[16px] pr-[16px] py-[12px] align-top">
-                              {op.action === "required" ? (
-                                <span className="text-[11px] font-semibold px-[10px] py-[3px] rounded-[999px] bg-[#f0ab00] text-white">Update required before OCP upgrade</span>
-                              ) : op.action === "optional" ? (
-                                <span className="text-[11px] font-semibold px-[10px] py-[3px] rounded-[999px] border border-[#3e8635] text-[#3e8635]">Update available (optional)</span>
-                              ) : (
-                                <span className="text-[12px] text-[#6a6e73]">Up to date</span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                {i === 1 && (
+                  <Grid hasGutter>
+                    {healthChecks.map((h) => (
+                      <GridItem key={h.label} span={12} md={6}>
+                        <Card isCompact variant="secondary">
+                          <CardBody>
+                            <Flex gap={{ default: "gapMd" }} alignItems={{ default: "alignItemsCenter" }}>
+                              <Icon status="success" iconSize="md">
+                                <CheckCircle />
+                              </Icon>
+                              <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
+                                <Content component="p" style={{ margin: 0, fontWeight: 600 }}>
+                                  {h.label}
+                                </Content>
+                                <Content component="small">{h.detail}</Content>
+                              </Flex>
+                            </Flex>
+                          </CardBody>
+                        </Card>
+                      </GridItem>
+                    ))}
+                  </Grid>
+                )}
+
+                {i === 2 && (
+                  <div>
+                    <Card isCompact>
+                      <CardHeader>
+                        <Flex
+                          justifyContent={{ default: "justifyContentSpaceBetween" }}
+                          alignItems={{ default: "alignItemsCenter" }}
+                          gap={{ default: "gapMd" }}
+                          flexWrap={{ default: "wrap" }}
+                          style={{ width: "100%" }}
+                        >
+                          <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsCenter" }}>
+                            <Icon status="warning" iconSize="sm">
+                              <AlertTriangle />
+                            </Icon>
+                            <Title headingLevel="h4" size="md">
+                              Operator compatibility
+                            </Title>
+                          </Flex>
+                          <Flex gap={{ default: "gapSm" }} flexWrap={{ default: "wrap" }}>
+                            <Label isCompact color="green" variant="outline">
+                              {planProfile.compatCompatible} compatible
+                            </Label>
+                            <Label isCompact color="orange" variant="outline">
+                              {planProfile.compatRequired} require update
+                            </Label>
+                          </Flex>
+                        </Flex>
+                      </CardHeader>
+                      <Divider />
+                      <CardBody>
+                        <Content component="p" style={{ marginTop: 0, marginBottom: "var(--pf-t--global--spacer--md)" }}>
+                          {planProfile.compatRequired} operators must be updated before upgrading to {targetVersion}
+                        </Content>
+                        <Table aria-label="Operator compatibility with target version" variant="compact" borders>
+                          <Thead>
+                            <Tr>
+                              <Th dataLabel="Operator">Operator</Th>
+                              <Th dataLabel="Current">Current</Th>
+                              <Th dataLabel="Required version">Required version</Th>
+                              <Th dataLabel="Compatibility">OCP {targetVersion} compat.</Th>
+                              <Th dataLabel="Action needed">Action needed</Th>
+                            </Tr>
+                          </Thead>
+                          <Tbody>
+                            {AGENT_OPERATORS.map((op) => (
+                              <Tr key={op.name}>
+                                <Td dataLabel="Operator">
+                                  <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsCenter" }}>
+                                    {!op.compatible ? (
+                                      <Content
+                                        component="span"
+                                        aria-hidden
+                                        style={{ color: "var(--pf-t--global--danger-color--100)", fontSize: "var(--pf-t--global--FontSize--xs)" }}
+                                      >
+                                        ●
+                                      </Content>
+                                    ) : null}
+                                    <Content
+                                      component="span"
+                                      style={{
+                                        fontWeight: 600,
+                                        color: op.compatible
+                                          ? "var(--pf-t--global--text--Color--100)"
+                                          : "var(--pf-t--global--danger-color--100)",
+                                      }}
+                                    >
+                                      {op.name}
+                                    </Content>
+                                  </Flex>
+                                </Td>
+                                <Td dataLabel="Current">
+                                  <Content
+                                    component="code"
+                                    style={{
+                                      fontFamily: "var(--pf-t--global--FontFamily--mono)",
+                                      color: "var(--pf-t--global--text--Color--200)",
+                                    }}
+                                  >
+                                    {op.current}
+                                  </Content>
+                                </Td>
+                                <Td dataLabel="Required version">
+                                  {op.required ? (
+                                    <Content
+                                      component="code"
+                                      style={{
+                                        fontFamily: "var(--pf-t--global--FontFamily--mono)",
+                                        fontWeight: 600,
+                                        color: op.compatible
+                                          ? "var(--pf-t--global--text--Color--100)"
+                                          : "var(--pf-t--global--danger-color--100)",
+                                      }}
+                                    >
+                                      {op.required}
+                                    </Content>
+                                  ) : (
+                                    <Content component="span" style={{ color: "var(--pf-t--global--text--Color--200)" }}>
+                                      –
+                                    </Content>
+                                  )}
+                                </Td>
+                                <Td dataLabel="Compatibility">
+                                  {op.compatible ? (
+                                    <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsCenter" }} flexWrap={{ default: "nowrap" }}>
+                                      <Icon status="success" iconSize="sm">
+                                        <CheckCircle />
+                                      </Icon>
+                                      <Content component="span" style={{ fontSize: "var(--pf-t--global--FontSize--sm)" }}>
+                                        Compatible
+                                      </Content>
+                                    </Flex>
+                                  ) : (
+                                    <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsCenter" }} flexWrap={{ default: "nowrap" }}>
+                                      <Icon status="warning" iconSize="sm">
+                                        <AlertTriangle />
+                                      </Icon>
+                                      <Content component="span" style={{ fontSize: "var(--pf-t--global--FontSize--sm)" }}>
+                                        Incompatible at {op.incompatibleAt}
+                                      </Content>
+                                    </Flex>
+                                  )}
+                                </Td>
+                                <Td dataLabel="Action needed">
+                                  {op.action === "required" ? (
+                                    <Label color="orange" variant="filled" isCompact>
+                                      Update required before OCP upgrade
+                                    </Label>
+                                  ) : op.action === "optional" ? (
+                                    <Label color="green" variant="outline" isCompact>
+                                      Update available (optional)
+                                    </Label>
+                                  ) : (
+                                    <Content component="span" style={{ fontSize: "var(--pf-t--global--FontSize--sm)", color: "var(--pf-t--global--text--Color--200)" }}>
+                                      Up to date
+                                    </Content>
+                                  )}
+                                </Td>
+                              </Tr>
+                            ))}
+                          </Tbody>
+                        </Table>
+                      </CardBody>
+                    </Card>
                   </div>
-                </div>
-              )}
+                )}
+              </Flex>
+            ))}
+          </Flex>
+        </CardBody>
+        <Divider />
+        <CardFooter>
+          <Flex direction={{ default: "column" }} gap={{ default: "gapLg" }}>
+            <Grid hasGutter>
+              <GridItem span={12} md={4}>
+                <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
+                  <Content component="small" style={{ margin: 0, color: "var(--pf-t--global--text--Color--200)" }}>
+                    Maintenance Window
+                  </Content>
+                  <Content component="p" style={{ margin: 0, fontWeight: 600 }}>
+                    {planDecision === "scheduled" && scheduledWindowLine ? scheduledWindowLine : maintenanceWindowLine}
+                  </Content>
+                </Flex>
+              </GridItem>
+              <GridItem span={12} md={4}>
+                <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
+                  <Content component="small" style={{ margin: 0, color: "var(--pf-t--global--text--Color--200)" }}>
+                    Estimated Duration
+                  </Content>
+                  <Content component="p" style={{ margin: 0, fontWeight: 600 }}>
+                    {planProfile.durationRange}
+                  </Content>
+                </Flex>
+              </GridItem>
+              <GridItem span={12} md={4}>
+                <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
+                  <Content component="small" style={{ margin: 0, color: "var(--pf-t--global--text--Color--200)" }}>
+                    Rolling Strategy
+                  </Content>
+                  <Content component="p" style={{ margin: 0, fontWeight: 600 }}>
+                    {planProfile.rollingStrategy}
+                  </Content>
+                </Flex>
+              </GridItem>
+            </Grid>
 
-              {i < steps.length - 1 && <div className="ml-[10px] w-[1px] h-[8px] bg-[#d2d2d2] dark:bg-[rgba(255,255,255,0.1)]" />}
-            </div>
-          ))}
-        </div>
+            <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+              <Content id="ai-risk-score-label" component="p" style={{ margin: 0, color: "var(--pf-t--global--text--Color--200)" }}>
+                AI Risk Score
+              </Content>
+              <Progress
+                id="agent-plan-risk-progress"
+                value={planProfile.riskBarPct}
+                min={0}
+                max={100}
+                measureLocation="outside"
+                label={planProfile.riskLabel}
+                variant={agentRiskProgressVariant(planProfile.riskLabel)}
+                aria-labelledby="ai-risk-score-label"
+              />
+            </Flex>
 
-        <div className="border-t border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)] px-[24px] py-[16px]">
-          <div className="grid grid-cols-3 gap-[24px] mb-[16px]">
-            <div>
-              <p className="text-[12px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Maintenance Window</p>
-              <p className="text-[14px] font-medium text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">
-                {planDecision === "scheduled" && scheduledWindowLine ? scheduledWindowLine : maintenanceWindowLine}
-              </p>
-            </div>
-            <div>
-              <p className="text-[12px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Estimated Duration</p>
-              <p className="text-[14px] font-medium text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">{planProfile.durationRange}</p>
-            </div>
-            <div>
-              <p className="text-[12px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif] mb-[2px]">Rolling Strategy</p>
-              <p className="text-[14px] font-medium text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">{planProfile.rollingStrategy}</p>
-            </div>
-          </div>
-
-          <div className="mb-[20px]">
-            <p className="text-[12px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif] mb-[6px]">AI Risk Score</p>
-            <div className="flex items-center gap-[12px]">
-              <div className="flex-1 h-[8px] bg-[#e0e0e0] dark:bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden">
-                <div className="h-full rounded-full transition-all duration-300" style={{ width: `${planProfile.riskBarPct}%`, backgroundColor: planProfile.riskBarColor }} />
-              </div>
-              <span className="text-[13px] font-medium font-['Red_Hat_Text:Regular',sans-serif] whitespace-nowrap" style={{ color: planProfile.riskBarColor }}>{planProfile.riskLabel}</span>
-            </div>
-          </div>
-
-          {planDecision === "pending" && (
-            <div className="flex flex-wrap items-center gap-[10px]">
-              <button
-                type="button"
-                disabled={isPlanLoading}
-                onClick={() => {
-                  setApproveAcknowledged(false);
-                  setShowApproveModal(true);
-                }}
-                className="flex items-center gap-[6px] bg-[var(--pf-color-blue-50)] hover:bg-[var(--pf-color-blue-60)] dark:bg-[var(--pf-color-blue-50)] dark:hover:bg-[var(--pf-color-blue-60)] text-white !text-white [&_svg]:text-white text-[14px] px-[20px] py-[9px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+            {planDecision === "pending" && (
+              <ActionList>
+                <ActionListItem>
+                  <Button
+                    type="button"
+                    variant="primary"
+                    isDisabled={isPlanLoading}
+                    icon={<Check aria-hidden />}
+                    onClick={() => {
+                      setApproveAcknowledged(false);
+                      setShowApproveModal(true);
+                    }}
+                  >
+                    Approve plan
+                  </Button>
+                </ActionListItem>
+                <ActionListItem>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    isDisabled={isPlanLoading}
+                    icon={<Calendar aria-hidden />}
+                    onClick={() => {
+                      setScheduleDate("2026-04-15");
+                      setScheduleTime("02:00");
+                      setScheduleTzLabel("Eastern Time (ET)");
+                      setShowScheduleModal(true);
+                    }}
+                  >
+                    Schedule for later
+                  </Button>
+                </ActionListItem>
+                <ActionListItem>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    isDanger
+                    isDisabled={isPlanLoading}
+                    icon={<X aria-hidden />}
+                    onClick={() => {
+                      setRejectAcknowledged(false);
+                      setShowRejectModal(true);
+                    }}
+                  >
+                    Reject plan
+                  </Button>
+                </ActionListItem>
+              </ActionList>
+            )}
+            {planDecision === "scheduled" && (
+              <Alert
+                variant="info"
+                isInline
+                title="Scheduled for later"
+                actionLinks={
+                  <Button
+                    variant="link"
+                    onClick={() => {
+                      setPlanDecision("pending");
+                      setScheduledWindowLine(null);
+                      setMaintenanceWindowLine(getAgentPlanProfile(activePlanVersion).defaultMaintenance);
+                    }}
+                  >
+                    Undo
+                  </Button>
+                }
               >
-                <Check className="size-[14px]" aria-hidden /> Approve plan
-              </button>
-              <button
-                type="button"
-                disabled={isPlanLoading}
-                onClick={() => {
-                  setScheduleDate("2026-04-15");
-                  setScheduleTime("02:00");
-                  setScheduleTzLabel("Eastern Time (ET)");
-                  setShowScheduleModal(true);
-                }}
-                className="flex items-center gap-[6px] bg-transparent hover:bg-[rgba(0,102,204,0.05)] dark:hover:bg-[rgba(0,102,204,0.12)] text-[var(--pf-color-blue-50)] text-[14px] px-[16px] py-[9px] rounded-[999px] border border-[var(--pf-color-blue-50)] cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                <Content component="p" style={{ margin: 0 }}>
+                  Update window:{" "}
+                  <Content component="span" style={{ fontWeight: 600 }}>
+                    {scheduledWindowLine ?? maintenanceWindowLine}
+                  </Content>
+                  . The agent will re-analyze before that window and remind you to confirm execution.
+                </Content>
+              </Alert>
+            )}
+            {planDecision === "rejected" && (
+              <Alert
+                variant="danger"
+                isInline
+                title="Plan rejected"
+                actionLinks={
+                  <>
+                    <Button variant="link" isDisabled={isPlanLoading} icon={<RefreshCw aria-hidden />} onClick={runGeneratePlan}>
+                      Generate new plan
+                    </Button>
+                    <Button variant="link" onClick={() => setPlanDecision("pending")}>
+                      Undo
+                    </Button>
+                  </>
+                }
               >
-                <Calendar className="size-[14px] shrink-0 text-[var(--pf-color-blue-50)]" aria-hidden /> Schedule for later
-              </button>
-              <button
-                type="button"
-                disabled={isPlanLoading}
-                onClick={() => {
-                  setRejectAcknowledged(false);
-                  setShowRejectModal(true);
-                }}
-                className="flex items-center gap-[6px] bg-transparent text-[#c9190b] text-[14px] px-[20px] py-[9px] rounded-[999px] border border-[#c9190b] cursor-pointer hover:bg-[rgba(201,25,11,0.05)] transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <X className="size-[14px]" aria-hidden /> Reject plan
-              </button>
-            </div>
-          )}
-          {planDecision === "scheduled" && (
-            <div className="flex items-center gap-[10px] rounded-[8px] bg-[rgba(0,102,204,0.05)] border border-[#0066cc] p-[14px]">
-              <Calendar className="size-[18px] text-[#0066cc] shrink-0" />
-              <div>
-                <p className="text-[14px] font-medium text-[#0066cc] font-['Red_Hat_Text:Regular',sans-serif]">Scheduled for later</p>
-                <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
-                  Update window: <span className="text-[#151515] dark:text-white font-medium">{scheduledWindowLine ?? maintenanceWindowLine}</span>.
-                  The agent will re-analyze before that window and remind you to confirm execution.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setPlanDecision("pending");
-                  setScheduledWindowLine(null);
-                  setMaintenanceWindowLine(getAgentPlanProfile(activePlanVersion).defaultMaintenance);
-                }}
-                className="ml-auto text-[12px] text-[#0066cc] dark:text-[#4dabf7] bg-transparent border-0 cursor-pointer hover:underline font-['Red_Hat_Text:Regular',sans-serif]"
-              >
-                Undo
-              </button>
-            </div>
-          )}
-          {planDecision === "rejected" && (
-            <div className="flex flex-col gap-[12px] rounded-[8px] bg-[rgba(201,25,11,0.05)] border border-[#c9190b] p-[14px] sm:flex-row sm:items-center">
-              <div className="flex items-start gap-[10px] flex-1 min-w-0">
-                <X className="size-[18px] text-[#c9190b] shrink-0 mt-[2px]" aria-hidden />
-                <div className="min-w-0">
-                <p className="text-[14px] font-medium text-[#c9190b] font-['Red_Hat_Text:Regular',sans-serif]">Plan rejected</p>
-                <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
+                <Content component="p" style={{ margin: 0 }}>
                   Generate a new plan for your chosen target version, or adjust the target above and run again.
-                </p>
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-[8px] shrink-0 sm:ml-auto sm:pl-[28px]">
-                <button
-                  type="button"
-                  onClick={runGeneratePlan}
-                  className="flex items-center gap-[6px] bg-[var(--pf-color-blue-50)] hover:bg-[var(--pf-color-blue-60)] dark:bg-[var(--pf-color-blue-50)] dark:hover:bg-[var(--pf-color-blue-60)] text-white !text-white [&_svg]:text-white text-[13px] px-[16px] py-[8px] rounded-[999px] border-0 cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium disabled:opacity-40 disabled:cursor-not-allowed"
-                  disabled={isPlanLoading}
-                >
-                  <RefreshCw className="size-[14px]" aria-hidden /> Generate new plan
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPlanDecision("pending")}
-                  className="text-[12px] text-[#0066cc] dark:text-[#4dabf7] bg-transparent border-0 cursor-pointer hover:underline font-['Red_Hat_Text:Regular',sans-serif] px-[4px]"
-                >
-                  Undo
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+                </Content>
+              </Alert>
+            )}
+          </Flex>
+        </CardFooter>
+      </Card>
+    </Flex>
 
       {showApproveModal && createPortal(
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-[16px]" onClick={() => setShowApproveModal(false)}>

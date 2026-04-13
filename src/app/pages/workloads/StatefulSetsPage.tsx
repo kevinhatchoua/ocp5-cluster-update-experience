@@ -41,7 +41,7 @@ export default function StatefulSetsPage() {
           { label: "Workloads", path: "/workloads" },
           { label: "StatefulSets", path: "/workloads/statefulsets" },
         ]}
-      />
+      >
 
       <div className="flex items-center justify-between mb-[24px]">
         <div>
@@ -140,6 +140,7 @@ export default function StatefulSetsPage() {
           </tbody>
         </table>
       </div>
+      </Breadcrumbs>
     </div>
   );
 }

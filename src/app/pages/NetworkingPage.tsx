@@ -292,8 +292,8 @@ export default function NetworkingPage() {
 
   return (
     <div className="flex flex-col h-full w-full">
+      <Breadcrumbs items={[{ label: "Home", path: "/" }, { label: "Networking", path: "/networking" }]}>
       <div className="p-[24px] pb-0">
-        <Breadcrumbs items={[{ label: "Home", path: "/" }, { label: "Networking", path: "/networking" }]} />
         <div className="flex items-center justify-between mb-[16px]">
           <div>
             <h1 className="font-['Red_Hat_Display_VF:Medium',sans-serif] font-medium leading-[36.4px] text-[#151515] dark:text-white text-[28px]">
@@ -542,6 +542,7 @@ export default function NetworkingPage() {
         {/* Detail panel */}
         {selectedItem && <DetailPanel type={activeTab} item={selectedItem} onClose={() => setSelectedItem(null)} />}
       </div>
+      </Breadcrumbs>
     </div>
   );
 }

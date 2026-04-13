@@ -543,14 +543,14 @@ export default function InstalledOperatorsPage() {
       >
       <div className="flex-1 min-h-0 min-w-0 overflow-y-auto">
         <div className="p-[24px]">
-          <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
             <Breadcrumbs
               items={[
                 { label: "Home", path: "/" },
                 { label: "Ecosystem", path: "/ecosystem" },
                 { label: "Installed Operators" },
               ]}
-            />
+            >
+            <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
 
             <Content>
               <Flex
@@ -990,6 +990,7 @@ export default function InstalledOperatorsPage() {
             </Flex>
             </PageSection>
           </Flex>
+            </Breadcrumbs>
         </div>
       </div>
       </OlsChatbot>

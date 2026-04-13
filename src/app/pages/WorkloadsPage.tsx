@@ -118,7 +118,7 @@ export default function WorkloadsPage() {
           { label: "Home", path: "/" },
           { label: "Workloads", path: "/workloads" },
         ]}
-      />
+      >
 
       <div className="flex items-center justify-between mb-[24px]">
         <div>
@@ -305,6 +305,7 @@ export default function WorkloadsPage() {
           </div>
         )}
       </div>
+      </Breadcrumbs>
     </div>
   );
 }

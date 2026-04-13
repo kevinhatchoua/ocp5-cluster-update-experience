@@ -1,4 +1,7 @@
+import type { ReactNode } from "react";
 import { Breadcrumb, BreadcrumbItem } from "@patternfly/react-core";
+import { css } from "@patternfly/react-styles";
+import spacingStyles from "@patternfly/react-styles/css/utilities/Spacing/spacing.mjs";
 import { Link } from "react-router";
 
 interface BreadcrumbItemData {
@@ -8,13 +11,22 @@ interface BreadcrumbItemData {
 
 interface BreadcrumbsProps {
   items: BreadcrumbItemData[];
-  /** Extra classes on the nav (default bottom margin matches prior layout). */
+  /** Optional PatternFly utility classes (e.g. from @patternfly/react-styles) merged onto the breadcrumb strip. */
   className?: string;
+  /** Main page body after breadcrumbs — wrapped in PatternFly page main section (no limit-width; that applies to the tabs/breadcrumb strip). */
+  children?: ReactNode;
 }
 
-export default function Breadcrumbs({ items, className = "mb-4" }: BreadcrumbsProps) {
+export default function Breadcrumbs({ items, className, children }: BreadcrumbsProps) {
+  const breadcrumbStripClass = [css(spacingStyles.mbMd), "pf-v6-c-page__main-breadcrumb", className]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <Breadcrumb className={className}>
+    <>
+      <section className="pf-v6-c-page__main-tabs pf-m-limit-width">
+        <section className={breadcrumbStripClass}>
+      <Breadcrumb>
       {items.map((item, index) => {
         const isLast = index === items.length - 1;
 
@@ -41,6 +53,12 @@ export default function Breadcrumbs({ items, className = "mb-4" }: BreadcrumbsPr
 
         return <BreadcrumbItem key={index}>{item.label}</BreadcrumbItem>;
       })}
-    </Breadcrumb>
+      </Breadcrumb>
+        </section>
+      </section>
+      {children != null && children !== false ? (
+        <section className="pf-v6-c-page__main-section">{children}</section>
+      ) : null}
+    </>
   );
 }
