@@ -1,4 +1,10 @@
 import { useState, useEffect, useRef } from "react";
+import { css } from "@patternfly/react-styles";
+import displayStyles from "@patternfly/react-styles/css/utilities/Display/display.mjs";
+import flexStyles from "@patternfly/react-styles/css/utilities/Flex/flex.mjs";
+import sizingStyles from "@patternfly/react-styles/css/utilities/Sizing/sizing.mjs";
+import spacingStyles from "@patternfly/react-styles/css/utilities/Spacing/spacing.mjs";
+import textStyles from "@patternfly/react-styles/css/utilities/Text/text.mjs";
 import {
   Send,
   ThumbsUp,
@@ -11,6 +17,8 @@ import {
 } from "@/lib/pfIcons";
 import {
   Button,
+  Card,
+  CardBody,
   Content,
   Divider,
   Drawer,
@@ -238,7 +246,6 @@ export function OlsChatbot({
     <Drawer
       isExpanded={isOpen}
       isInline
-      isPill
       position="end"
       style={{ flex: "1 1 0%", minHeight: 0, minWidth: 0, alignSelf: "stretch" }}
     >
@@ -373,16 +380,7 @@ export function OlsChatbot({
           </DrawerPanelContent>
         }
       >
-        <DrawerContentBody
-          hasPadding={false}
-          style={{
-            minHeight: 0,
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-            overflow: "hidden",
-          }}
-        >
+        <DrawerContentBody hasPadding={false}>
           {children}
         </DrawerContentBody>
       </DrawerContent>

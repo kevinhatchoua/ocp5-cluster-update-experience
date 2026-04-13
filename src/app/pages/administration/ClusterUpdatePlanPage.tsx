@@ -440,7 +440,7 @@ export default function ClusterUpdatePlanPage() {
         onClose={() => setChatbotOpen(false)}
         onAction={handleChatAction}
       >
-      <div className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden p-[24px] pb-[48px]">
+      <div>
       <Breadcrumbs items={[
         { label: "Administration", path: "/administration/cluster-update" },
         { label: "Cluster Update" },
