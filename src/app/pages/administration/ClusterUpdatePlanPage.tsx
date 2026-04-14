@@ -2,14 +2,20 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, Link, useLocation } from "react-router";
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionToggle,
   ActionList,
   ActionListItem,
   Alert,
   Button,
   Card,
   CardBody,
+  CardExpandableContent,
   CardFooter,
   CardHeader,
+  CardTitle,
   Checkbox,
   Content,
   Divider,
@@ -469,128 +475,78 @@ export default function ClusterUpdatePlanPage() {
                     <Grid hasGutter>
                       <GridItem span={12} md={6}>
                         <Card
+                          id="cluster-update-card-manual"
                           isCompact
                           isFullHeight
                           isSelectable
-                          isClickable
                           isSelected={updateMode === "manual"}
-                          onClick={() => setUpdateMode("manual")}
-                          style={
-                            updateMode === "manual"
-                              ? {
-                                  boxShadow:
-                                    "inset 4px 0 0 0 var(--pf-t--global--BorderColor--brand--default), 0 0 0 1px var(--pf-t--global--BorderColor--brand--default)",
-                                }
-                              : undefined
-                          }
                         >
+                          <CardHeader
+                            selectableActions={{
+                              variant: "single",
+                              name: "cluster-update-method",
+                              selectableActionId: "cluster-update-method-manual",
+                              selectableActionAriaLabel: "Manual update method",
+                              onChange: (_event, checked) => {
+                                if (checked) setUpdateMode("manual");
+                              },
+                            }}
+                          >
+                            <CardTitle>
+                              <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsCenter" }}>
+                                <Icon size="lg">
+                                  <Settings aria-hidden />
+                                </Icon>
+                                <Title headingLevel="h4" size="md">
+                                  Manual updates
+                                </Title>
+                              </Flex>
+                            </CardTitle>
+                          </CardHeader>
                           <CardBody>
-                            <Flex
-                              direction={{ default: "column" }}
-                              gap={{ default: "gapMd" }}
-                              alignItems={{ default: "alignItemsStretch" }}
-                            >
-                              <Flex
-                                justifyContent={{ default: "justifyContentSpaceBetween" }}
-                                alignItems={{ default: "alignItemsCenter" }}
-                              >
-                                <Radio
-                                  id="cluster-update-method-manual"
-                                  name="cluster-update-method"
-                                  isChecked={updateMode === "manual"}
-                                  onChange={() => setUpdateMode("manual")}
-                                  label="Manual"
-                                  aria-label="Manual update method"
-                                />
-                                {updateMode === "manual" ? (
-                                  <Label color="blue" isCompact>
-                                    Selected
-                                  </Label>
-                                ) : null}
-                              </Flex>
-                              <Flex gap={{ default: "gapMd" }} alignItems={{ default: "alignItemsFlexStart" }}>
-                                <FlexItem>
-                                  <Icon size="lg">
-                                    <Settings aria-hidden />
-                                  </Icon>
-                                </FlexItem>
-                                <FlexItem flex={{ default: "flex_1" }}>
-                                  <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
-                                    <Title headingLevel="h4" size="md">
-                                      Manual updates
-                                    </Title>
-                                    <Content component="p">
-                                      Review available updates, assess risks, and initiate updates yourself. Full control over
-                                      timing and version selection.
-                                    </Content>
-                                  </Flex>
-                                </FlexItem>
-                              </Flex>
-                            </Flex>
+                            <Content component="p">
+                              Review available updates, assess risks, and initiate updates yourself. Full control over timing and
+                              version selection.
+                            </Content>
                           </CardBody>
                         </Card>
                       </GridItem>
                       <GridItem span={12} md={6}>
                         <Card
+                          id="cluster-update-card-agent"
                           isCompact
                           isFullHeight
                           isSelectable
-                          isClickable
                           isSelected={updateMode === "agent"}
-                          onClick={() => setUpdateMode("agent")}
-                          style={
-                            updateMode === "agent"
-                              ? {
-                                  boxShadow:
-                                    "inset 4px 0 0 0 var(--pf-t--global--BorderColor--brand--default), 0 0 0 1px var(--pf-t--global--BorderColor--brand--default)",
-                                }
-                              : undefined
-                          }
                         >
+                          <CardHeader
+                            selectableActions={{
+                              variant: "single",
+                              name: "cluster-update-method",
+                              selectableActionId: "cluster-update-method-agent",
+                              selectableActionAriaLabel: "Agent-based update method",
+                              onChange: (_event, checked) => {
+                                if (checked) setUpdateMode("agent");
+                              },
+                            }}
+                          >
+                            <CardTitle>
+                              <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsCenter" }}>
+                                <Icon size="lg" status="custom">
+                                  <Bot aria-hidden />
+                                </Icon>
+                                <Title headingLevel="h4" size="md">
+                                  Agent-based updates
+                                </Title>
+                              </Flex>
+                            </CardTitle>
+                          </CardHeader>
                           <CardBody>
-                            <Flex
-                              direction={{ default: "column" }}
-                              gap={{ default: "gapMd" }}
-                              alignItems={{ default: "alignItemsStretch" }}
-                            >
-                              <Flex
-                                justifyContent={{ default: "justifyContentSpaceBetween" }}
-                                alignItems={{ default: "alignItemsCenter" }}
-                              >
-                                <Radio
-                                  id="cluster-update-method-agent"
-                                  name="cluster-update-method"
-                                  isChecked={updateMode === "agent"}
-                                  onChange={() => setUpdateMode("agent")}
-                                  label="Agent-based"
-                                  aria-label="Agent-based update method"
-                                />
-                                {updateMode === "agent" ? (
-                                  <Label color="blue" isCompact>
-                                    Selected
-                                  </Label>
-                                ) : null}
-                              </Flex>
-                              <Flex gap={{ default: "gapMd" }} alignItems={{ default: "alignItemsFlexStart" }}>
-                                <FlexItem>
-                                  <Icon size="lg" status="custom">
-                                    <Bot aria-hidden />
-                                  </Icon>
-                                </FlexItem>
-                                <FlexItem flex={{ default: "flex_1" }}>
-                                  <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
-                                    <Title headingLevel="h4" size="md">
-                                      Agent-based updates
-                                    </Title>
-                                    <Content component="p">
-                                      An AI agent handles pre-flight checks, scheduling, coordinated platform and catalog operator
-                                      updates, and rollback automatically. Pre-checks and status span both layers holistically. You
-                                      approve plans before execution.
-                                    </Content>
-                                  </Flex>
-                                </FlexItem>
-                              </Flex>
-                            </Flex>
+                            <Content component="p">
+                              An AI agent handles pre-flight checks, scheduling, coordinated platform and catalog operator updates,
+                              and rollback automatically. Pre-checks and status span both layers holistically. You approve plans
+                              before execution.
+                            </Content>
                           </CardBody>
                         </Card>
                       </GridItem>
@@ -3064,19 +3020,28 @@ function WorkerNodesSection() {
   const isGlass = usePatternFlyGlassActive();
 
   return (
-    <Card isGlass={isGlass} component="div" style={{ marginBottom: "var(--pf-t--global--spacer--md)" }}>
-      <CardBody>
-        <ExpandableSection
-          className={clusterExpandablePlainClass(isGlass)}
-          isExpanded={sectionExpanded}
-          onToggle={(_event, expanded) => setSectionExpanded(expanded)}
-          displaySize="lg"
-          toggleContent={
-            <Title headingLevel="h2" size="xl">
-              Worker nodes on this cluster
-            </Title>
-          }
-        >
+    <Card
+      id="cluster-update-worker-nodes"
+      isGlass={isGlass}
+      component="div"
+      isExpanded={sectionExpanded}
+      style={{ marginBottom: "var(--pf-t--global--spacer--md)" }}
+    >
+      <CardHeader
+        onExpand={(_event) => setSectionExpanded((prev) => !prev)}
+        toggleButtonProps={{
+          id: "cluster-update-worker-nodes-expand",
+          "aria-labelledby": "cluster-update-worker-nodes-title",
+        }}
+      >
+        <CardTitle>
+          <Title headingLevel="h2" size="xl" id="cluster-update-worker-nodes-title">
+            Worker nodes on this cluster
+          </Title>
+        </CardTitle>
+      </CardHeader>
+      <CardExpandableContent>
+        <CardBody>
           <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
             {poolsNeedingUpdate > 0 && (
               <Alert variant="warning" isInline title="Node pools need attention" icon={<AlertTriangle aria-hidden />}>
@@ -3149,8 +3114,8 @@ function WorkerNodesSection() {
               onChange={(_e, c) => setUpdateAll(c)}
             />
           </Flex>
-        </ExpandableSection>
-      </CardBody>
+        </CardBody>
+      </CardExpandableContent>
     </Card>
   );
 }
@@ -3193,27 +3158,32 @@ export function AvailableUpdatesSection({
 
   return (
     <Card
+      id="cluster-update-available-updates"
       isGlass={isGlass}
       component="div"
+      isExpanded={sectionExpanded}
       style={{ marginBottom: "var(--pf-t--global--spacer--md)" }}
     >
-      <CardBody>
-        <ExpandableSection
-          className={clusterExpandablePlainClass(isGlass)}
-          isExpanded={sectionExpanded}
-          onToggle={(_event, expanded) => setSectionExpanded(expanded)}
-          displaySize="lg"
-          toggleContent={
-            <Flex gap={{ default: "gapMd" }} alignItems={{ default: "alignItemsCenter" }} flexWrap={{ default: "wrap" }}>
-              <Title headingLevel="h2" size="xl">
-                Available updates
-              </Title>
-              <span onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
-                <InfoTooltip />
-              </span>
-            </Flex>
-          }
-        >
+      <CardHeader
+        onExpand={(_event) => setSectionExpanded((prev) => !prev)}
+        toggleButtonProps={{
+          id: "cluster-update-available-updates-expand",
+          "aria-labelledby": "cluster-update-available-updates-title",
+        }}
+      >
+        <CardTitle>
+          <Flex gap={{ default: "gapMd" }} alignItems={{ default: "alignItemsCenter" }} flexWrap={{ default: "wrap" }}>
+            <Title headingLevel="h2" size="xl" id="cluster-update-available-updates-title">
+              Available updates
+            </Title>
+            <span onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+              <InfoTooltip />
+            </span>
+          </Flex>
+        </CardTitle>
+      </CardHeader>
+      <CardExpandableContent>
+        <CardBody>
           <Flex direction={{ default: "column" }} gap={{ default: "gapLg" }}>
             <Flex
               direction={{ default: "column" }}
@@ -3266,34 +3236,42 @@ export function AvailableUpdatesSection({
             {groups.length === 0 ? (
               <Content component="p">No updates available for this channel.</Content>
             ) : (
-              groups.map((group: VersionGroup) => (
-                <VersionGroupComponent
-                  key={group.label}
-                  label={group.label}
-                  versions={group.versions}
-                  expanded={!!expandedGroups[group.label]}
-                  setExpanded={(val: boolean) =>
-                    setExpandedGroups((prev: Record<string, boolean>) => {
-                      if (val) {
-                        const next: Record<string, boolean> = {};
-                        for (const g of groups) {
-                          next[g.label] = g.label === group.label;
+              <Accordion
+                aria-label="OpenShift release versions"
+                isBordered
+                displaySize="lg"
+                headingLevel="h3"
+                togglePosition="start"
+              >
+                {groups.map((group: VersionGroup) => (
+                  <VersionGroupComponent
+                    key={group.label}
+                    label={group.label}
+                    versions={group.versions}
+                    expanded={!!expandedGroups[group.label]}
+                    setExpanded={(val: boolean) =>
+                      setExpandedGroups((prev: Record<string, boolean>) => {
+                        if (val) {
+                          const next: Record<string, boolean> = {};
+                          for (const g of groups) {
+                            next[g.label] = g.label === group.label;
+                          }
+                          return next;
                         }
-                        return next;
-                      }
-                      return { ...prev, [group.label]: false };
-                    })
-                  }
-                  selectedVersion={selectedVersion}
-                  setSelectedVersion={setSelectedVersion}
-                  navigate={navigate}
-                  setActiveTab={setActiveTab}
-                />
-              ))
+                        return { ...prev, [group.label]: false };
+                      })
+                    }
+                    selectedVersion={selectedVersion}
+                    setSelectedVersion={setSelectedVersion}
+                    navigate={navigate}
+                    setActiveTab={setActiveTab}
+                  />
+                ))}
+              </Accordion>
             )}
           </Flex>
-        </ExpandableSection>
-      </CardBody>
+        </CardBody>
+      </CardExpandableContent>
     </Card>
   );
 }
@@ -3350,24 +3328,33 @@ function InstalledOperatorsSection({ selectedVersion, operators, navigate }: { s
   };
 
   return (
-    <Card id="operators-section" isGlass={isGlass} component="div" style={{ marginBottom: "var(--pf-t--global--spacer--md)" }}>
-      <CardBody>
-        <ExpandableSection
-          className={clusterExpandablePlainClass(isGlass)}
-          isExpanded={sectionExpanded}
-          onToggle={(_event, expanded) => setSectionExpanded(expanded)}
-          displaySize="lg"
-          toggleContent={
-            <Flex gap={{ default: "gapMd" }} alignItems={{ default: "alignItemsCenter" }} flexWrap={{ default: "wrap" }}>
-              <Title headingLevel="h2" size="xl">
-                Operators on this cluster
-              </Title>
-              <span onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
-                <InfoTooltip />
-              </span>
-            </Flex>
-          }
-        >
+    <Card
+      id="operators-section"
+      isGlass={isGlass}
+      component="div"
+      isExpanded={sectionExpanded}
+      style={{ marginBottom: "var(--pf-t--global--spacer--md)" }}
+    >
+      <CardHeader
+        onExpand={(_event) => setSectionExpanded((prev) => !prev)}
+        toggleButtonProps={{
+          id: "cluster-update-operators-expand",
+          "aria-labelledby": "cluster-update-operators-title",
+        }}
+      >
+        <CardTitle>
+          <Flex gap={{ default: "gapMd" }} alignItems={{ default: "alignItemsCenter" }} flexWrap={{ default: "wrap" }}>
+            <Title headingLevel="h2" size="xl" id="cluster-update-operators-title">
+              Operators on this cluster
+            </Title>
+            <span onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+              <InfoTooltip />
+            </span>
+          </Flex>
+        </CardTitle>
+      </CardHeader>
+      <CardExpandableContent>
+        <CardBody>
           <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
             <Flex gap={{ default: "gapMd" }} alignItems={{ default: "alignItemsFlexStart" }} flexWrap={{ default: "wrap" }}>
               <Content component="p">
@@ -3623,8 +3610,8 @@ function InstalledOperatorsSection({ selectedVersion, operators, navigate }: { s
               onChange={(_e, c) => setUpdateAll(c)}
             />
           </Flex>
-        </ExpandableSection>
-      </CardBody>
+        </CardBody>
+      </CardExpandableContent>
     </Card>
   );
 }
@@ -3719,31 +3706,31 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
   // Per-version unique risks (not in shared set)
   const getUniqueRisks = (v: VersionEntry) => (v.operatorIssues || []).filter((i: OperatorIssue) => !sharedSlugs.includes(i.slug));
 
-  const isGlass = usePatternFlyGlassActive();
+  const releaseToggleId = `cluster-update-release-${label.replace(/[^a-zA-Z0-9_-]/g, "")}-toggle`;
+  const releaseContentId = `cluster-update-release-${label.replace(/[^a-zA-Z0-9_-]/g, "")}-content`;
 
   return (
-    <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }} style={{ marginBottom: "var(--pf-t--global--spacer--sm)" }}>
-      <ExpandableSection
-        className={clusterExpandablePlainClass(isGlass)}
-        isExpanded={expanded}
-        onToggle={(_event, exp) => setExpanded(exp)}
-        displaySize="lg"
-        toggleContent={
-          <Flex gap={{ default: "gapMd" }} alignItems={{ default: "alignItemsCenter" }} flexWrap={{ default: "wrap" }}>
-            <Title headingLevel="h3" size="lg">
-              {label}
-            </Title>
-            <Label color="blue" isCompact>
-              {versions.length} update{versions.length !== 1 ? "s" : ""}
-            </Label>
-            {sharedSlugs.length > 0 ? (
-              <Content component="small">
-                All versions exposed to <code>{sharedSlugs.join(", ")}</code>
-              </Content>
-            ) : null}
-          </Flex>
-        }
+    <AccordionItem isExpanded={expanded}>
+      <AccordionToggle
+        id={releaseToggleId}
+        component="div"
+        onClick={() => setExpanded(!expanded)}
       >
+        <Flex gap={{ default: "gapMd" }} alignItems={{ default: "alignItemsCenter" }} flexWrap={{ default: "wrap" }}>
+          <Title headingLevel="h3" size="lg">
+            {label}
+          </Title>
+          <Label color="blue" isCompact>
+            {versions.length} update{versions.length !== 1 ? "s" : ""}
+          </Label>
+          {sharedSlugs.length > 0 ? (
+            <Content component="small">
+              All versions exposed to <code>{sharedSlugs.join(", ")}</code>
+            </Content>
+          ) : null}
+        </Flex>
+      </AccordionToggle>
+      <AccordionContent id={releaseContentId} aria-labelledby={releaseToggleId}>
         <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
           {versions.map((v: VersionEntry) => {
             const isSelected = selectedVersion === v.version;
@@ -4107,8 +4094,8 @@ function VersionGroupComponent({ label, versions, expanded, setExpanded, selecte
             );
           })}
         </Flex>
-      </ExpandableSection>
-    </Flex>
+      </AccordionContent>
+    </AccordionItem>
   );
 }
 
