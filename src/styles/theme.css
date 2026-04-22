@@ -775,6 +775,11 @@ html:not(.dark) .ocs-console-sidebar .pf-v6-c-nav {
 html .ocs-console-page.pf-v6-c-page {
   --pf-v6-c-page__main-section--PaddingBlockStart: 0;
   --pf-v6-c-page__main-section--PaddingBlockEnd: 0;
+  /* Unset filled strip backgrounds: main content, tabs row, and breadcrumb strip. */
+  --pf-v6-c-page__main-section--BackgroundColor: transparent;
+  --pf-v6-c-page__main-section--m-secondary--BackgroundColor: transparent;
+  --pf-v6-c-page__main-tabs--BackgroundColor: transparent;
+  --pf-v6-c-page__main-breadcrumb--BackgroundColor: transparent;
 }
 
 /** Home / stub PageSection, or any full-width app section without Breadcrumbs. */
@@ -843,4 +848,72 @@ html.dark .ols-legal-header-notice {
 .ols-legal-header-notice p {
   color: var(--pf-t--global--text--color--subtle) !important;
   line-height: 1.45;
+}
+
+.ols-legal-header-notice .pf-v6-c-title {
+  color: var(--pf-t--global--text--color--regular) !important;
+  margin: 0 !important;
+}
+
+.ols-legal-composer {
+  padding: var(--pf-t--global--spacer--sm) var(--pf-t--global--spacer--md);
+  max-height: 10.5rem;
+  overflow-y: auto;
+  background: var(--pf-t--global--background--color--secondary--default, rgba(0, 0, 0, 0.02));
+}
+
+.ls-composer-notice__title {
+  margin: 0 !important;
+}
+
+html.dark .ols-legal-composer {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* LLM accuracy reminder — high-visibility inline banner (legal / summit demo) */
+.ols-legal-ai-accuracy-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0;
+  max-width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: var(--pf-t--global--font--size--body--default, 0.875rem);
+  line-height: 1.45;
+  font-weight: 500;
+  color: var(--pf-t--global--text--color--regular) !important;
+  background-color: var(
+    --pf-t--global--color--status--warning--200,
+    var(--pf-t--color-yellow-50, #fdf6e0)
+  );
+  border: 1px solid var(--pf-t--global--color--status--warning--100, #f0ab00);
+  border-left-width: 4px;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.ols-legal-ai-accuracy-banner--compact {
+  padding: 0.35rem 0.55rem;
+  font-size: var(--pf-t--global--font--size--body--sm, 0.8125rem);
+  line-height: 1.4;
+}
+
+.ols-legal-ai-accuracy-banner__icon {
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 0.1em;
+  color: var(--pf-t--global--icon--color--status--warning--default, #c58c00) !important;
+  fill: currentColor;
+}
+
+.ols-legal-ai-accuracy-banner__text {
+  flex: 1;
+  min-width: 0;
+}
+
+html.dark .ols-legal-ai-accuracy-banner {
+  background-color: rgba(197, 140, 0, 0.18) !important;
+  border-color: rgba(240, 171, 0, 0.55) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
