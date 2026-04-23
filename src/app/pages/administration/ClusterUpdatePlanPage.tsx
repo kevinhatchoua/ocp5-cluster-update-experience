@@ -61,6 +61,7 @@ import Breadcrumbs from "../../components/Breadcrumbs";
 import FavoriteButton from "../../components/FavoriteButton";
 import { AiAssessmentSection } from "../../components/AiAssessmentSection";
 import { OlsChatbot } from "../../components/OlsChatbot";
+import { LightspeedAiContentBanner, LightspeedAiAccuracyInline } from "../../components/lightspeed/LightspeedLegalCopy";
 import { useClusterUpdateDemoVariant } from "../../contexts/ClusterUpdateDemoContext";
 
 /** Disclosure (displaySize lg) — strip secondary panel chrome inside glass surfaces; see cluster-update-layout.css */
@@ -445,7 +446,7 @@ export default function ClusterUpdatePlanPage() {
         }}
       >
         <Tab eventKey="update-plan" title={<TabTitleText>Update plan</TabTitleText>}>
-          <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
+          <Flex direction={{ default: "column" }} gap={{ default: "gapLg" }}>
           <AiAssessmentSection
             openChatbot={openChatbot}
             selectedVersion={selectedVersion}
@@ -1051,6 +1052,9 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
             <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Generated Mar 30, 2026 02:15 UTC</span>
           </div>
           <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[14px] mb-[16px] font-['Red_Hat_Text:Regular',sans-serif]">AI-generated update plan for your cluster</p>
+          <div className="mb-[16px]">
+            <LightspeedAiContentBanner />
+          </div>
 
           <div className="space-y-[20px]">
             {/* Pre-Checks Module */}
@@ -2617,6 +2621,7 @@ function UpdateAgentTab({
                 variant={agentRiskProgressVariant(planProfile.riskLabel)}
                 aria-labelledby="ai-risk-score-label"
               />
+              <LightspeedAiAccuracyInline className="mt-[0.5rem]" />
             </Flex>
 
             {planDecision === "pending" && (
