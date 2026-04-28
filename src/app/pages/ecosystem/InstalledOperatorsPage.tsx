@@ -4,10 +4,10 @@ import {
   Info,
   AlertCircle,
   ExternalLink,
-  Layers,
   AlertTriangle,
   Clock,
   Columns2,
+  Globe,
 } from "@/lib/pfIcons";
 import { usePatternFlyGlassActive } from "@/lib/usePatternFlyGlassActive";
 import { Link, useNavigate } from "react-router";
@@ -32,13 +32,13 @@ import {
   Pagination,
   PaginationVariant,
   Title,
+  Tooltip,
   ToolbarGroup,
   ToolbarItem,
 } from "@patternfly/react-core";
 import {
   DataView,
   DataViewCheckboxFilter,
-  DataViewFilters,
   DataViewTextFilter,
   DataViewToolbar,
   useDataViewFilters,
@@ -46,7 +46,6 @@ import {
 import EllipsisVIcon from "@patternfly/react-icons/dist/esm/icons/ellipsis-v-icon";
 import SlidersHIcon from "@patternfly/react-icons/dist/esm/icons/sliders-h-icon";
 import SortCommonAscIcon from "@patternfly/react-icons/dist/esm/icons/pficon-sort-common-asc-icon";
-import SortCommonDescIcon from "@patternfly/react-icons/dist/esm/icons/pficon-sort-common-desc-icon";
 import { InnerScrollContainer, Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import FavoriteButton from "../../components/FavoriteButton";
@@ -54,26 +53,34 @@ import { useChat } from "../../contexts/ChatContext";
 import { BulkUpdateModal } from "../../components/OperatorUpdateModals";
 import { AiAssessmentSection } from "../../components/AiAssessmentSection";
 import { OlsChatbot } from "../../components/OlsChatbot";
+import { useClusterUpdateDemoVariant } from "../../contexts/ClusterUpdateDemoContext";
 import {
   ListAdvancedFilterModal,
   type ListAdvancedAttributeSpec,
 } from "../../components/dataView/ListAdvancedFilterModal";
+import { IoDataViewFiltersWithMidActions } from "../../components/dataView/IoDataViewFiltersWithMidActions";
 
 const CLUSTER_TARGET_VERSION = "5.1.10";
 const CLUSTER_CHANNEL = "fast-5.1";
 
-/** Data columns that can be hidden (Operator, selection, and Actions stay visible). */
+/** Data columns and optional table chrome (row selection, kebab) via Managed columns. */
 type TableColumnKey =
   | "version"
+  | "clusterExtension"
   | "clusterCompatibility"
   | "updatePlan"
   | "support"
   | "status"
   | "lastUpdated"
-  | "managedNamespaces";
+  | "managedNamespaces"
+  | "rowSelect"
+  | "rowActions";
 
-const TABLE_COLUMN_OPTIONS: { key: TableColumnKey; label: string }[] = [
+type DataColumnKey = Exclude<TableColumnKey, "rowSelect" | "rowActions">;
+
+const TABLE_COLUMN_OPTIONS: { key: DataColumnKey; label: string }[] = [
   { key: "version", label: "Version" },
+  { key: "clusterExtension", label: "Cluster extension" },
   { key: "clusterCompatibility", label: "Cluster compatibility" },
   { key: "updatePlan", label: "Update plan" },
   { key: "support", label: "Support" },
@@ -82,39 +89,34 @@ const TABLE_COLUMN_OPTIONS: { key: TableColumnKey; label: string }[] = [
   { key: "managedNamespaces", label: "Managed namespaces" },
 ];
 
-/** Shown in the “Default columns” group; Operator is always visible and listed as disabled. */
+/** “Default columns” in Manage columns (Operator is always on). */
 const DEFAULT_MANAGE_COLUMN_ORDER: { key: TableColumnKey; label: string }[] = [
   { key: "version", label: "Version" },
   { key: "status", label: "Status" },
+  { key: "clusterExtension", label: "Cluster extension" },
   { key: "clusterCompatibility", label: "Cluster compatibility" },
+  { key: "support", label: "Support" },
   { key: "lastUpdated", label: "Last updated" },
+  { key: "rowSelect", label: "Row selection" },
 ];
 
 const ADDITIONAL_MANAGE_COLUMN_ORDER: { key: TableColumnKey; label: string }[] = [
   { key: "updatePlan", label: "Update plan" },
-  { key: "support", label: "Support" },
   { key: "managedNamespaces", label: "Managed namespaces" },
+  { key: "rowActions", label: "Actions" },
 ];
 
-/** “Restore default columns” — default group on, additional off (list-filter manage-columns pattern). */
 const RESTORE_DEFAULT_VISIBLE: Record<TableColumnKey, boolean> = {
   version: true,
   status: true,
+  clusterExtension: true,
   clusterCompatibility: true,
+  support: true,
   lastUpdated: true,
   updatePlan: false,
-  support: false,
   managedNamespaces: false,
-};
-
-const ALL_COLUMNS_VISIBLE: Record<TableColumnKey, boolean> = {
-  version: true,
-  clusterCompatibility: true,
-  updatePlan: true,
-  support: true,
-  status: true,
-  lastUpdated: true,
-  managedNamespaces: true,
+  rowSelect: true,
+  rowActions: false,
 };
 
 const ioManageColRowStyle = (withDivider: boolean): CSSProperties => ({
@@ -164,13 +166,12 @@ const FILTER_VALUE_OPTIONS: Record<
   clusterCompatibility: [
     { value: "Compatible", label: "Compatible" },
     { value: "Incompatible", label: "Incompatible" },
-    { value: "Unknown", label: "Unknown" },
   ],
   support: [
     { value: "Full", label: "Full" },
     { value: "Limited", label: "Limited" },
     { value: "Community", label: "Community" },
-    { value: "Self-support", label: "Self-support" },
+    { value: "Unsupported", label: "Unsupported" },
   ],
 };
 
@@ -212,18 +213,37 @@ const IO_LIST_ADV_FILTER_SPEC: ListAdvancedAttributeSpec<keyof IoListFilters>[] 
   },
 ];
 
-type SortColumnKey = "name" | "version" | "status" | "lastUpdated" | "clusterCompatibility";
+type SortColumnKey =
+  | "name"
+  | "version"
+  | "status"
+  | "lastUpdated"
+  | "clusterCompatibility"
+  | "clusterExtension"
+  | "support";
 
-const COMPAT_SORT_ORDER: Record<"Compatible" | "Incompatible" | "Unknown", number> = {
+const COMPAT_SORT_ORDER: Record<"Compatible" | "Incompatible", number> = {
   Compatible: 0,
-  Unknown: 1,
-  Incompatible: 2,
+  Incompatible: 1,
 };
 
 function parseUpdatedAt(s?: string): number {
   if (!s) return 0;
   const t = Date.parse(s);
   return Number.isNaN(t) ? 0 : t;
+}
+
+/**
+ * List timestamp cell — same en-US “medium + short” shape as PatternFly Data View examples
+ * (see https://www.patternfly.org/extensions/data-view/overview). Falls back to the raw value if it won’t parse.
+ */
+function formatDataViewListDate(value: string | undefined): string {
+  if (!value || value === "—") return "—";
+  const t = Date.parse(value);
+  if (Number.isNaN(t)) {
+    return value;
+  }
+  return new Date(t).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
 }
 
 type InstalledOperator = {
@@ -234,9 +254,9 @@ type InstalledOperator = {
   source: string;
   status: "Running" | "Degraded" | "Pending";
   autoUpdate: boolean;
-  clusterCompatibility: "Compatible" | "Incompatible" | "Unknown";
+  clusterCompatibility: "Compatible" | "Incompatible";
   compatibilityMessage?: string;
-  support: "Full" | "Limited" | "Community" | "Self-support";
+  support: "Full" | "Limited" | "Community" | "Unsupported";
   supportEndDate?: string;
   supportBadge?: string;
   supportBadgeType?: "success" | "danger" | "warning";
@@ -264,16 +284,19 @@ function compareVersions(a: string, b: string): number {
 function getOperatorCompatibilityPage(
   op: InstalledOperator,
   targetVersion: string
-): { compatibility: "Compatible" | "Incompatible" | "Unknown"; message?: string } {
+): { compatibility: "Compatible" | "Incompatible"; message?: string } {
   if (op.status === "Pending") {
-    return { compatibility: "Unknown", message: op.compatibilityMessage || "Operator is pending." };
+    return {
+      compatibility: "Incompatible",
+      message: op.compatibilityMessage || "Operator is pending and not compatible until it is running.",
+    };
   }
   if (op.status === "Degraded") {
     return {
-      compatibility: "Unknown",
+      compatibility: "Incompatible",
       message:
         op.compatibilityMessage ||
-        "Operator is degraded. Compatibility cannot be determined until the operator is healthy.",
+        "Operator is degraded and not compatible until the operator is healthy.",
     };
   }
   if (!op.maxOcpVersion) return { compatibility: "Compatible" };
@@ -292,8 +315,72 @@ function getOperatorCompatibilityPage(
 }
 
 type OperatorRow = CatalogOperator & {
-  clusterCompatibility: "Compatible" | "Incompatible" | "Unknown";
+  clusterCompatibility: "Compatible" | "Incompatible";
 };
+
+/** Parses prototype date strings like "Nov 13, 2025" reliably across environments. */
+function parseSupportEndDateMs(supportEndDate?: string): number | undefined {
+  if (!supportEndDate || supportEndDate === "—") return undefined;
+  const trimmed = supportEndDate.trim();
+  let parsed = Date.parse(trimmed);
+  if (!Number.isNaN(parsed)) return parsed;
+  const d = new Date(trimmed);
+  if (!Number.isNaN(d.getTime())) return d.getTime();
+  // Safari / some locales: "MMM d, yyyy"
+  const mdy = trimmed.match(/^([A-Za-z]{3})\s+(\d{1,2}),\s+(\d{4})$/);
+  if (mdy) {
+    parsed = Date.parse(`${mdy[1]} ${mdy[2]}, ${mdy[3]}`);
+    if (!Number.isNaN(parsed)) return parsed;
+  }
+  // ISO yyyy-mm-dd
+  const iso = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) {
+    parsed = Date.UTC(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]));
+    return parsed;
+  }
+  return undefined;
+}
+
+function normalizeSupportBadgeLabel(supportBadge?: string): string | undefined {
+  const s = supportBadge?.replace(/\s+/g, " ").trim();
+  return s || undefined;
+}
+
+function getSupportDisplayValue(supportEndDate?: string, supportBadge?: string): string {
+  const badge = normalizeSupportBadgeLabel(supportBadge);
+  if (badge?.toLowerCase() === "end of life") return "End of life";
+
+  const ms = parseSupportEndDateMs(supportEndDate);
+  if (ms !== undefined && ms < Date.now()) return "End of life";
+
+  if (!supportEndDate || supportEndDate === "—") {
+    if (badge?.toLowerCase() === "unsupported") return "Unsupported";
+    if (badge) return badge;
+    return "—";
+  }
+  return supportEndDate;
+}
+
+/** Monotonic timestamp for sorting the Support column (earlier = older risk). */
+function getSupportSortTimestamp(op: OperatorRow): number {
+  const badge = normalizeSupportBadgeLabel(op.supportBadge);
+  if (badge?.toLowerCase() === "end of life") {
+    const ms = parseSupportEndDateMs(op.supportEndDate);
+    return ms !== undefined ? ms : 0;
+  }
+  const ms = parseSupportEndDateMs(op.supportEndDate);
+  if (ms !== undefined) return ms;
+  if (!op.supportEndDate || op.supportEndDate === "—") {
+    if (badge?.toLowerCase() === "unsupported") return Number.MAX_SAFE_INTEGER - 2;
+    if (badge) return Number.MAX_SAFE_INTEGER - 3;
+  }
+  return Number.MAX_SAFE_INTEGER - 1;
+}
+
+function getSupportTooltipText(supportBadge?: string): string | undefined {
+  if (!supportBadge) return undefined;
+  return supportBadge.replaceAll("Self-support", "Unsupported");
+}
 
 function rowMatchesDataViewFilters(op: OperatorRow, f: IoListFilters): boolean {
   if (f.name.trim()) {
@@ -332,8 +419,16 @@ function sortOperatorRows(rows: OperatorRow[], key: SortColumnKey, dir: "asc" | 
       case "clusterCompatibility":
         cmp = COMPAT_SORT_ORDER[a.clusterCompatibility] - COMPAT_SORT_ORDER[b.clusterCompatibility];
         break;
+      case "clusterExtension": {
+        const r = (o: OperatorRow) => (o.isOlmV1Extension ? 1 : 0);
+        cmp = r(a) - r(b);
+        break;
+      }
       case "lastUpdated":
         cmp = parseUpdatedAt(a.lastUpdated) - parseUpdatedAt(b.lastUpdated);
+        break;
+      case "support":
+        cmp = getSupportSortTimestamp(a) - getSupportSortTimestamp(b);
         break;
       default:
         cmp = 0;
@@ -356,7 +451,7 @@ const INITIAL_CATALOG_OPERATORS: CatalogOperator[] = [
     compatibilityMessage:
       "Max supported OCP version is 5.0. Update to v6.5+ before upgrading cluster.",
     support: "Full",
-    supportEndDate: "Nov 13, 2025",
+    supportEndDate: "2025-11-13",
     supportBadge: "End of life",
     supportBadgeType: "danger",
     updateAvailable: "6.5.1",
@@ -513,7 +608,7 @@ const INITIAL_CATALOG_OPERATORS: CatalogOperator[] = [
     source: "redhat-operators",
     status: "Degraded",
     autoUpdate: false,
-    clusterCompatibility: "Unknown",
+    clusterCompatibility: "Incompatible",
     compatibilityMessage:
       "Operator is degraded. Compatibility cannot be determined until the operator is healthy.",
     support: "Limited",
@@ -585,11 +680,11 @@ const INITIAL_CATALOG_OPERATORS: CatalogOperator[] = [
     source: "community-operators",
     status: "Pending",
     autoUpdate: true,
-    clusterCompatibility: "Unknown",
+    clusterCompatibility: "Incompatible",
     compatibilityMessage: "V1 discovery in progress — update availability TBD",
     support: "Community",
     supportEndDate: "—",
-    supportBadge: "Self-support",
+    supportBadge: "Unsupported",
     supportBadgeType: "danger",
     lastUpdated: "Jun 11, 2025, 9:15 AM",
     managedNamespaces: ["observability-sample"],
@@ -615,14 +710,16 @@ export default function InstalledOperatorsPage() {
   const [isManageColumnsModalOpen, setIsManageColumnsModalOpen] = useState(false);
   const [isAdvancedFilterModalOpen, setIsAdvancedFilterModalOpen] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState<Record<TableColumnKey, boolean>>(
-    () => ({ ...ALL_COLUMNS_VISIBLE })
+    () => ({ ...RESTORE_DEFAULT_VISIBLE })
   );
   const [columnModalDraft, setColumnModalDraft] = useState<Record<TableColumnKey, boolean>>(
-    () => ({ ...ALL_COLUMNS_VISIBLE })
+    () => ({ ...RESTORE_DEFAULT_VISIBLE })
   );
   const navigate = useNavigate();
+  const { demoVariant } = useClusterUpdateDemoVariant();
   const { setCurrentPage } = useChat();
   const isGlass = usePatternFlyGlassActive();
+  const showAssessmentAndOverviewCards = demoVariant === "manual-and-agent";
 
   const openChatbot = useCallback((context: string) => {
     setChatbotContext(context);
@@ -648,7 +745,8 @@ export default function InstalledOperatorsPage() {
     [visibleColumns]
   );
 
-  const tableColSpan = 3 + visibleDataColumnCount;
+  const tableColSpan =
+    (visibleColumns.rowSelect ? 1 : 0) + 1 + visibleDataColumnCount + (visibleColumns.rowActions ? 1 : 0);
 
   const operatorsWithCompat = useMemo(() => {
     return operators.map((op) => {
@@ -692,8 +790,7 @@ export default function InstalledOperatorsPage() {
   const renderSortableHeader = useCallback(
     (label: string, col: SortColumnKey) => {
       const active = sortColumn === col;
-      const SortHeaderIcon =
-        active && sortDirection === "desc" ? SortCommonDescIcon : SortCommonAscIcon;
+      const isDesc = active && sortDirection === "desc";
       return (
         <Button
           className="ocs-operator-table-sort"
@@ -702,8 +799,14 @@ export default function InstalledOperatorsPage() {
           isInline
           iconPosition="end"
           icon={
-            <SortHeaderIcon
-              className={active ? "ocs-operator-table-sort-icon--active" : "ocs-operator-table-sort-icon--idle"}
+            <SortCommonAscIcon
+              className={[
+                "ocs-operator-table-sort-glyph",
+                active ? "ocs-operator-table-sort-icon--active" : "ocs-operator-table-sort-icon--idle",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              style={isDesc ? { transform: "rotate(180deg)" } : undefined}
               aria-hidden
             />
           }
@@ -715,7 +818,20 @@ export default function InstalledOperatorsPage() {
     [sortColumn, sortDirection, toggleSort]
   );
 
-  const v1Count = operators.filter((o) => o.isOlmV1Extension).length;
+  /** Non-sortable headers: same <Button plain isInline> shell as sortable columns for consistent type size. */
+  const renderPlainHeader = useCallback((label: string) => {
+    return (
+      <Button
+        className="ocs-operator-table-sort ocs-operator-table-header-static"
+        component="div"
+        variant="plain"
+        isInline
+        tabIndex={-1}
+      >
+        {label}
+      </Button>
+    );
+  }, []);
 
   const operatorsForBulkModal = useMemo(
     () =>
@@ -832,94 +948,152 @@ export default function InstalledOperatorsPage() {
               </p>
             </Content>
 
-            <AiAssessmentSection
-              variant="installed-operators"
-              installedSummary={installedAiSummary}
-              openChatbot={openChatbot}
-              selectedVersion={CLUSTER_TARGET_VERSION}
-            />
+            {showAssessmentAndOverviewCards && (
+              <>
+                <AiAssessmentSection
+                  variant="installed-operators"
+                  installedSummary={installedAiSummary}
+                  openChatbot={openChatbot}
+                  selectedVersion={CLUSTER_TARGET_VERSION}
+                />
 
-            <Flex flexWrap={{ default: "flexWrapWrap" }} gap={{ default: "gapLg" }}>
-            <FlexItem flex={{ default: "flex_1" }} grow={{ default: "grow" }} shrink={{ default: "shrink" }}>
-              <Card isGlass={isGlass} isFullHeight>
-                <CardBody>
-                  <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
-                    <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapMd" }}>
-                      <Icon size="lg" status="success">
-                        <CheckCircle />
-                      </Icon>
-                      <Content component="small">Total installed</Content>
-                    </Flex>
-                    <Title headingLevel="h3" size="4xl">
-                      {operators.length}
-                    </Title>
-                  </Flex>
-                </CardBody>
-              </Card>
-            </FlexItem>
-            <FlexItem flex={{ default: "flex_1" }} grow={{ default: "grow" }} shrink={{ default: "shrink" }}>
-              <Card isGlass={isGlass} isFullHeight>
-                <CardBody>
-                  <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
-                    <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapMd" }}>
-                      <Icon size="lg" status="info">
-                        <Info />
-                      </Icon>
-                      <Content component="small">Available Updates</Content>
-                    </Flex>
-                    <Title headingLevel="h3" size="4xl">
-                      {operators.filter((o) => o.updateAvailable).length}
-                    </Title>
-                  </Flex>
-                </CardBody>
-              </Card>
-            </FlexItem>
-            <FlexItem flex={{ default: "flex_1" }} grow={{ default: "grow" }} shrink={{ default: "shrink" }}>
-              <Card isGlass={isGlass} isFullHeight>
-                <CardBody>
-                  <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
-                    <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapMd" }}>
-                      <Icon size="lg" status="warning">
-                        <AlertCircle />
-                      </Icon>
-                      <Content component="small">End of Life Support</Content>
-                    </Flex>
-                    <Title headingLevel="h3" size="4xl">
-                      {operators.filter((o) => o.supportBadge === "End of life").length}
-                    </Title>
-                  </Flex>
-                </CardBody>
-              </Card>
-            </FlexItem>
-            <FlexItem flex={{ default: "flex_1" }} grow={{ default: "grow" }} shrink={{ default: "shrink" }}>
-              <Card isGlass={isGlass} isFullHeight>
-                <CardBody>
-                  <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
-                    <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapMd" }}>
-                      <Icon size="lg">
-                        <Layers />
-                      </Icon>
-                      <Content component="small">OLM v1 extensions</Content>
-                    </Flex>
-                    <Title headingLevel="h3" size="4xl">
-                      {v1Count}
-                    </Title>
-                  </Flex>
-                </CardBody>
-              </Card>
-            </FlexItem>
-            </Flex>
+                <Flex flexWrap={{ default: "flexWrapWrap" }} gap={{ default: "gapLg" }}>
+                  <FlexItem flex={{ default: "flex_1" }} grow={{ default: "grow" }} shrink={{ default: "shrink" }}>
+                    <Card isGlass={isGlass} isFullHeight>
+                      <CardBody>
+                        <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+                          <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapMd" }}>
+                            <Icon size="lg" status="success">
+                              <CheckCircle />
+                            </Icon>
+                            <Content component="small">Total installed</Content>
+                          </Flex>
+                          <Title headingLevel="h3" size="4xl">
+                            {operators.length}
+                          </Title>
+                        </Flex>
+                      </CardBody>
+                    </Card>
+                  </FlexItem>
+                  <FlexItem flex={{ default: "flex_1" }} grow={{ default: "grow" }} shrink={{ default: "shrink" }}>
+                    <Card isGlass={isGlass} isFullHeight>
+                      <CardBody>
+                        <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+                          <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapMd" }}>
+                            <Icon size="lg" status="info">
+                              <Info />
+                            </Icon>
+                            <Content component="small">Available Updates</Content>
+                          </Flex>
+                          <Title headingLevel="h3" size="4xl">
+                            {operators.filter((o) => o.updateAvailable).length}
+                          </Title>
+                        </Flex>
+                      </CardBody>
+                    </Card>
+                  </FlexItem>
+                  <FlexItem flex={{ default: "flex_1" }} grow={{ default: "grow" }} shrink={{ default: "shrink" }}>
+                    <Card isGlass={isGlass} isFullHeight>
+                      <CardBody>
+                        <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+                          <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapMd" }}>
+                            <Icon size="lg" status="warning">
+                              <AlertCircle />
+                            </Icon>
+                            <Content component="small">End of Life Support</Content>
+                          </Flex>
+                          <Title headingLevel="h3" size="4xl">
+                            {
+                              operators.filter(
+                                (o) => getSupportDisplayValue(o.supportEndDate, o.supportBadge) === "End of life"
+                              ).length
+                            }
+                          </Title>
+                        </Flex>
+                      </CardBody>
+                    </Card>
+                  </FlexItem>
+                </Flex>
+              </>
+            )}
 
-            <DataView ouiaId="installed-operators-data-view" className="ocs-io-dataview">
+            <DataView
+              ouiaId="installed-operators-data-view"
+              className="ocs-io-dataview"
+              style={
+                showAssessmentAndOverviewCards
+                  ? undefined
+                  : { marginBlockStart: "var(--pf-t--global--spacer--lg)" }
+              }
+            >
               <DataViewToolbar
                 ouiaId="installed-operators-dv-toolbar"
-                className="ocs-io-dataview-toolbar"
+                id="installed-operators-dv-toolbar"
+                className="ocs-io-dataview-toolbar pf-m-toggle-group-container ocs-io-dv-toolbar-align"
                 clearAllFilters={clearAllFilters}
+                collapseListedFiltersBreakpoint="xl"
                 filters={
-                  <DataViewFilters<IoListFilters>
+                  <IoDataViewFiltersWithMidActions<IoListFilters>
                     values={filters}
                     onChange={(_filterId, partial) => onSetFilters(partial as Partial<IoListFilters>)}
-                    breakpoint="md"
+                    breakpoint="xl"
+                    midContent={
+                      <ToolbarGroup
+                        className="ocs-io-filters-mid-actions"
+                        gap={{ default: "gapMd" }}
+                        variant="action-group"
+                        alignItems="center"
+                      >
+                        <ToolbarItem>
+                          <Button
+                            variant="plain"
+                            title="Advanced filter"
+                            aria-label="Advanced filter"
+                            onClick={() => {
+                              setIsAdvancedFilterModalOpen(true);
+                            }}
+                            icon={<SlidersHIcon aria-hidden />}
+                          />
+                        </ToolbarItem>
+                        <ToolbarItem>
+                          <Button
+                            variant="plain"
+                            title="Manage columns"
+                            aria-label="Manage columns"
+                            onClick={() => {
+                              setColumnModalDraft({ ...visibleColumns });
+                              setIsManageColumnsModalOpen(true);
+                            }}
+                            icon={<Columns2 aria-hidden />}
+                          />
+                        </ToolbarItem>
+                        <ToolbarItem>
+                          <Button
+                            variant="primary"
+                            onClick={() => setIsBulkUpdateModalOpen(true)}
+                            isDisabled={selectedOperators.length < 2}
+                            title={
+                              selectedOperators.length < 2
+                                ? "Select at least two operators to run a bulk approval"
+                                : "Review and approve updates for the selected operators"
+                            }
+                          >
+                            Approve update
+                          </Button>
+                        </ToolbarItem>
+                        <ToolbarItem>
+                          <Button
+                            variant="link"
+                            component={Link}
+                            to="/ecosystem/software-catalog"
+                            icon={<ExternalLink />}
+                            iconPosition="right"
+                          >
+                            Browse Software Catalog
+                          </Button>
+                        </ToolbarItem>
+                      </ToolbarGroup>
+                    }
                   >
                     <DataViewTextFilter
                       title="Name"
@@ -947,59 +1121,7 @@ export default function InstalledOperatorsPage() {
                       filterId="support"
                       options={FILTER_VALUE_OPTIONS.support}
                     />
-                  </DataViewFilters>
-                }
-                actions={
-                  <ToolbarGroup align={{ default: "alignEnd" }} gap={{ default: "gapMd" }} variant="action-group">
-                    <ToolbarItem>
-                      <Button
-                        variant="plain"
-                        title="Advanced filter"
-                        aria-label="Advanced filter"
-                        onClick={() => {
-                          setIsAdvancedFilterModalOpen(true);
-                        }}
-                        icon={<SlidersHIcon aria-hidden />}
-                      />
-                    </ToolbarItem>
-                    <ToolbarItem>
-                      <Button
-                        variant="plain"
-                        title="Manage columns"
-                        aria-label="Manage columns"
-                        onClick={() => {
-                          setColumnModalDraft({ ...visibleColumns });
-                          setIsManageColumnsModalOpen(true);
-                        }}
-                        icon={<Columns2 aria-hidden />}
-                      />
-                    </ToolbarItem>
-                    <ToolbarItem>
-                      <Button
-                        variant="primary"
-                        onClick={() => setIsBulkUpdateModalOpen(true)}
-                        isDisabled={selectedOperators.length < 2}
-                        title={
-                          selectedOperators.length < 2
-                            ? "Select at least two operators to run a bulk approval"
-                            : "Review and approve updates for the selected operators"
-                        }
-                      >
-                        Approve update
-                      </Button>
-                    </ToolbarItem>
-                    <ToolbarItem>
-                      <Button
-                        variant="link"
-                        component={Link}
-                        to="/ecosystem/software-catalog"
-                        icon={<ExternalLink />}
-                        iconPosition="right"
-                      >
-                        Browse Software Catalog
-                      </Button>
-                    </ToolbarItem>
-                  </ToolbarGroup>
+                  </IoDataViewFiltersWithMidActions>
                 }
                 pagination={
                   <Pagination
@@ -1020,65 +1142,72 @@ export default function InstalledOperatorsPage() {
                     variant={PaginationVariant.top}
                     isCompact
                     ouiaId="installed-operators-pagination"
+                    widgetId="installed-operators-pagination"
                     titles={{ items: "operators" }}
+                    paginationAriaLabel="Installed operators pagination (top)"
                   />
                 }
               />
 
             <PageSection aria-label="Installed operators table" padding={{ default: "noPadding" }}>
-            <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
-              <Flex
-                alignItems={{ default: "alignItemsCenter" }}
-                gap={{ default: "gapSm" }}
-                flexWrap={{ default: "flexWrapWrap" }}
-              >
-                <Icon>
-                  <Layers />
-                </Icon>
-                <Content component="small">
-                  = <strong>Cluster extension</strong> (OLM v1 managed)
-                </Content>
-              </Flex>
-              <InnerScrollContainer>
-                <Table aria-label="Installed operators" borders variant="compact">
+            <InnerScrollContainer>
+                <Table
+                  aria-label="Installed operators"
+                  borders
+                  variant="compact"
+                  className="ocs-io-operator-table"
+                >
                   <Thead>
                     <Tr>
-                      <Th modifier="fitContent" aria-label="Select all operators in view">
-                        <input
-                          type="checkbox"
-                          checked={
-                            sortedFilteredOperators.length > 0 &&
-                            sortedFilteredOperators.every((op) => selectedOperators.includes(op.name))
-                          }
-                          onChange={handleSelectAll}
-                          title="Select all results matching current filters and search"
-                        />
-                      </Th>
+                      {visibleColumns.rowSelect && (
+                        <Th modifier="fitContent" aria-label="Select all operators in view">
+                          <input
+                            type="checkbox"
+                            checked={
+                              sortedFilteredOperators.length > 0 &&
+                              sortedFilteredOperators.every((op) => selectedOperators.includes(op.name))
+                            }
+                            onChange={handleSelectAll}
+                            title="Select all results matching current filters and search"
+                          />
+                        </Th>
+                      )}
                       <Th dataLabel="Operator">
                         {renderSortableHeader("Operator", "name")}
                       </Th>
+                      {visibleColumns.status && (
+                        <Th dataLabel="Status">{renderSortableHeader("Status", "status")}</Th>
+                      )}
                       {visibleColumns.version && (
                         <Th dataLabel="Version">{renderSortableHeader("Version", "version")}</Th>
+                      )}
+                      {visibleColumns.clusterExtension && (
+                        <Th dataLabel="Cluster extension" className="ocs-io-col-cluster-ext">
+                          {renderSortableHeader("Cluster extension", "clusterExtension")}
+                        </Th>
                       )}
                       {visibleColumns.clusterCompatibility && (
                         <Th dataLabel="Cluster compatibility">
                           {renderSortableHeader("Cluster compatibility", "clusterCompatibility")}
                         </Th>
                       )}
-                      {visibleColumns.updatePlan && <Th dataLabel="Update plan">Update plan</Th>}
-                      {visibleColumns.support && <Th dataLabel="Support">Support</Th>}
-                      {visibleColumns.status && (
-                        <Th dataLabel="Status">{renderSortableHeader("Status", "status")}</Th>
+                      {visibleColumns.support && (
+                        <Th dataLabel="Support">{renderSortableHeader("Support", "support")}</Th>
                       )}
                       {visibleColumns.lastUpdated && (
                         <Th dataLabel="Last updated">{renderSortableHeader("Last updated", "lastUpdated")}</Th>
                       )}
-                      {visibleColumns.managedNamespaces && (
-                        <Th dataLabel="Managed namespaces">Managed namespaces</Th>
+                      {visibleColumns.updatePlan && (
+                        <Th dataLabel="Update plan">{renderPlainHeader("Update plan")}</Th>
                       )}
-                      <Th modifier="fitContent" dataLabel="Actions">
-                        Actions
-                      </Th>
+                      {visibleColumns.managedNamespaces && (
+                        <Th dataLabel="Managed namespaces">{renderPlainHeader("Managed namespaces")}</Th>
+                      )}
+                      {visibleColumns.rowActions && (
+                        <Th modifier="fitContent" dataLabel="Actions">
+                          {renderPlainHeader("Actions")}
+                        </Th>
+                      )}
                     </Tr>
                   </Thead>
                   <Tbody>
@@ -1091,117 +1220,31 @@ export default function InstalledOperatorsPage() {
                     ) : (
                       pagedOperators.map((op, i) => (
                         <Tr key={op.name} isRowSelected={selectedOperators.includes(op.name)}>
-                          <Td modifier="fitContent" dataLabel="Select row">
-                            <input
-                              type="checkbox"
-                              checked={selectedOperators.includes(op.name)}
-                              onChange={() => handleSelectOperator(op.name)}
-                              aria-label={`Select ${op.name}`}
-                            />
-                          </Td>
+                          {visibleColumns.rowSelect && (
+                            <Td modifier="fitContent" dataLabel="Select row">
+                              <input
+                                type="checkbox"
+                                checked={selectedOperators.includes(op.name)}
+                                onChange={() => handleSelectOperator(op.name)}
+                                aria-label={`Select ${op.name}`}
+                              />
+                            </Td>
+                          )}
                           <Td dataLabel="Operator">
                             <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
-                              <Flex
-                                flexWrap={{ default: "flexWrapWrap" }}
-                                gap={{ default: "gapSm" }}
-                                alignItems={{ default: "alignItemsCenter" }}
+                              <Button
+                                variant="link"
+                                isInline
+                                component={Link}
+                                to={`/ecosystem/installed-operators/${encodeURIComponent(op.name)}`}
                               >
-                                <Button
-                                  variant="link"
-                                  isInline
-                                  component={Link}
-                                  to={`/ecosystem/installed-operators/${encodeURIComponent(op.name)}`}
-                                >
-                                  {op.name}
-                                </Button>
-                                {op.requiredBeforeClusterUpdate ? (
-                                  <Label color="orange" isCompact>
-                                    Required
-                                  </Label>
-                                ) : null}
-                              </Flex>
+                                {op.name}
+                              </Button>
                               <Content component="small">
                                 <code>{op.namespace}</code>
                               </Content>
                             </Flex>
                           </Td>
-                          {visibleColumns.version && (
-                            <Td dataLabel="Version">
-                              <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
-                                <Content component="small">
-                                  <code>{op.version}</code>
-                                </Content>
-                                {op.updateAvailable ? (
-                                  <Content component="small">
-                                    <Button
-                                      variant="link"
-                                      isInline
-                                      component={Link}
-                                      to={`/ecosystem/installed-operators/${encodeURIComponent(op.name)}/update`}
-                                      state={{
-                                        returnTo: "/ecosystem/installed-operators",
-                                        operatorName: op.name,
-                                        operatorData: op,
-                                      }}
-                                    >
-                                      Update available: {op.updateAvailable}
-                                    </Button>
-                                  </Content>
-                                ) : null}
-                              </Flex>
-                            </Td>
-                          )}
-                          {visibleColumns.clusterCompatibility && (
-                            <Td dataLabel="Cluster compatibility">
-                              {op.clusterCompatibility === "Compatible" ? (
-                                <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
-                                  <Icon status="success">
-                                    <CheckCircle />
-                                  </Icon>
-                                  Compatible
-                                </Flex>
-                              ) : op.clusterCompatibility === "Incompatible" ? (
-                                <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
-                                  <Icon status="danger">
-                                    <AlertCircle />
-                                  </Icon>
-                                  Incompatible
-                                </Flex>
-                              ) : (
-                                <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
-                                  <Icon status="warning">
-                                    <AlertTriangle />
-                                  </Icon>
-                                  Unknown
-                                </Flex>
-                              )}
-                            </Td>
-                          )}
-                          {visibleColumns.updatePlan && (
-                            <Td dataLabel="Update plan">{op.autoUpdate ? "Automatic" : "Manual"}</Td>
-                          )}
-                          {visibleColumns.support && (
-                            <Td dataLabel="Support">
-                              <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
-                                <Content>{op.supportEndDate || "—"}</Content>
-                                {op.supportBadge ? (
-                                  <Label
-                                    isCompact
-                                    variant="outline"
-                                    status={
-                                      op.supportBadgeType === "danger"
-                                        ? "danger"
-                                        : op.supportBadgeType === "warning"
-                                          ? "warning"
-                                          : "success"
-                                    }
-                                  >
-                                    {op.supportBadge}
-                                  </Label>
-                                ) : null}
-                              </Flex>
-                            </Td>
-                          )}
                           {visibleColumns.status && (
                             <Td dataLabel="Status">
                               {op.status === "Running" ? (
@@ -1228,10 +1271,130 @@ export default function InstalledOperatorsPage() {
                               )}
                             </Td>
                           )}
+                          {visibleColumns.version && (
+                            <Td dataLabel="Version">
+                              <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
+                                <Content component="small">
+                                  <code>{op.version}</code>
+                                </Content>
+                                {op.updateAvailable ? (
+                                  <Content component="small">
+                                    <Button
+                                      variant="link"
+                                      isInline
+                                      component={Link}
+                                      to={`/ecosystem/installed-operators/${encodeURIComponent(op.name)}/update`}
+                                      state={{
+                                        returnTo: "/ecosystem/installed-operators",
+                                        operatorName: op.name,
+                                        operatorData: op,
+                                      }}
+                                    >
+                                      Update available: {op.updateAvailable}
+                                    </Button>
+                                  </Content>
+                                ) : null}
+                              </Flex>
+                            </Td>
+                          )}
+                          {visibleColumns.clusterExtension && (
+                            <Td dataLabel="Cluster extension" className="ocs-io-col-cluster-ext">
+                              <Content component="small">
+                                {op.isOlmV1Extension ? "OLM v1 managed" : "OLM v0 managed"}
+                              </Content>
+                            </Td>
+                          )}
+                          {visibleColumns.clusterCompatibility && (
+                            <Td dataLabel="Cluster compatibility">
+                              {op.clusterCompatibility === "Compatible" ? (
+                                <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                                  <Icon status="success">
+                                    <CheckCircle />
+                                  </Icon>
+                                  Compatible
+                                </Flex>
+                              ) : (
+                                <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                                  <Icon status="danger">
+                                    <AlertCircle />
+                                  </Icon>
+                                  Incompatible
+                                </Flex>
+                              )}
+                            </Td>
+                          )}
+                          {visibleColumns.support && (
+                            <Td dataLabel="Support">
+                              <Flex
+                                alignItems={{ default: "alignItemsCenter" }}
+                                gap={{ default: "gapSm" }}
+                                flexWrap={{ default: "nowrap" }}
+                              >
+                                {op.supportBadge ? (
+                                  <Tooltip
+                                    content={getSupportTooltipText(op.supportBadge)}
+                                    position="top"
+                                    trigger="mouseenter focus click"
+                                    aria="describedby"
+                                  >
+                                    <span
+                                      className="ocs-operator-support-brief"
+                                      tabIndex={0}
+                                      style={{
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        lineHeight: 0,
+                                        cursor: "help",
+                                      }}
+                                    >
+                                      {op.supportBadgeType === "danger" ? (
+                                        <Icon status="danger">
+                                          <AlertCircle />
+                                        </Icon>
+                                      ) : op.supportBadgeType === "warning" ? (
+                                        <Icon status="warning">
+                                          <AlertTriangle />
+                                        </Icon>
+                                      ) : (
+                                        <Icon status="success">
+                                          <CheckCircle />
+                                        </Icon>
+                                      )}
+                                    </span>
+                                  </Tooltip>
+                                ) : null}
+                                <Content component="span">
+                                  {getSupportDisplayValue(op.supportEndDate, op.supportBadge)}
+                                </Content>
+                              </Flex>
+                            </Td>
+                          )}
                           {visibleColumns.lastUpdated && (
                             <Td dataLabel="Last updated" modifier="nowrap">
-                              {op.lastUpdated || "—"}
+                              {op.lastUpdated && op.lastUpdated !== "—" ? (
+                                <Flex
+                                  spaceItems={{ default: "spaceItemsSm" }}
+                                  alignItems={{ default: "alignItemsCenter" }}
+                                  flexWrap={{ default: "nowrap" }}
+                                >
+                                  <Globe
+                                    aria-hidden
+                                    style={{
+                                      color: "var(--pf-t--global--icon--color--on-disabled, #6a6e73)",
+                                      width: "1.125em",
+                                      height: "1.125em",
+                                      flexShrink: 0,
+                                    }}
+                                  />
+                                  <span>{formatDataViewListDate(op.lastUpdated)}</span>
+                                </Flex>
+                              ) : (
+                                "—"
+                              )}
                             </Td>
+                          )}
+                          {visibleColumns.updatePlan && (
+                            <Td dataLabel="Update plan">{op.autoUpdate ? "Automatic" : "Manual"}</Td>
                           )}
                           {visibleColumns.managedNamespaces && (
                             <Td dataLabel="Managed namespaces">
@@ -1244,59 +1407,60 @@ export default function InstalledOperatorsPage() {
                               </Flex>
                             </Td>
                           )}
-                          <Td dataLabel="Actions" isActionCell hasAction>
-                            <Dropdown
-                              isOpen={openKebabIndex === i}
-                              onOpenChange={(open) => setOpenKebabIndex(open ? i : null)}
-                              popperProps={{ position: "right-end" }}
-                              toggle={(toggleRef) => (
-                                <MenuToggle
-                                  ref={toggleRef}
-                                  variant="plain"
-                                  aria-label={`Actions for ${op.name}`}
-                                  icon={<EllipsisVIcon />}
+                          {visibleColumns.rowActions && (
+                            <Td dataLabel="Actions" isActionCell hasAction>
+                              <Dropdown
+                                isOpen={openKebabIndex === i}
+                                onOpenChange={(open) => setOpenKebabIndex(open ? i : null)}
+                                popperProps={{ position: "right-end" }}
+                                toggle={(toggleRef) => (
+                                  <MenuToggle
+                                    ref={toggleRef}
+                                    variant="plain"
+                                    aria-label={`Actions for ${op.name}`}
+                                    icon={<EllipsisVIcon />}
+                                    onClick={() =>
+                                      setOpenKebabIndex(openKebabIndex === i ? null : i)
+                                    }
+                                    isExpanded={openKebabIndex === i}
+                                  />
+                                )}
+                                onSelect={() => setOpenKebabIndex(null)}
+                              >
+                                <DropdownItem
+                                  itemId="view"
                                   onClick={() =>
-                                    setOpenKebabIndex(openKebabIndex === i ? null : i)
+                                    navigate(
+                                      `/ecosystem/installed-operators/${encodeURIComponent(op.name)}`
+                                    )
                                   }
-                                  isExpanded={openKebabIndex === i}
-                                />
-                              )}
-                              onSelect={() => setOpenKebabIndex(null)}
-                            >
-                              <DropdownItem
-                                itemId="view"
-                                onClick={() =>
-                                  navigate(
-                                    `/ecosystem/installed-operators/${encodeURIComponent(op.name)}`
-                                  )
-                                }
-                              >
-                                View details
-                              </DropdownItem>
-                              {typeof op.updateAvailable === "string" && op.updateAvailable.length > 0 ? (
-                                <DropdownItem itemId="update" onClick={() => navigateToUpdate(op)}>
-                                  Update
+                                >
+                                  View details
                                 </DropdownItem>
-                              ) : null}
-                              <DropdownItem
-                                itemId="subscription"
-                                onClick={() =>
-                                  navigate(
-                                    `/ecosystem/installed-operators/${encodeURIComponent(op.name)}/subscription`
-                                  )
-                                }
-                              >
-                                Edit subscription
-                              </DropdownItem>
-                            </Dropdown>
-                          </Td>
+                                {typeof op.updateAvailable === "string" && op.updateAvailable.length > 0 ? (
+                                  <DropdownItem itemId="update" onClick={() => navigateToUpdate(op)}>
+                                    Update
+                                  </DropdownItem>
+                                ) : null}
+                                <DropdownItem
+                                  itemId="subscription"
+                                  onClick={() =>
+                                    navigate(
+                                      `/ecosystem/installed-operators/${encodeURIComponent(op.name)}/subscription`
+                                    )
+                                  }
+                                >
+                                  Edit subscription
+                                </DropdownItem>
+                              </Dropdown>
+                            </Td>
+                          )}
                         </Tr>
                       ))
                     )}
                   </Tbody>
                 </Table>
               </InnerScrollContainer>
-            </Flex>
             </PageSection>
             </DataView>
           </Flex>
@@ -1315,7 +1479,7 @@ export default function InstalledOperatorsPage() {
           labelId="io-manage-cols-title"
           descriptorId="io-manage-cols-body"
           title="Manage columns"
-          description="Default columns are always available; additional columns are optional. Operator stays visible."
+          description="Default columns are shown by default. Additional columns include update plan, managed namespaces, and optional row selection and row actions. Operator is always shown."
         />
         <ModalBody id="io-manage-cols-body">
           <Flex
