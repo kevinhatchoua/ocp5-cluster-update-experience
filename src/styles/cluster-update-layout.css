@@ -40,7 +40,7 @@ html:not(.no-glass) .pf-v6-c-expandable-section.ocp-cluster-expandable--plain.pf
 
 /**
  * Cluster Update AI privacy alert: pin custom icon to the title row (not vertical center of title + body).
- * Update details slide-over: tighter inset so the teal frame does not float with excess top padding.
+ * Agent logs slide-over: tighter inset so the teal frame does not float with excess top padding.
  */
 .ocs-cluster-update-ai-privacy-alert.pf-v6-c-alert .pf-v6-c-alert__icon {
   align-self: flex-start;

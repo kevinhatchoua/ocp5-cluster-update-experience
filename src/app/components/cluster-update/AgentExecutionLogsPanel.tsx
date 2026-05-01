@@ -318,7 +318,7 @@ export default function AgentExecutionLogsPanel({
     <div
       className="fixed inset-0 z-[1100] flex items-stretch justify-end"
       role="dialog"
-      aria-label="Update details and agent logs"
+      aria-label="Agent logs"
     >
       <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden />
       {/** min-h-0: flex item must shrink below content min-height so inner flex-1 + overflow-y-auto creates a scroll region */}
@@ -326,7 +326,7 @@ export default function AgentExecutionLogsPanel({
         <div className="ocs-update-details-panel__chrome flex shrink-0 items-start justify-between gap-[var(--pf-t--global--spacer--md)] border-b border-[var(--pf-t--global--border--color--default)] px-[var(--pf-t--global--spacer--lg)] py-[var(--pf-t--global--spacer--md)]">
           <div>
             <Title headingLevel="h2" size="lg" className="ocs-update-details-panel__title">
-              Update details
+              Agent logs
             </Title>
             <Content
               component="div"
@@ -336,7 +336,7 @@ export default function AgentExecutionLogsPanel({
               <ClusterUpdateAiImportantPrivacyPanelNotice />
             </Content>
           </div>
-          <Button variant="plain" onClick={onClose} aria-label="Close update details">
+          <Button variant="plain" onClick={onClose} aria-label="Close agent logs">
             <X className="size-[18px]" aria-hidden />
           </Button>
         </div>

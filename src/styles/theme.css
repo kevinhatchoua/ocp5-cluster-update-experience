@@ -122,7 +122,7 @@ html.no-glass.dark .app-glass-panel.app-glass-panel--edge-right {
 }
 
 /**
- * Cluster Update — “Update details” slide-over: always opaque (no glass blur / no rgba shell).
+ * Cluster Update — “Agent logs” slide-over: always opaque (no glass blur / no rgba shell).
  * Matches solid LightSpeed surfaces for transcript readability and WCAG contrast.
  */
 .ocs-update-details-panel {
@@ -292,7 +292,7 @@ html:not(.dark) .ocs-cluster-update-modal.pf-v6-c-modal-box .pf-v6-c-modal-box__
   max-width: min(100%, 22rem);
 }
 
-/** Update details slide-over — light theme chrome matches body copy contrast. */
+/** Agent logs slide-over — light theme chrome matches body copy contrast. */
 html:not(.dark) .ocs-update-details-panel .ocs-update-details-panel__title {
   color: var(--pf-t--global--text--color--regular) !important;
 }
