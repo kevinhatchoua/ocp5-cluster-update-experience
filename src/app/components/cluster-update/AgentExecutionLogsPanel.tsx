@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   Button,
@@ -123,12 +123,108 @@ function buildClusterProgressLines(): { ts: string; level: string; msg: string }
 
 const CLUSTER_PROGRESS_LINES: { ts: string; level: string; msg: string }[] = buildClusterProgressLines();
 
+const CLUSTER_PROGRESS_LINE_COUNT = CLUSTER_PROGRESS_LINES.length;
+
+/**
+ * Post-success agent / verification lines — streamed after main cluster log + finale, with longer delays
+ * so the log feels like it keeps reporting briefly after the update completes.
+ */
+function buildCompletionEpilogueLines(): { ts: string; level: string; msg: string }[] {
+  const startMm = 45;
+  let ss = 18;
+  const rows: { ts: string; level: string; msg: string }[] = [];
+  const push = (level: string, msg: string, step = 3) => {
+    rows.push({
+      ts: `${String(startMm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`,
+      level,
+      msg,
+    });
+    ss += step;
+  };
+  push("info", "Running post-update validation: console routes, samples, and default SCCs…");
+  push("info", "Cluster extensions catalog refreshed; subscription health OK.");
+  push("warn", "Insights operator: advisory bundle refresh delayed 12s (within SLA).");
+  push("info", "Agent policy engine: recording successful plan execution (plan hash verified).");
+  push("info", "Emitting completion webhook to notification channels (if configured).");
+  push("info", "Agent log stream idle — cluster update and follow-up checks complete.");
+  return rows;
+}
+
+const COMPLETION_EPILOGUE_LINES: { ts: string; level: string; msg: string }[] = buildCompletionEpilogueLines();
+
+const COMPLETION_EPILOGUE_LINE_COUNT = COMPLETION_EPILOGUE_LINES.length;
+
 /** Last N lines declare full cluster success — withheld until UI progress catches up (in-progress page). */
 export const CLUSTER_PROGRESS_FINALE_LINE_COUNT = 4;
 
 export const CLUSTER_PROGRESS_BODY_LINES = CLUSTER_PROGRESS_LINES.slice(0, -CLUSTER_PROGRESS_FINALE_LINE_COUNT);
 
 const CLUSTER_PROGRESS_FINALE_LINES = CLUSTER_PROGRESS_LINES.slice(-CLUSTER_PROGRESS_FINALE_LINE_COUNT);
+
+/** Indices derived from generated log text so progress mapping stays aligned with {@link CLUSTER_PROGRESS_LINES}. */
+const CLUSTER_LOG_SEGMENTS = (() => {
+  const L = CLUSTER_PROGRESS_LINES;
+  const iBegin = L.findIndex((l) => l.msg.includes("Beginning cluster operator updates"));
+  const iAll = L.findIndex((l) => l.msg.includes("All platform cluster operators reconciled"));
+  const iWorker = L.findIndex((l) => l.msg.includes("Beginning worker node updates"));
+  const bodyLastIdx = CLUSTER_PROGRESS_LINE_COUNT - CLUSTER_PROGRESS_FINALE_LINE_COUNT - 1;
+  return {
+    iBegin: Math.max(0, iBegin),
+    iAll: Math.max(0, iAll),
+    iWorker: Math.max(0, iWorker),
+    bodyLastIdx,
+  };
+})();
+
+/**
+ * Maps dashboard progress bars (cluster operators → catalog operators → worker pools) to how many
+ * cluster log lines should be visible. Finale lines only apply when releaseCompletion is true and all phases complete.
+ */
+export function clusterVisibleLineCountFromDashboard(
+  controlPct: number,
+  operatorPct: number,
+  workerPct: number,
+  releaseCompletion: boolean,
+): number {
+  const { iBegin, iAll, iWorker, bodyLastIdx } = CLUSTER_LOG_SEGMENTS;
+  if (iBegin < 0 || iAll < 0 || iWorker < 0) {
+    const avg = (controlPct + operatorPct + workerPct) / 300;
+    let n = Math.round(avg * CLUSTER_PROGRESS_LINE_COUNT);
+    if (!releaseCompletion) {
+      n = Math.min(n, CLUSTER_PROGRESS_LINE_COUNT - CLUSTER_PROGRESS_FINALE_LINE_COUNT);
+    } else if (controlPct >= 100 && operatorPct >= 100 && workerPct >= 100) {
+      n = CLUSTER_PROGRESS_LINE_COUNT;
+    }
+    return Math.max(1, n);
+  }
+
+  const nPlatform = Math.max(0, iAll - iBegin - 1);
+  const nCatalog = Math.max(0, iWorker - iAll - 1);
+  const workerSpan = Math.max(0, bodyLastIdx - (iWorker - 1));
+
+  let lastIdx: number;
+
+  if (controlPct < 100) {
+    const p = Math.round((controlPct / 100) * nPlatform);
+    lastIdx = iBegin + p;
+  } else if (operatorPct < 100) {
+    const c = Math.round((operatorPct / 100) * nCatalog);
+    lastIdx = iAll + c;
+  } else {
+    const w = Math.round((workerPct / 100) * workerSpan);
+    lastIdx = iWorker - 1 + w;
+  }
+
+  lastIdx = Math.min(Math.max(lastIdx, 0), CLUSTER_PROGRESS_LINE_COUNT - 1);
+
+  if (!releaseCompletion) {
+    lastIdx = Math.min(lastIdx, bodyLastIdx);
+  } else if (controlPct >= 100 && operatorPct >= 100 && workerPct >= 100) {
+    lastIdx = CLUSTER_PROGRESS_LINE_COUNT - 1;
+  }
+
+  return lastIdx + 1;
+}
 
 /** Rotating activity lines while cluster UI is still catching up (inserted after body, before finale). */
 const ACTIVITY_PULSE_MESSAGES = [
@@ -168,6 +264,15 @@ export interface AgentExecutionLogsPanelProps {
    * Default true — full stream for update-plan / approvals.
    */
   releaseCompletionLogLines?: boolean;
+  /**
+   * When set (e.g. Cluster Update in-progress page), visible log lines follow cluster / catalog / worker progress
+   * instead of replaying from line one each time the panel opens.
+   */
+  dashboardProgress?: {
+    operatorPct: number;
+    controlPct: number;
+    workerPct: number;
+  };
 }
 
 /**
@@ -180,10 +285,12 @@ export default function AgentExecutionLogsPanel({
   isOpen,
   planSerial = 13,
   releaseCompletionLogLines = true,
+  dashboardProgress,
 }: AgentExecutionLogsPanelProps) {
   const agentLen = AGENT_ANALYSIS_LINES.length;
   const bodyLen = CLUSTER_PROGRESS_BODY_LINES.length;
   const finaleLen = CLUSTER_PROGRESS_FINALE_LINE_COUNT;
+  const epilogueLen = COMPLETION_EPILOGUE_LINE_COUNT;
 
   const [visibleCount, setVisibleCount] = useState(1);
   const [autoScroll, setAutoScroll] = useState(true);
@@ -199,18 +306,42 @@ export default function AgentExecutionLogsPanel({
   const logScrollRef = useRef<HTMLDivElement>(null);
   const logContentRef = useRef<HTMLDivElement>(null);
 
+  const syncCp = dashboardProgress?.controlPct;
+  const syncOp = dashboardProgress?.operatorPct;
+  const syncWn = dashboardProgress?.workerPct;
+
   useEffect(() => {
     if (isOpen && !prevIsOpenRef.current) {
-      setVisibleCount(1);
       pulseFrozenRef.current = null;
       setUseHoldLayout(!releaseCompletionLogLines);
+      if (
+        dashboardProgress &&
+        syncCp !== undefined &&
+        syncOp !== undefined &&
+        syncWn !== undefined
+      ) {
+        const cc = clusterVisibleLineCountFromDashboard(syncCp, syncOp, syncWn, releaseCompletionLogLines);
+        setVisibleCount(agentLen + cc);
+      } else {
+        setVisibleCount(1);
+      }
     }
     prevIsOpenRef.current = isOpen;
-  }, [isOpen, releaseCompletionLogLines]);
+  }, [isOpen, releaseCompletionLogLines, agentLen, syncCp, syncOp, syncWn]);
+
+  /** Advance log tail when dashboard progress moves forward (panel may stay open). */
+  useEffect(() => {
+    if (!isOpen || syncCp === undefined || syncOp === undefined || syncWn === undefined) {
+      return;
+    }
+    const cc = clusterVisibleLineCountFromDashboard(syncCp, syncOp, syncWn, releaseCompletionLogLines);
+    const target = agentLen + cc;
+    setVisibleCount((v) => Math.max(v, target));
+  }, [isOpen, syncCp, syncOp, syncWn, releaseCompletionLogLines, agentLen]);
 
   const streamEndVisible = useMemo(() => {
     if (!useHoldLayout) {
-      return agentLen + CLUSTER_PROGRESS_LINES.length;
+      return agentLen + CLUSTER_PROGRESS_LINE_COUNT + epilogueLen;
     }
     if (!releaseCompletionLogLines) {
       return Number.MAX_SAFE_INTEGER;
@@ -219,17 +350,91 @@ export default function AgentExecutionLogsPanel({
       const slots = Math.max(0, visibleCount - agentLen);
       pulseFrozenRef.current = Math.max(0, slots - bodyLen);
     }
-    return agentLen + bodyLen + (pulseFrozenRef.current ?? 0) + finaleLen;
-  }, [useHoldLayout, releaseCompletionLogLines, visibleCount, agentLen, bodyLen, finaleLen]);
+    return agentLen + bodyLen + (pulseFrozenRef.current ?? 0) + finaleLen + epilogueLen;
+  }, [useHoldLayout, releaseCompletionLogLines, visibleCount, agentLen, bodyLen, finaleLen, epilogueLen]);
+
+  const delayBeforeNextLine = useCallback(
+    (vc: number) => {
+      if (vc < agentLen) {
+        return 360;
+      }
+      const co = vc - agentLen;
+
+      if (!useHoldLayout) {
+        const finStart = CLUSTER_PROGRESS_LINE_COUNT - CLUSTER_PROGRESS_FINALE_LINE_COUNT;
+        if (co < finStart) {
+          return 440;
+        }
+        if (co < CLUSTER_PROGRESS_LINE_COUNT) {
+          return 760;
+        }
+        if (co < CLUSTER_PROGRESS_LINE_COUNT + epilogueLen) {
+          return 940;
+        }
+        return 440;
+      }
+
+      if (!releaseCompletionLogLines) {
+        return co < bodyLen ? 440 : 520;
+      }
+
+      const pulseCap = pulseFrozenRef.current ?? 0;
+      if (co < bodyLen) {
+        return 440;
+      }
+      if (co < bodyLen + pulseCap) {
+        return 520;
+      }
+      if (co < bodyLen + pulseCap + finaleLen) {
+        return 760;
+      }
+      if (co < bodyLen + pulseCap + finaleLen + epilogueLen) {
+        return 940;
+      }
+      return 440;
+    },
+    [agentLen, bodyLen, epilogueLen, finaleLen, releaseCompletionLogLines, useHoldLayout],
+  );
 
   useEffect(() => {
     if (!isOpen) {
       return;
     }
-    if (visibleCount >= streamEndVisible) return;
-    const timer = setTimeout(() => setVisibleCount((c) => Math.min(streamEndVisible, c + 1)), 420);
+    if (visibleCount >= streamEndVisible) {
+      return;
+    }
+    const delay = delayBeforeNextLine(visibleCount);
+    const timer = setTimeout(() => {
+      setVisibleCount((c) => {
+        const next = Math.min(streamEndVisible, c + 1);
+        if (syncCp === undefined || syncOp === undefined || syncWn === undefined) {
+          return next;
+        }
+        const syncCap =
+          agentLen +
+          clusterVisibleLineCountFromDashboard(syncCp, syncOp, syncWn, releaseCompletionLogLines);
+        const allowPulsePastSync =
+          useHoldLayout && !releaseCompletionLogLines && c >= agentLen + bodyLen;
+        if (allowPulsePastSync) {
+          return next;
+        }
+        return Math.min(next, syncCap);
+      });
+    }, delay);
     return () => clearTimeout(timer);
-  }, [isOpen, visibleCount, streamEndVisible]);
+  }, [
+    isOpen,
+    visibleCount,
+    streamEndVisible,
+    delayBeforeNextLine,
+    syncCp,
+    syncOp,
+    syncWn,
+    agentLen,
+    bodyLen,
+    releaseCompletionLogLines,
+    useHoldLayout,
+  ]);
 
   /** Layout phase: scrollHeight matches new DOM before paint (effect ran too late for “live” stream). */
   useLayoutEffect(() => {
@@ -261,10 +466,24 @@ export default function AgentExecutionLogsPanel({
   const clusterSlice = useMemo(() => {
     const clusterIdxStart = Math.max(0, visibleCount - agentLen);
     if (!useHoldLayout) {
-      return CLUSTER_PROGRESS_LINES.slice(0, clusterIdxStart).map((e) => ({
-        ...e,
-        msg: clusterFmt(e.msg),
-      }));
+      const rows: { ts: string; level: string; msg: string }[] = [];
+      const mainTake = Math.min(clusterIdxStart, CLUSTER_PROGRESS_LINE_COUNT);
+      rows.push(
+        ...CLUSTER_PROGRESS_LINES.slice(0, mainTake).map((e) => ({
+          ...e,
+          msg: clusterFmt(e.msg),
+        })),
+      );
+      if (clusterIdxStart > CLUSTER_PROGRESS_LINE_COUNT) {
+        const epTake = Math.min(clusterIdxStart - CLUSTER_PROGRESS_LINE_COUNT, epilogueLen);
+        rows.push(
+          ...COMPLETION_EPILOGUE_LINES.slice(0, epTake).map((e) => ({
+            ...e,
+            msg: clusterFmt(e.msg),
+          })),
+        );
+      }
+      return rows;
     }
 
     const rows: { ts: string; level: string; msg: string }[] = [];
@@ -294,8 +513,18 @@ export default function AgentExecutionLogsPanel({
     rem -= pulseRows;
     if (rem <= 0) return rows;
 
+    const finaleTake = Math.min(rem, finaleLen);
     rows.push(
-      ...CLUSTER_PROGRESS_FINALE_LINES.slice(0, Math.min(rem, finaleLen)).map((e) => ({
+      ...CLUSTER_PROGRESS_FINALE_LINES.slice(0, finaleTake).map((e) => ({
+        ...e,
+        msg: clusterFmt(e.msg),
+      })),
+    );
+    rem -= finaleTake;
+    if (rem <= 0) return rows;
+
+    rows.push(
+      ...COMPLETION_EPILOGUE_LINES.slice(0, Math.min(rem, epilogueLen)).map((e) => ({
         ...e,
         msg: clusterFmt(e.msg),
       })),
@@ -306,6 +535,7 @@ export default function AgentExecutionLogsPanel({
     visibleCount,
     agentLen,
     bodyLen,
+    epilogueLen,
     finaleLen,
     releaseCompletionLogLines,
     version,

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router";
 import {
   Alert,
@@ -63,6 +63,9 @@ function slotStatus(index: number, rowCount: number, pct: number): RowStatus {
   return index === 0 ? "Updating" : "Pending";
 }
 
+/** Time to keep Agent logs visible with final completion lines before navigating to the success screen. */
+const COMPLETION_NAV_DELAY_MS = 4000;
+
 export default function ClusterUpdateInProgressPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -71,6 +74,7 @@ export default function ClusterUpdateInProgressPage() {
 
   const [progress, setProgress] = useState({ op: 0, cp: 0, wn: 0 });
   const [showLogsPanel, setShowLogsPanel] = useState(false);
+  const completionNavTimeoutRef = useRef<number | null>(null);
 
   const operatorProgress = progress.op;
   const controlProgress = progress.cp;
@@ -93,10 +97,23 @@ export default function ClusterUpdateInProgressPage() {
   }, []);
 
   useEffect(() => {
-    if (operatorProgress >= 100 && controlProgress >= 100 && workerProgress >= 100) {
-      localStorage.removeItem("clusterUpdateInProgress");
-      setTimeout(() => navigate("/administration/cluster-update/complete", { state: { version } }), 1200);
-    }
+    if (operatorProgress < 100 || controlProgress < 100 || workerProgress < 100) return;
+    if (completionNavTimeoutRef.current != null) return;
+
+    localStorage.removeItem("clusterUpdateInProgress");
+    setShowLogsPanel(true);
+
+    completionNavTimeoutRef.current = window.setTimeout(() => {
+      completionNavTimeoutRef.current = null;
+      navigate("/administration/cluster-update/complete", { state: { version } });
+    }, COMPLETION_NAV_DELAY_MS);
+
+    return () => {
+      if (completionNavTimeoutRef.current != null) {
+        window.clearTimeout(completionNavTimeoutRef.current);
+        completionNavTimeoutRef.current = null;
+      }
+    };
   }, [operatorProgress, controlProgress, workerProgress, navigate, version]);
 
   const opPct = Math.round(operatorProgress);
@@ -486,6 +503,11 @@ export default function ClusterUpdateInProgressPage() {
         version={version}
         onClose={() => setShowLogsPanel(false)}
         releaseCompletionLogLines={updateFullyComplete}
+        dashboardProgress={{
+          operatorPct: operatorProgress,
+          controlPct: controlProgress,
+          workerPct: workerProgress,
+        }}
       />
     </div>
   );

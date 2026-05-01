@@ -129,10 +129,6 @@ export const channelVersions: Record<string, { groups: VersionGroup[]; banner?: 
         versions: [
           {
             version: "5.1.10", recommended: true, risk: "Low Risk", riskColor: "#3e8635", features: 4, bugFixes: 12, date: "Mar 22, 2026",
-            operatorIssues: [
-              { name: "ClusterLoggingMaxVersion", slug: "ClusterLoggingMaxVersion", severity: "critical", message: "openshift-logging/cluster-logging v6.4.3 maximum supported OCP version is 5.0. Update to v6.5+ before updating.", url: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html", resolution: { type: "update-operator", description: "Update cluster-logging operator from v6.4.3 to v6.5.1+.", actionAvailable: true } },
-              { name: "CloudCredentialIAMUpdate", slug: "CloudCredentialIAMUpdate", severity: "warning", message: "cloudcredential.operator.openshift.io/cluster object needs updating before update. The IAM configuration created for 5.0 is missing permissions required by 5.1. See Manually Creating IAM.", url: "https://docs.openshift.com/container-platform/latest/authentication/managing_cloud_provider_credentials/about-cloud-credential-operator.html", resolution: { type: "accept-only", description: "No automated fix. Manually update IAM configuration per the linked documentation, then accept this risk." } },
-            ],
           },
           { version: "5.1.9", recommended: false, risk: "Low Risk", riskColor: "#3e8635", features: 2, bugFixes: 8, date: "Mar 16, 2026",
             operatorIssues: [
@@ -275,10 +271,10 @@ function getOperatorCompatibility(op: InstalledOperator, targetVersion: string):
 }
 
 const installedOperators: InstalledOperator[] = [
-  { name: "Cluster Logging", namespace: "openshift-logging", version: "6.4.3", channel: "stable-6.4", source: "redhat-operators", status: "Running", autoUpdate: false, clusterCompatibility: "Incompatible", compatibilityMessage: "Max supported OCP version is 5.0. Update to v6.5+ before updating cluster.", support: "Full", supportEndDate: "Nov 13, 2025", supportBadge: "End of life", supportBadgeType: "danger", updateAvailable: "6.5.1", maxOcpVersion: "5.0", lastUpdated: "Jan 8, 2026, 3:12 PM", managedNamespaces: ["openshift-logging"], requiredBeforeClusterUpdate: true },
-  { name: "Elasticsearch Operator", namespace: "openshift-operators-redhat", version: "5.7.2", channel: "stable-5.7", source: "redhat-operators", status: "Running", autoUpdate: false, clusterCompatibility: "Compatible", support: "Full", supportEndDate: "May 10, 2028", supportBadge: "2 years, 1 month", supportBadgeType: "success", maxOcpVersion: "5.1", lastUpdated: "Feb 12, 2026, 4:32 AM", managedNamespaces: ["openshift-operators-redhat", "openshift-logging"], requiredBeforeClusterUpdate: true },
+  { name: "Cluster Logging", namespace: "openshift-logging", version: "6.5.1", channel: "stable-6.5", source: "redhat-operators", status: "Running", autoUpdate: false, clusterCompatibility: "Compatible", support: "Full", supportEndDate: "Nov 13, 2028", supportBadge: "2 years", supportBadgeType: "success", maxOcpVersion: "5.2", lastUpdated: "Jan 8, 2026, 3:12 PM", managedNamespaces: ["openshift-logging"] },
+  { name: "Elasticsearch Operator", namespace: "openshift-operators-redhat", version: "5.8.0", channel: "stable-5.8", source: "redhat-operators", status: "Running", autoUpdate: false, clusterCompatibility: "Compatible", support: "Full", supportEndDate: "May 10, 2028", supportBadge: "2 years, 1 month", supportBadgeType: "success", maxOcpVersion: "5.1", lastUpdated: "Feb 12, 2026, 4:32 AM", managedNamespaces: ["openshift-operators-redhat", "openshift-logging"] },
   { name: "Cloud Credential Operator", namespace: "openshift-cloud-credential-operator", version: "5.0.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: true, clusterCompatibility: "Compatible", compatibilityMessage: "IAM configuration may need updating before cluster update.", support: "Full", supportEndDate: "Jun 15, 2028", supportBadge: "2 years, 2 months", supportBadgeType: "success", maxOcpVersion: "5.2", lastUpdated: "Mar 1, 2026, 3:48 AM", managedNamespaces: ["openshift-cloud-credential-operator"] },
-  { name: "Operator Lifecycle Manager", namespace: "openshift-operator-lifecycle-manager", version: "4.21.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: false, clusterCompatibility: "Incompatible", compatibilityMessage: "Incompatible with OCP 5.1. Update to 4.22.0 or higher.", support: "Full", supportEndDate: "Mar 20, 2027", supportBadge: "11 months", supportBadgeType: "warning", updateAvailable: "4.22.0", maxOcpVersion: "5.0", lastUpdated: "Mar 1, 2026, 3:48 AM", managedNamespaces: ["openshift-operator-lifecycle-manager", "openshift-marketplace"] },
+  { name: "Operator Lifecycle Manager", namespace: "openshift-operator-lifecycle-manager", version: "4.22.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: false, clusterCompatibility: "Compatible", support: "Full", supportEndDate: "Mar 20, 2027", supportBadge: "11 months", supportBadgeType: "success", maxOcpVersion: "5.2", lastUpdated: "Mar 1, 2026, 3:48 AM", managedNamespaces: ["openshift-operator-lifecycle-manager", "openshift-marketplace"] },
   { name: "Cert Manager", namespace: "cert-manager-operator", version: "1.14.0", channel: "stable-v1", source: "redhat-operators", status: "Running", autoUpdate: true, clusterCompatibility: "Compatible", support: "Full", supportEndDate: "Sep 1, 2027", supportBadge: "1 year, 5 months", supportBadgeType: "success", maxOcpVersion: "5.2", lastUpdated: "Mar 18, 2026, 2:05 AM", managedNamespaces: ["cert-manager", "cert-manager-operator"] },
   { name: "OpenShift DNS", namespace: "openshift-dns-operator", version: "5.0.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: true, clusterCompatibility: "Compatible", support: "Full", supportEndDate: "Jun 15, 2028", supportBadge: "2 years, 2 months", supportBadgeType: "success", maxOcpVersion: "5.2", lastUpdated: "Mar 1, 2026, 3:48 AM", managedNamespaces: ["openshift-dns", "openshift-dns-operator"] },
   { name: "Ingress Operator", namespace: "openshift-ingress-operator", version: "5.0.0", channel: "stable", source: "Built-in", status: "Running", autoUpdate: true, clusterCompatibility: "Compatible", support: "Full", supportEndDate: "Jun 15, 2028", supportBadge: "2 years, 2 months", supportBadgeType: "success", maxOcpVersion: "5.2", lastUpdated: "Mar 1, 2026, 3:48 AM", managedNamespaces: ["openshift-ingress", "openshift-ingress-operator"] },
@@ -755,15 +751,13 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
 
   const compatAnalysis = {
     operators: [
-      { name: "Cluster Logging", category: "Platform" as const, slug: "cluster-logging-6.4.3-max-ocp-5.0", currentVersion: "6.4.3", status: "incompatible" as const, maxOCP: "5.0", action: "Update to v6.5.1+", docUrl: "https://docs.openshift.com/container-platform/latest/logging/cluster-logging-upgrading.html" },
-      { name: "Elasticsearch Operator", category: "Catalog" as const, slug: "elasticsearch-5.7.2-max-ocp-5.0", currentVersion: "5.7.2", status: "incompatible" as const, maxOCP: "5.0", action: "Update to v5.8.0+", docUrl: "https://docs.openshift.com/container-platform/latest/logging/log_storage/installing-log-storage.html" },
-      { name: "Cert Manager", category: "Catalog" as const, slug: null, currentVersion: "1.12.0", status: "compatible" as const, maxOCP: "5.1", action: null, docUrl: null },
+      { name: "Cluster Logging", category: "Platform" as const, slug: null, currentVersion: "6.5.1", status: "compatible" as const, maxOCP: "5.2", action: null, docUrl: null },
+      { name: "Elasticsearch Operator", category: "Catalog" as const, slug: null, currentVersion: "5.8.0", status: "compatible" as const, maxOCP: "5.1", action: null, docUrl: null },
+      { name: "Cert Manager", category: "Catalog" as const, slug: null, currentVersion: "1.14.0", status: "compatible" as const, maxOCP: "5.2", action: null, docUrl: null },
       { name: "Ansible Automation Platform", category: "Catalog" as const, slug: null, currentVersion: "3.1.0", status: "compatible" as const, maxOCP: "5.1", action: null, docUrl: null },
-      { name: "Operator Lifecycle Manager", category: "Platform" as const, slug: "olm-4.21-incompatible-5.1", currentVersion: "4.21.0", status: "warning" as const, maxOCP: "5.0", action: "Update to v4.22.0", docUrl: "https://docs.openshift.com/container-platform/latest/operators/admin/olm-upgrading-operators.html" },
+      { name: "Operator Lifecycle Manager", category: "Platform" as const, slug: null, currentVersion: "4.22.0", status: "compatible" as const, maxOCP: "5.2", action: null, docUrl: null },
     ],
-    apiDeprecations: [
-      { api: "flowcontrol.apiserver.k8s.io/v1beta2", replacement: "flowcontrol.apiserver.k8s.io/v1", severity: "warning" as const, docUrl: "https://docs.openshift.com/container-platform/latest/updating/preparing_for_updates/updating-cluster-prepare.html#updating-cluster-prepare-apis" },
-    ],
+    apiDeprecations: [] as { api: string; replacement: string; severity: "warning"; docUrl: string }[],
     crIncompatibilities: [] as { resource: string; detail: string }[],
   };
 
@@ -1854,11 +1848,12 @@ interface AgentOperator {
   action: "required" | "optional" | "up-to-date";
 }
 
+/** Versions match cluster target compatibility — all rows green for the proposed update storyline. */
 const AGENT_OPERATORS: AgentOperator[] = [
-  { name: "Abot Operator", current: "3.0.0", required: "3.1.0", compatible: false, incompatibleAt: "3.0.0", action: "required" },
-  { name: "Airflow Helm Operator", current: "5.7.2", required: "5.7.3", compatible: false, incompatibleAt: "5.7.2", action: "required" },
-  { name: "Ansible Automation Platform", current: "1.5.0", required: "1.6.0", compatible: true, action: "optional" },
-  { name: "Bare Metal Event Relay", current: "1.1.1", required: "1.2.0", compatible: true, action: "optional" },
+  { name: "Abot Operator", current: "3.1.0", required: null, compatible: true, action: "up-to-date" },
+  { name: "Airflow Helm Operator", current: "5.7.3", required: null, compatible: true, action: "up-to-date" },
+  { name: "Ansible Automation Platform", current: "1.6.0", required: null, compatible: true, action: "up-to-date" },
+  { name: "Bare Metal Event Relay", current: "1.2.0", required: null, compatible: true, action: "up-to-date" },
   { name: "Camel K Operator", current: "2.1.0", required: null, compatible: true, action: "up-to-date" },
 ];
 
@@ -1998,12 +1993,7 @@ function getAgentPlanProfile(version: string): AgentPlanProfile {
     "Sufficient capacity (72% used)",
     "Sufficient capacity (61% used)",
   ];
-  const compatVariants = [
-    { c: 3, t: 5, r: 2 },
-    { c: 4, t: 5, r: 1 },
-    { c: 2, t: 5, r: 3 },
-  ];
-  const cv = compatVariants[h % compatVariants.length];
+  /** All prototype operators are modeled compatible with the chosen cluster target (aligned worker + catalog versions). */
   const ri = risks[h % risks.length];
   return {
     defaultMaintenance: windows[h % windows.length],
@@ -2014,9 +2004,9 @@ function getAgentPlanProfile(version: string): AgentPlanProfile {
     riskBarColor: ri.color,
     riskDetail: ri.detail,
     tags: tagSets[h % tagSets.length],
-    compatCompatible: cv.c,
-    compatTotal: cv.t,
-    compatRequired: cv.r,
+    compatCompatible: 5,
+    compatTotal: 5,
+    compatRequired: 0,
     storageDetail: storageDetails[h % storageDetails.length],
   };
 }
@@ -2118,10 +2108,13 @@ function UpdateAgentTab({
       { label: "Pre-flight Checks Complete", status: "done", badge: "PASSED", badgeColor: "#3e8635", detail: "All cluster health checks completed successfully" },
       {
         label: "Compatibility Analysis",
-        status: "warning",
-        badge: "ACTION NEEDED",
-        badgeColor: "#f0ab00",
-        detail: `${planProfile.compatCompatible} of ${planProfile.compatTotal} operators compatible with ${targetVersion} · ${planProfile.compatRequired} operators must be updated first`,
+        status: planProfile.compatRequired > 0 ? "warning" : "done",
+        badge: planProfile.compatRequired > 0 ? "ACTION NEEDED" : "PASSED",
+        badgeColor: planProfile.compatRequired > 0 ? "#f0ab00" : "#3e8635",
+        detail:
+          planProfile.compatRequired > 0
+            ? `${planProfile.compatCompatible} of ${planProfile.compatTotal} operators compatible with ${targetVersion} · ${planProfile.compatRequired} operators must be updated first`
+            : `All ${planProfile.compatTotal} operators are compatible with OpenShift ${targetVersion}`,
       },
       { label: "API Deprecations", status: "done", detail: "No deprecated APIs in use" },
       { label: "Custom Resources", status: "done", detail: "All CRDs compatible with new version" },
@@ -2141,11 +2134,15 @@ function UpdateAgentTab({
   const healthChecks = useMemo(
     () => [
       { label: "Cluster Health", detail: "All operators available", ok: true },
-      { label: "Node Status", detail: "6/6 nodes ready", ok: true },
+      {
+        label: "Node Status",
+        detail: `6/6 nodes Ready on ${AGENT_CLUSTER_CURRENT_VERSION}; schedulable for cluster update to ${targetVersion}`,
+        ok: true,
+      },
       { label: "Storage", detail: planProfile.storageDetail, ok: true },
       { label: "Network", detail: "All pods reachable", ok: true },
     ],
-    [planProfile.storageDetail]
+    [planProfile.storageDetail, targetVersion]
   );
 
   const confirmApproveAndStart = () => {
@@ -2460,15 +2457,17 @@ function UpdateAgentTab({
                 {i === 2 && (
                   <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
                     <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsCenter" }} style={{ width: "100%" }}>
-                      <Icon status="warning" iconSize="sm">
-                        <AlertTriangle />
+                      <Icon status={planProfile.compatRequired > 0 ? "warning" : "success"} iconSize="sm">
+                        {planProfile.compatRequired > 0 ? <AlertTriangle /> : <CheckCircle />}
                       </Icon>
                       <Title headingLevel="h4" size="md">
                         Operator compatibility
                       </Title>
                     </Flex>
                     <Content component="p" style={{ margin: 0 }}>
-                      {planProfile.compatRequired} operators must be updated before updating to {targetVersion}
+                      {planProfile.compatRequired > 0
+                        ? `${planProfile.compatRequired} operators must be updated before updating to ${targetVersion}`
+                        : `All operators meet requirements for OpenShift ${targetVersion}`}
                     </Content>
                     <Table aria-label="Operator compatibility with target version" variant="compact" borders>
                           <Thead>
