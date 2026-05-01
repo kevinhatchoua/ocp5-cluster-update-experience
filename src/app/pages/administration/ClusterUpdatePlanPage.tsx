@@ -2753,17 +2753,9 @@ function UpdateAgentTab({
               <code>{AGENT_CLUSTER_CURRENT_VERSION}</code> to <code>{selectedVersion}</code> on channel{" "}
               <strong>{selectedChannel}</strong>.
             </Content>
-            <Content component="p" style={{ margin: 0 }}>
-              The console will open the in-progress update experience. Ensure maintenance is communicated and workloads are ready.
-            </Content>
-            <div>
-              <Button variant="link" isInline icon={<FileText aria-hidden />} onClick={() => setShowApproveAgentLogs(true)}>
-                View agent analysis logs
-              </Button>
-              <Content component="small" className="pf-v6-u-display-block pf-v6-u-mt-xs">
-                Opens recorded agent tool use and reasoning for this plan (prototype sample stream).
-              </Content>
-            </div>
+            <Button variant="link" isInline icon={<FileText aria-hidden />} onClick={() => setShowApproveAgentLogs(true)}>
+              View agent analysis logs
+            </Button>
           </Flex>
         </ModalBody>
         <ModalFooter>
