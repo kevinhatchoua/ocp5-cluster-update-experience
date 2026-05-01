@@ -306,8 +306,8 @@ function getOperatorCompatibilityPage(
       compatibility: "Incompatible",
       message: `Max supported OCP version is ${op.maxOcpVersion}. ${
         op.updateAvailable
-          ? `Update to v${op.updateAvailable}+ before upgrading cluster.`
-          : "Update operator before upgrading cluster."
+          ? `Update to v${op.updateAvailable}+ before updating cluster.`
+          : "Update operator before updating cluster."
       }`,
     };
   }
@@ -449,7 +449,7 @@ const INITIAL_CATALOG_OPERATORS: CatalogOperator[] = [
     autoUpdate: false,
     clusterCompatibility: "Incompatible",
     compatibilityMessage:
-      "Max supported OCP version is 5.0. Update to v6.5+ before upgrading cluster.",
+      "Max supported OCP version is 5.0. Update to v6.5+ before updating cluster.",
     support: "Full",
     supportEndDate: "2025-11-13",
     supportBadge: "End of life",
@@ -487,7 +487,7 @@ const INITIAL_CATALOG_OPERATORS: CatalogOperator[] = [
     status: "Running",
     autoUpdate: true,
     clusterCompatibility: "Compatible",
-    compatibilityMessage: "IAM configuration may need updating before cluster upgrade.",
+    compatibilityMessage: "IAM configuration may need updating before cluster update.",
     support: "Full",
     supportEndDate: "Jun 15, 2028",
     supportBadge: "2 years, 2 months",

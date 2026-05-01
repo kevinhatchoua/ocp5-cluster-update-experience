@@ -679,7 +679,7 @@ export default function SoftwareCatalogPage() {
       name: "Vault Operator",
       provider: "HashiCorp",
       providerType: "Certified",
-      description: "Manage HashiCorp Vault in Kubernetes with OLMv1 direct control over upgrade rollouts",
+      description: "Manage HashiCorp Vault in Kubernetes with OLMv1 direct control over update rollouts",
       installed: true,
       hasUpdate: true,
       newVersion: "1.15.0",
@@ -1380,7 +1380,7 @@ export default function SoftwareCatalogPage() {
                         <ul className="space-y-2">
                           {[
                             { label: "Basic Install", done: true },
-                            { label: "Seamless Upgrades", done: true },
+                            { label: "Seamless Updates", done: true },
                             { label: "Full Lifecycle", done: false },
                             { label: "Deep Insights", done: false },
                             { label: "Auto Pilot", done: false },

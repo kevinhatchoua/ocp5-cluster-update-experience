@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   Button,
@@ -51,69 +51,204 @@ const CLUSTER_PROGRESS_LINES: { ts: string; level: string; msg: string }[] = [
   { ts: "00:03:45", level: "info", msg: "Worker worker-east-1 drained. Applying update…" },
   { ts: "00:04:10", level: "info", msg: "Worker worker-east-1 rebooting with new OS image" },
   { ts: "00:04:55", level: "info", msg: "Worker worker-east-1 update complete. Uncordoning." },
+  { ts: "00:05:06", level: "info", msg: "Node worker-east-1 Ready. Continuing worker pool rollout…" },
+  { ts: "00:05:18", level: "info", msg: "Operator Bare Metal Event Relay: dependency resolved; update complete" },
+  { ts: "00:05:35", level: "info", msg: "Cordoning worker-east-2. Draining pods…" },
+  { ts: "00:05:58", level: "info", msg: "Worker worker-east-2 drained. Applying update…" },
+  { ts: "00:06:22", level: "info", msg: "Worker worker-east-2 rebooting with new OS image" },
+  { ts: "00:06:48", level: "info", msg: "Worker worker-east-2 update complete. Uncordoning." },
+  { ts: "00:07:02", level: "info", msg: "MachineConfigPool worker: all nodes updated and Ready" },
+  { ts: "00:07:18", level: "info", msg: "Cluster operators: Available=True, Progressing=False" },
+  { ts: "00:07:35", level: "info", msg: "ClusterVersion: status=Available; desired version {version} reconciled" },
+  { ts: "00:07:48", level: "info", msg: "Cluster update finished successfully. OpenShift {version} is active." },
 ];
+
+/** Last N lines declare full cluster success — withheld until UI progress catches up (in-progress page). */
+export const CLUSTER_PROGRESS_FINALE_LINE_COUNT = 4;
+
+export const CLUSTER_PROGRESS_BODY_LINES = CLUSTER_PROGRESS_LINES.slice(0, -CLUSTER_PROGRESS_FINALE_LINE_COUNT);
+
+const CLUSTER_PROGRESS_FINALE_LINES = CLUSTER_PROGRESS_LINES.slice(-CLUSTER_PROGRESS_FINALE_LINE_COUNT);
+
+/** Rotating activity lines while cluster UI is still catching up (inserted after body, before finale). */
+const ACTIVITY_PULSE_MESSAGES = [
+  "Cluster operators reconciling; operands progressing…",
+  "MachineConfigPools and DaemonSets still rolling…",
+  "Monitoring ClusterVersion Progressing status…",
+  "Worker pools: cordon/drain cycle in progress…",
+  "Verifying API availability and etcd quorum…",
+  "Catalog subscriptions reconciling after platform sync…",
+];
+
+function formatActivityTs(holdIndex: number): string {
+  const baseSec = 6 * 60 + 49;
+  const t = baseSec + holdIndex;
+  const mm = Math.floor(t / 60);
+  const ss = t % 60;
+  return `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
+}
+
+function activityPulseEntry(holdIndex: number): { ts: string; level: string; msg: string } {
+  return {
+    ts: formatActivityTs(holdIndex),
+    level: "info",
+    msg: ACTIVITY_PULSE_MESSAGES[holdIndex % ACTIVITY_PULSE_MESSAGES.length],
+  };
+}
 
 export interface AgentExecutionLogsPanelProps {
   version: string;
   onClose: () => void;
   /** When false, panel is not mounted (parent controls visibility). */
   isOpen: boolean;
+  /**
+   * When false, finale lines stay queued until the cluster UI reports full completion (all phases done).
+   * Default true — full stream for update-plan / approvals.
+   */
+  releaseCompletionLogLines?: boolean;
 }
 
 /**
  * Slide-over panel: agent analysis (tool_use / thinking) plus cluster update progress lines.
  * Answers “how do I see agent execution details?” from update flows.
  */
-export default function AgentExecutionLogsPanel({ version, onClose, isOpen }: AgentExecutionLogsPanelProps) {
+export default function AgentExecutionLogsPanel({
+  version,
+  onClose,
+  isOpen,
+  releaseCompletionLogLines = true,
+}: AgentExecutionLogsPanelProps) {
+  const agentLen = AGENT_ANALYSIS_LINES.length;
+  const bodyLen = CLUSTER_PROGRESS_BODY_LINES.length;
+  const finaleLen = CLUSTER_PROGRESS_FINALE_LINE_COUNT;
+
   const [visibleCount, setVisibleCount] = useState(1);
   const [autoScroll, setAutoScroll] = useState(true);
+  /** When panel opens on in-progress page, stream uses body + rolling activity lines until UI completes. */
+  const [useHoldLayout, setUseHoldLayout] = useState(false);
+  /** Frozen count of activity lines once cluster UI reports complete (hold mode). */
+  const pulseFrozenRef = useRef<number | null>(null);
+  const prevIsOpenRef = useRef(false);
+
+  const autoScrollRef = useRef(autoScroll);
+  autoScrollRef.current = autoScroll;
   const logsEndRef = useRef<HTMLDivElement>(null);
   const logScrollRef = useRef<HTMLDivElement>(null);
-
-  const totalLines =
-    AGENT_ANALYSIS_LINES.length +
-    CLUSTER_PROGRESS_LINES.length;
+  const logContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !prevIsOpenRef.current) {
       setVisibleCount(1);
+      pulseFrozenRef.current = null;
+      setUseHoldLayout(!releaseCompletionLogLines);
     }
-  }, [isOpen]);
+    prevIsOpenRef.current = isOpen;
+  }, [isOpen, releaseCompletionLogLines]);
+
+  const streamEndVisible = useMemo(() => {
+    if (!useHoldLayout) {
+      return agentLen + CLUSTER_PROGRESS_LINES.length;
+    }
+    if (!releaseCompletionLogLines) {
+      return Number.MAX_SAFE_INTEGER;
+    }
+    if (pulseFrozenRef.current === null) {
+      const slots = Math.max(0, visibleCount - agentLen);
+      pulseFrozenRef.current = Math.max(0, slots - bodyLen);
+    }
+    return agentLen + bodyLen + (pulseFrozenRef.current ?? 0) + finaleLen;
+  }, [useHoldLayout, releaseCompletionLogLines, visibleCount, agentLen, bodyLen, finaleLen]);
 
   useEffect(() => {
     if (!isOpen) {
       return;
     }
-    if (visibleCount >= totalLines) return;
-    const timer = setTimeout(() => setVisibleCount((c) => Math.min(totalLines, c + 1)), 420);
+    if (visibleCount >= streamEndVisible) return;
+    const timer = setTimeout(() => setVisibleCount((c) => Math.min(streamEndVisible, c + 1)), 420);
     return () => clearTimeout(timer);
-  }, [isOpen, visibleCount, totalLines]);
+  }, [isOpen, visibleCount, streamEndVisible]);
 
-  useEffect(() => {
+  /** Layout phase: scrollHeight matches new DOM before paint (effect ran too late for “live” stream). */
+  useLayoutEffect(() => {
     if (!isOpen || !autoScroll) return;
     const el = logScrollRef.current;
     if (!el) return;
-    /** Scroll the log container; instant scroll after layout — smooth scroll fights rapid stream updates and fails if overflow never activates. */
-    const scrollToBottom = () => {
-      el.scrollTop = el.scrollHeight;
-    };
-    scrollToBottom();
-    requestAnimationFrame(() => {
-      scrollToBottom();
-      requestAnimationFrame(scrollToBottom);
-    });
+    el.scrollTop = el.scrollHeight;
+    logsEndRef.current?.scrollIntoView({ block: "end", behavior: "auto" });
   }, [visibleCount, isOpen, autoScroll]);
 
-  if (!isOpen) return null;
+  /** Content height grows inside a fixed-height overflow:auto shell — border box of the shell does not resize, so observe inner column and re-stick to bottom when it grows (fonts, streaming lines). */
+  useEffect(() => {
+    if (!isOpen || typeof ResizeObserver === "undefined") return;
+    const inner = logContentRef.current;
+    const outer = logScrollRef.current;
+    if (!inner || !outer) return;
+    const ro = new ResizeObserver(() => {
+      if (!autoScrollRef.current) return;
+      outer.scrollTop = outer.scrollHeight;
+    });
+    ro.observe(inner);
+    return () => ro.disconnect();
+  }, [isOpen]);
 
   const clusterFmt = (msg: string) => msg.replace(/\{version\}/g, version);
 
-  const agentSlice = AGENT_ANALYSIS_LINES.slice(0, Math.min(visibleCount, AGENT_ANALYSIS_LINES.length));
-  const clusterIdxStart = Math.max(0, visibleCount - AGENT_ANALYSIS_LINES.length);
-  const clusterSlice = CLUSTER_PROGRESS_LINES.slice(0, clusterIdxStart).map((e) => ({
-    ...e,
-    msg: clusterFmt(e.msg),
-  }));
+  const agentSlice = AGENT_ANALYSIS_LINES.slice(0, Math.min(visibleCount, agentLen));
+
+  const clusterSlice = useMemo(() => {
+    const clusterIdxStart = Math.max(0, visibleCount - agentLen);
+    if (!useHoldLayout) {
+      return CLUSTER_PROGRESS_LINES.slice(0, clusterIdxStart).map((e) => ({
+        ...e,
+        msg: clusterFmt(e.msg),
+      }));
+    }
+
+    const rows: { ts: string; level: string; msg: string }[] = [];
+    const bodyShown = Math.min(clusterIdxStart, bodyLen);
+    rows.push(
+      ...CLUSTER_PROGRESS_BODY_LINES.slice(0, bodyShown).map((e) => ({
+        ...e,
+        msg: clusterFmt(e.msg),
+      })),
+    );
+
+    let rem = clusterIdxStart - bodyShown;
+    if (rem <= 0) return rows;
+
+    if (!releaseCompletionLogLines) {
+      for (let i = 0; i < rem; i++) {
+        rows.push(activityPulseEntry(i));
+      }
+      return rows;
+    }
+
+    const pulseCap = pulseFrozenRef.current ?? 0;
+    const pulseRows = Math.min(rem, pulseCap);
+    for (let i = 0; i < pulseRows; i++) {
+      rows.push(activityPulseEntry(i));
+    }
+    rem -= pulseRows;
+    if (rem <= 0) return rows;
+
+    rows.push(
+      ...CLUSTER_PROGRESS_FINALE_LINES.slice(0, Math.min(rem, finaleLen)).map((e) => ({
+        ...e,
+        msg: clusterFmt(e.msg),
+      })),
+    );
+    return rows;
+  }, [
+    useHoldLayout,
+    visibleCount,
+    agentLen,
+    bodyLen,
+    finaleLen,
+    releaseCompletionLogLines,
+    version,
+  ]);
+
+  if (!isOpen) return null;
 
   /** Portaled like {@link LightSpeedPanel}: avoids nested glass/opacity under `#root`. */
   const panel = (
@@ -159,33 +294,37 @@ export default function AgentExecutionLogsPanel({ version, onClose, isOpen }: Ag
           tabIndex={0}
           aria-label="Agent and cluster update log output"
         >
-          {agentSlice.map((line, i) => (
-            <div key={`a-${i}`} className="break-words pb-[var(--pf-t--global--spacer--xs)]">
-              {line}
-            </div>
-          ))}
-          {clusterSlice.map((entry, i) => (
-            <div key={`c-${i}`} className="flex flex-wrap gap-x-[var(--pf-t--global--spacer--sm)] pb-[var(--pf-t--global--spacer--xs)]">
-              <span className="ocs-update-details-panel__log-ts shrink-0 tabular-nums">{entry.ts}</span>
-              <span className="ocs-update-details-panel__log-level shrink-0 font-semibold">{entry.level.toUpperCase()}</span>
-              <span className="min-w-0 break-words">{entry.msg}</span>
-            </div>
-          ))}
-          {visibleCount < totalLines ? (
-            <div
-              className="ocs-update-details-panel__agent-status mt-[var(--pf-t--global--spacer--sm)] pt-[var(--pf-t--global--spacer--sm)]"
-              aria-live="polite"
-              aria-busy="true"
-            >
-              <span className="ocs-update-details-panel__agent-status-text">Agent is analyzing cluster data</span>
-              <span className="ocs-update-details-panel__agent-dots" aria-hidden>
-                <span />
-                <span />
-                <span />
-              </span>
-            </div>
-          ) : null}
-          <div ref={logsEndRef} />
+          <div ref={logContentRef}>
+            {agentSlice.map((line, i) => (
+              <div key={`a-${i}`} className="break-words pb-[var(--pf-t--global--spacer--xs)]">
+                {line}
+              </div>
+            ))}
+            {clusterSlice.map((entry, i) => (
+              <div key={`c-${i}`} className="flex flex-wrap gap-x-[var(--pf-t--global--spacer--sm)] pb-[var(--pf-t--global--spacer--xs)]">
+                <span className="ocs-update-details-panel__log-ts shrink-0 tabular-nums">{entry.ts}</span>
+                <span className="ocs-update-details-panel__log-level shrink-0 font-semibold">{entry.level.toUpperCase()}</span>
+                <span className="min-w-0 break-words">{entry.msg}</span>
+              </div>
+            ))}
+            {visibleCount < streamEndVisible ? (
+              <div
+                className="ocs-update-details-panel__agent-status mt-[var(--pf-t--global--spacer--sm)] pt-[var(--pf-t--global--spacer--sm)]"
+                aria-live="polite"
+                aria-busy="true"
+              >
+                <span className="ocs-update-details-panel__agent-status-text">
+                  {useHoldLayout && !releaseCompletionLogLines ? "Live cluster activity…" : "Streaming cluster activity…"}
+                </span>
+                <span className="ocs-update-details-panel__agent-dots" aria-hidden>
+                  <span />
+                  <span />
+                  <span />
+                </span>
+              </div>
+            ) : null}
+            <div ref={logsEndRef} />
+          </div>
         </div>
       </div>
     </div>

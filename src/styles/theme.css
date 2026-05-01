@@ -150,6 +150,7 @@ html.dark .ocs-update-details-panel {
 
 /** Inset log stream (terminal-style) — opaque layer inside the panel shell. */
 .ocs-update-details-panel__log-well {
+  overflow-anchor: none;
   background-color: var(--pf-color-gray-10);
   color: #151515;
   font-size: var(--pf-t--global--FontSize--sm);

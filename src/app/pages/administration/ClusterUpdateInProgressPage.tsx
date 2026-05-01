@@ -27,33 +27,42 @@ import AgentExecutionLogsPanel from "../../components/cluster-update/AgentExecut
 
 type TabKey = "update-plan" | "active-update-plans" | "update-history";
 
-interface UpdatingOperator {
+type RowStatus = "Updating" | "Updated" | "Pending";
+
+interface OperatorRowModel {
   name: string;
   version: string;
-  status: "Updating" | "Updated" | "Pending";
   compatibility: "compatible" | "incompatible";
   lastUpdated: string;
 }
 
-interface WorkerPool {
+interface WorkerPoolModel {
   pool: string;
-  status: "Updating" | "Updated" | "Pending";
-  version: string;
+  baseVersion: string;
   compatibility: "compatible" | "incompatible";
 }
 
-const UPDATING_OPERATORS: UpdatingOperator[] = [
-  { name: "Abot Operator-v3.0.0", version: "3.2.5", status: "Updating", compatibility: "compatible", lastUpdated: "Feb 13, 2026, 10:28 AM" },
-  { name: "Airflow Helm Operator", version: "3.5", status: "Updating", compatibility: "compatible", lastUpdated: "Feb 13, 2026, 10:28 AM" },
-  { name: "Ansible Automation Platform", version: "3.25", status: "Updating", compatibility: "compatible", lastUpdated: "Feb 13, 2026, 10:28 AM" },
-  { name: "Bare Metal Event Relay", version: "1.2.0", status: "Pending", compatibility: "compatible", lastUpdated: "Feb 13, 2026, 10:28 AM" },
-  { name: "Camel K Operator", version: "2.1.0", status: "Pending", compatibility: "compatible", lastUpdated: "Feb 13, 2026, 10:28 AM" },
+const OPERATORS_BASE: OperatorRowModel[] = [
+  { name: "Abot Operator-v3.0.0", version: "3.2.5", compatibility: "compatible", lastUpdated: "Feb 13, 2026, 10:28 AM" },
+  { name: "Airflow Helm Operator", version: "3.5", compatibility: "compatible", lastUpdated: "Feb 13, 2026, 10:28 AM" },
+  { name: "Ansible Automation Platform", version: "3.25", compatibility: "compatible", lastUpdated: "Feb 13, 2026, 10:28 AM" },
+  { name: "Bare Metal Event Relay", version: "1.2.0", compatibility: "compatible", lastUpdated: "Feb 13, 2026, 10:28 AM" },
+  { name: "Camel K Operator", version: "2.1.0", compatibility: "compatible", lastUpdated: "Feb 13, 2026, 10:28 AM" },
 ];
 
-const WORKER_POOLS: WorkerPool[] = [
-  { pool: "worker-east", status: "Updating", version: "4.18.16", compatibility: "compatible" },
-  { pool: "worker-west", status: "Pending", version: "4.18.15", compatibility: "compatible" },
+const WORKER_POOLS_BASE: WorkerPoolModel[] = [
+  { pool: "worker-east", baseVersion: "4.18.16", compatibility: "compatible" },
+  { pool: "worker-west", baseVersion: "4.18.15", compatibility: "compatible" },
 ];
+
+/** Maps overall phase % to per-row status so tables stay aligned with progress bars. */
+function slotStatus(index: number, rowCount: number, pct: number): RowStatus {
+  if (rowCount <= 0) return "Pending";
+  const seg = 100 / rowCount;
+  if (pct >= (index + 1) * seg) return "Updated";
+  if (pct > index * seg) return "Updating";
+  return index === 0 ? "Updating" : "Pending";
+}
 
 export default function ClusterUpdateInProgressPage() {
   const navigate = useNavigate();
@@ -61,12 +70,14 @@ export default function ClusterUpdateInProgressPage() {
   const version = (location.state as any)?.version || "5.1.10";
   const [activeTab, setActiveTab] = useState<TabKey>("update-plan");
 
-  const [operatorProgress, setOperatorProgress] = useState(0);
-  const [controlProgress, setControlProgress] = useState(0);
-  const [workerProgress, setWorkerProgress] = useState(0);
+  const [progress, setProgress] = useState({ op: 0, cp: 0, wn: 0 });
   const [paused, setPaused] = useState(false);
   const [showAbortModal, setShowAbortModal] = useState(false);
   const [showLogsPanel, setShowLogsPanel] = useState(false);
+
+  const operatorProgress = progress.op;
+  const controlProgress = progress.cp;
+  const workerProgress = progress.wn;
 
   useEffect(() => {
     localStorage.setItem("clusterUpdateInProgress", JSON.stringify({ version, startedAt: Date.now() }));
@@ -75,15 +86,15 @@ export default function ClusterUpdateInProgressPage() {
   useEffect(() => {
     if (paused) return;
     const timer = setInterval(() => {
-      setControlProgress(p => Math.min(100, p + 1.5));
-      setOperatorProgress(p => Math.min(100, p + 0.8));
-      setWorkerProgress(p => {
-        if (controlProgress > 40) return Math.min(100, p + 0.3);
-        return p;
+      setProgress((s) => {
+        const cp = Math.min(100, s.cp + 1.5);
+        const op = Math.min(100, s.op + 0.8);
+        const wn = cp > 40 ? Math.min(100, s.wn + 0.35) : s.wn;
+        return { cp, op, wn };
       });
     }, 300);
     return () => clearInterval(timer);
-  }, [controlProgress, paused]);
+  }, [paused]);
 
   useEffect(() => {
     if (operatorProgress >= 100 && controlProgress >= 100 && workerProgress >= 100) {
@@ -95,6 +106,18 @@ export default function ClusterUpdateInProgressPage() {
   const opPct = Math.round(operatorProgress);
   const cpPct = Math.round(controlProgress);
   const wnPct = Math.round(workerProgress);
+
+  const operatorRows = OPERATORS_BASE.map((op, i) => ({
+    ...op,
+    status: slotStatus(i, OPERATORS_BASE.length, operatorProgress),
+  }));
+
+  const workerRows = WORKER_POOLS_BASE.map((pool, i) => ({
+    ...pool,
+    status: slotStatus(i, WORKER_POOLS_BASE.length, workerProgress),
+  }));
+
+  const updateFullyComplete = operatorProgress >= 100 && controlProgress >= 100 && workerProgress >= 100;
 
   const tabs: { key: TabKey; label: string }[] = [
     { key: "update-plan", label: "Update plan" },
@@ -213,7 +236,7 @@ export default function ClusterUpdateInProgressPage() {
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {UPDATING_OPERATORS.map((op) => (
+                  {operatorRows.map((op) => (
                     <Tr key={op.name}>
                       <Td dataLabel="Name">
                         <Content component="span" style={{ fontWeight: 600 }}>
@@ -303,7 +326,7 @@ export default function ClusterUpdateInProgressPage() {
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {WORKER_POOLS.map((pool) => (
+                  {workerRows.map((pool) => (
                     <Tr key={pool.pool}>
                       <Td dataLabel="Pool">
                         <Content component="span" style={{ fontWeight: 600 }}>
@@ -334,7 +357,7 @@ export default function ClusterUpdateInProgressPage() {
                       </Td>
                       <Td dataLabel="Version">
                         <Content component="small">
-                          <code>{pool.version}</code>
+                          <code>{pool.status === "Updated" ? version : pool.baseVersion}</code>
                         </Content>
                       </Td>
                       <Td dataLabel="Cluster compatibility">
@@ -414,6 +437,7 @@ export default function ClusterUpdateInProgressPage() {
         isOpen={showLogsPanel}
         version={version}
         onClose={() => setShowLogsPanel(false)}
+        releaseCompletionLogLines={updateFullyComplete}
       />
     </div>
   );
