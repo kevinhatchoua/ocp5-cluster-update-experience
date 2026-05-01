@@ -20,5 +20,5 @@ export const CLUSTER_WORKER_POOL_COUNT = 5;
  * Representative nodes rolled during the worker phase (pools × nodes per pool).
  * Matches “Worker nodes” progress and Post-Update Summary node totals.
  */
-export const CLUSTER_NODES_PER_WORKER_POOL = 3;
+export const CLUSTER_NODES_PER_WORKER_POOL = 1;
 export const CLUSTER_NODE_COUNT_UPDATED = CLUSTER_WORKER_POOL_COUNT * CLUSTER_NODES_PER_WORKER_POOL;

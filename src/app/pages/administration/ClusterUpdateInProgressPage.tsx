@@ -47,11 +47,11 @@ const OPERATORS_BASE: OperatorRowModel[] = [
 ];
 
 const WORKER_POOLS_BASE: WorkerPoolModel[] = [
-  { pool: "worker-east", baseVersion: "4.18.16", compatibility: "compatible" },
-  { pool: "worker-west", baseVersion: "4.18.15", compatibility: "compatible" },
-  { pool: "worker-central", baseVersion: "4.18.16", compatibility: "compatible" },
-  { pool: "worker-north", baseVersion: "4.18.14", compatibility: "compatible" },
-  { pool: "worker-south", baseVersion: "4.18.15", compatibility: "compatible" },
+  { pool: "worker-east", baseVersion: "5.0.0", compatibility: "compatible" },
+  { pool: "worker-west", baseVersion: "5.0.0", compatibility: "compatible" },
+  { pool: "worker-central", baseVersion: "5.0.0", compatibility: "compatible" },
+  { pool: "worker-north", baseVersion: "5.0.0", compatibility: "compatible" },
+  { pool: "worker-south", baseVersion: "5.0.0", compatibility: "compatible" },
 ];
 
 /** Maps overall phase % to per-row status so tables stay aligned with progress bars. */
@@ -373,7 +373,7 @@ export default function ClusterUpdateInProgressPage() {
                       </Td>
                       <Td dataLabel="Version">
                         <Content component="small">
-                          <code>{row.status === "Updated" ? version : "—"}</code>
+                          <code>{row.status === "Updated" ? version : "5.0.0"}</code>
                         </Content>
                       </Td>
                       <Td dataLabel="Cluster compatibility">
