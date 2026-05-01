@@ -1,4 +1,4 @@
-import { Content } from "@patternfly/react-core";
+import { Alert, Content } from "@patternfly/react-core";
 import { css } from "@patternfly/react-styles";
 import textStyles from "@patternfly/react-styles/css/utilities/Text/text.mjs";
 
@@ -33,6 +33,34 @@ export function LightspeedAiMessageFooter() {
       className="ols-legal-message-footer"
       style={{
         margin: "0.5rem 0 0 0",
+        fontSize: "var(--pf-t--global--font--size--body--sm, 0.75rem)",
+        lineHeight: 1.4,
+        color: "var(--pf-t--global--text--color--subtle)",
+      }}
+    >
+      {LIGHTSPEED_AI_RESPONSE_FOOTER}
+    </p>
+  );
+}
+
+/** Inline PatternFly alert for AI-generated plan / assessment surfaces (uses approved accuracy copy). */
+export function LightspeedAiContentBanner() {
+  return (
+    <Alert variant="info" isInline title="AI-generated content">
+      <Content component="p" style={{ margin: 0 }}>
+        {LIGHTSPEED_AI_RESPONSE_FOOTER}
+      </Content>
+    </Alert>
+  );
+}
+
+/** Subtle inline disclaimer for dense layouts (e.g. next to metrics). */
+export function LightspeedAiAccuracyInline({ className }: { className?: string }) {
+  return (
+    <p
+      className={className}
+      style={{
+        margin: 0,
         fontSize: "var(--pf-t--global--font--size--body--sm, 0.75rem)",
         lineHeight: 1.4,
         color: "var(--pf-t--global--text--color--subtle)",

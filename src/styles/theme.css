@@ -121,6 +121,189 @@ html.no-glass.dark .app-glass-panel.app-glass-panel--edge-right {
   box-shadow: -4px 0 24px 0 rgba(0, 0, 0, 0.35);
 }
 
+/**
+ * Cluster Update — “Update details” slide-over: always opaque (no glass blur / no rgba shell).
+ * Matches solid LightSpeed surfaces for transcript readability and WCAG contrast.
+ */
+.ocs-update-details-panel {
+  /* Flexbox: allow column children with flex-1 + overflow-auto to scroll (default min-height: auto prevents this). */
+  min-height: 0;
+  max-height: 100dvh;
+  border-radius: var(--pf-t--global--border--radius--glass--default) 0 0
+    var(--pf-t--global--border--radius--glass--default);
+  border-width: var(--pf-t--global--border--width--glass--default);
+  border-style: solid;
+  box-shadow: -4px 0 24px 0 rgba(0, 0, 0, 0.35);
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html:not(.dark) .ocs-update-details-panel {
+  background-color: var(--pf-color-white);
+  border-color: var(--pf-color-gray-30);
+}
+
+html.dark .ocs-update-details-panel {
+  background-color: var(--pf-color-gray-80);
+  border-color: var(--pf-color-gray-60);
+}
+
+/** Inset log stream (terminal-style) — opaque layer inside the panel shell. */
+.ocs-update-details-panel__log-well {
+  background-color: var(--pf-color-gray-10);
+  color: #151515;
+  font-size: var(--pf-t--global--FontSize--sm);
+  line-height: 1.5;
+}
+
+html.dark .ocs-update-details-panel__log-well {
+  /* Explicit light-on-dark for WCAG contrast on near-black (inverse token can read too dim). */
+  background-color: #0f0f0f;
+  color: #e8e8e8;
+}
+
+html.dark .ocs-update-details-panel__log-well .ocs-update-details-panel__log-ts {
+  color: #a8a8a8;
+}
+
+html:not(.dark) .ocs-update-details-panel__log-well .ocs-update-details-panel__log-ts {
+  color: #6a6e73;
+}
+
+/** Log level token matches body (single readable white / dark gray). */
+html.dark .ocs-update-details-panel__log-well .ocs-update-details-panel__log-level {
+  color: #e8e8e8;
+}
+
+html:not(.dark) .ocs-update-details-panel__log-well .ocs-update-details-panel__log-level {
+  color: #151515;
+}
+
+/** Panel chrome — title + subtitle + toolbar match (white on dark shell). */
+html.dark .ocs-update-details-panel .ocs-update-details-panel__title {
+  color: #fff !important;
+}
+
+html.dark .ocs-update-details-panel .ocs-update-details-panel__subtitle {
+  color: #e0e0e0 !important;
+}
+
+html.dark .ocs-update-details-panel .ocs-update-details-panel__toolbar-label {
+  color: #fff;
+}
+
+/** Agent still streaming — no spinner; subtle animated dots (a11y-friendly motion). */
+html.dark .ocs-update-details-panel__agent-status {
+  display: flex;
+  align-items: center;
+  gap: var(--pf-t--global--spacer--sm);
+  font-family: var(--pf-t--global--FontFamily--text);
+  font-size: var(--pf-t--global--FontSize--sm);
+  color: #e8e8e8;
+}
+
+html:not(.dark) .ocs-update-details-panel__agent-status {
+  display: flex;
+  align-items: center;
+  gap: var(--pf-t--global--spacer--sm);
+  font-family: var(--pf-t--global--FontFamily--text);
+  font-size: var(--pf-t--global--FontSize--sm);
+  color: #151515;
+}
+
+html.dark .ocs-update-details-panel__agent-status {
+  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+html:not(.dark) .ocs-update-details-panel__agent-status {
+  border-top: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
+.ocs-update-details-panel__agent-dots span {
+  display: inline-block;
+  width: 0.35rem;
+  height: 0.35rem;
+  margin: 0 0.1rem;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.35;
+  animation: ocs-agent-dot-pulse 1.2s ease-in-out infinite;
+}
+
+.ocs-update-details-panel__agent-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.ocs-update-details-panel__agent-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes ocs-agent-dot-pulse {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ocs-update-details-panel__agent-dots span {
+    animation: none;
+    opacity: 0.85;
+  }
+}
+
+/** Cluster Update agent modals — align title + body copy (white on dark chrome; dark text on light). */
+html.dark .ocs-cluster-update-modal.pf-v6-c-modal-box {
+  background-color: var(--pf-color-gray-80);
+  color: #f5f5f5;
+}
+
+html.dark .ocs-cluster-update-modal.pf-v6-c-modal-box .pf-v6-c-modal-box__title-text {
+  color: #fff !important;
+}
+
+html.dark .ocs-cluster-update-modal.pf-v6-c-modal-box .pf-v6-c-modal-box__body {
+  color: #f5f5f5;
+}
+
+html:not(.dark) .ocs-cluster-update-modal.pf-v6-c-modal-box .pf-v6-c-modal-box__title-text {
+  color: var(--pf-t--global--text--color--regular);
+}
+
+html:not(.dark) .ocs-cluster-update-modal.pf-v6-c-modal-box .pf-v6-c-modal-box__body {
+  color: var(--pf-t--global--text--color--regular);
+}
+
+/** Schedule update window — compact PatternFly DatePicker / TimePicker / FormSelect row. */
+.ocs-schedule-modal-fields {
+  width: 100%;
+}
+
+.ocs-schedule-modal-field {
+  flex: 0 1 auto;
+  max-width: min(100%, 14rem);
+}
+
+.ocs-schedule-modal-field--timezone {
+  max-width: min(100%, 22rem);
+}
+
+/** Update details slide-over — light theme chrome matches body copy contrast. */
+html:not(.dark) .ocs-update-details-panel .ocs-update-details-panel__title {
+  color: var(--pf-t--global--text--color--regular) !important;
+}
+
+html:not(.dark) .ocs-update-details-panel .ocs-update-details-panel__subtitle {
+  color: var(--pf-t--global--text--color--subtle) !important;
+}
+
+html:not(.dark) .ocs-update-details-panel .ocs-update-details-panel__toolbar-label {
+  color: var(--pf-t--global--text--color--regular);
+}
+
 /** Compact floating surfaces (menus): smaller radius than default glass token. */
 .app-glass-panel.app-glass-panel--radius-sm {
   border-radius: 8px;

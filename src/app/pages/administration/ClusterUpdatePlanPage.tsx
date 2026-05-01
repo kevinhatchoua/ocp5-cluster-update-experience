@@ -18,6 +18,7 @@ import {
   CardTitle,
   Checkbox,
   Content,
+  DatePicker,
   Divider,
   Dropdown,
   DropdownItem,
@@ -35,6 +36,10 @@ import {
   List,
   ListItem,
   MenuToggle,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
   Panel,
   PanelMain,
   PanelMainBody,
@@ -49,6 +54,7 @@ import {
   Tab,
   Tabs,
   TabTitleText,
+  TimePicker,
   Title,
   ToggleGroup,
   ToggleGroupItem,
@@ -57,6 +63,7 @@ import EllipsisVIcon from "@patternfly/react-icons/dist/esm/icons/ellipsis-v-ico
 import { InnerScrollContainer, Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import { usePatternFlyGlassActive } from "@/lib/usePatternFlyGlassActive";
 import { ExternalLink, Sparkles, ArrowRight, CheckCircle, AlertTriangle, AlertCircle, HelpCircle, Info, X, Loader2, Shield, Bot, Settings, RotateCcw, Play, Pause, Calendar, Bell, Clock, FileText, User, Zap, Eye, RefreshCw, Check } from "@/lib/pfIcons";
+import AgentExecutionLogsPanel from "../../components/cluster-update/AgentExecutionLogsPanel";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import FavoriteButton from "../../components/FavoriteButton";
 import { AiAssessmentSection } from "../../components/AiAssessmentSection";
@@ -2015,9 +2022,8 @@ function UpdateAgentTab({
   });
 
   const [showApproveModal, setShowApproveModal] = useState(false);
-  const [approveAcknowledged, setApproveAcknowledged] = useState(false);
+  const [showApproveAgentLogs, setShowApproveAgentLogs] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
-  const [rejectAcknowledged, setRejectAcknowledged] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [scheduleDate, setScheduleDate] = useState("2026-04-15");
   const [scheduleTime, setScheduleTime] = useState("02:00");
@@ -2118,7 +2124,6 @@ function UpdateAgentTab({
   );
 
   const confirmApproveAndStart = () => {
-    if (!approveAcknowledged) return;
     recordApproval();
     localStorage.setItem("clusterUpdateInProgress", JSON.stringify({ version: selectedVersion, startedAt: Date.now() }));
     setShowApproveModal(false);
@@ -2126,7 +2131,6 @@ function UpdateAgentTab({
   };
 
   const confirmRejectPlan = () => {
-    if (!rejectAcknowledged) return;
     setPlanDecision("rejected");
     setShowRejectModal(false);
   };
@@ -2430,29 +2434,13 @@ function UpdateAgentTab({
 
                 {i === 2 && (
                   <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
-                    <Flex
-                      justifyContent={{ default: "justifyContentSpaceBetween" }}
-                      alignItems={{ default: "alignItemsCenter" }}
-                      gap={{ default: "gapSm" }}
-                      flexWrap={{ default: "wrap" }}
-                      style={{ width: "100%" }}
-                    >
-                      <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsCenter" }}>
-                        <Icon status="warning" iconSize="sm">
-                          <AlertTriangle />
-                        </Icon>
-                        <Title headingLevel="h4" size="md">
-                          Operator compatibility
-                        </Title>
-                      </Flex>
-                      <Flex gap={{ default: "gapSm" }} flexWrap={{ default: "wrap" }}>
-                        <Label isCompact color="green" variant="outline">
-                          {planProfile.compatCompatible} compatible
-                        </Label>
-                        <Label isCompact color="orange" variant="outline">
-                          {planProfile.compatRequired} require update
-                        </Label>
-                      </Flex>
+                    <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsCenter" }} style={{ width: "100%" }}>
+                      <Icon status="warning" iconSize="sm">
+                        <AlertTriangle />
+                      </Icon>
+                      <Title headingLevel="h4" size="md">
+                        Operator compatibility
+                      </Title>
                     </Flex>
                     <Content component="p" style={{ margin: 0 }}>
                       {planProfile.compatRequired} operators must be updated before upgrading to {targetVersion}
@@ -2548,7 +2536,7 @@ function UpdateAgentTab({
                                 </Td>
                                 <Td dataLabel="Action needed">
                                   {op.action === "required" ? (
-                                    <Label color="orange" variant="filled" isCompact>
+                                    <Label color="orange" variant="outline" isCompact>
                                       Update required before OCP upgrade
                                     </Label>
                                   ) : op.action === "optional" ? (
@@ -2632,10 +2620,7 @@ function UpdateAgentTab({
                     variant="primary"
                     isDisabled={isPlanLoading}
                     icon={<Check aria-hidden />}
-                    onClick={() => {
-                      setApproveAcknowledged(false);
-                      setShowApproveModal(true);
-                    }}
+                    onClick={() => setShowApproveModal(true)}
                   >
                     Approve plan
                   </Button>
@@ -2663,10 +2648,7 @@ function UpdateAgentTab({
                     isDanger
                     isDisabled={isPlanLoading}
                     icon={<X aria-hidden />}
-                    onClick={() => {
-                      setRejectAcknowledged(false);
-                      setShowRejectModal(true);
-                    }}
+                    onClick={() => setShowRejectModal(true)}
                   >
                     Reject plan
                   </Button>
@@ -2726,222 +2708,192 @@ function UpdateAgentTab({
       </Card>
     </Flex>
 
-      {showApproveModal && createPortal(
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-[16px]" onClick={() => setShowApproveModal(false)}>
-          <div
-            className="bg-white dark:bg-[#1a1a1a] rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.2)] max-w-[520px] w-full"
-            onClick={(e: React.MouseEvent) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="agent-approve-title"
+      <Modal
+        className="ocs-cluster-update-modal"
+        variant="medium"
+        isOpen={showApproveModal}
+        onClose={() => {
+          setShowApproveModal(false);
+          setShowApproveAgentLogs(false);
+        }}
+        aria-labelledby="agent-approve-title"
+        aria-describedby="agent-approve-desc"
+      >
+        <ModalHeader labelId="agent-approve-title" title="Approve and start update" />
+        <ModalBody id="agent-approve-desc">
+          <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
+            <Content component="p" style={{ margin: 0 }}>
+              You are about to approve the agent plan and <strong>start the cluster update</strong> from{" "}
+              <code>{AGENT_CLUSTER_CURRENT_VERSION}</code> to <code>{selectedVersion}</code> on channel{" "}
+              <strong>{selectedChannel}</strong>.
+            </Content>
+            <Content component="p" style={{ margin: 0 }}>
+              The console will open the in-progress update experience. Ensure maintenance is communicated and workloads are ready.
+            </Content>
+            <div>
+              <Button variant="link" isInline icon={<FileText aria-hidden />} onClick={() => setShowApproveAgentLogs(true)}>
+                View agent analysis logs
+              </Button>
+              <Content component="small" className="pf-v6-u-display-block pf-v6-u-mt-xs">
+                Opens recorded agent tool use and reasoning for this plan (prototype sample stream).
+              </Content>
+            </div>
+          </Flex>
+        </ModalBody>
+        <ModalFooter>
+          <Flex
+            justifyContent={{ default: "justifyContentFlexEnd" }}
+            flexWrap={{ default: "wrap" }}
+            gap={{ default: "gapMd" }}
           >
-            <div className="flex items-center justify-between px-[24px] py-[16px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
-              <h3 id="agent-approve-title" className="text-[16px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white">
-                Approve and start update
-              </h3>
-              <button type="button" onClick={() => setShowApproveModal(false)} className="bg-transparent border-0 cursor-pointer text-[#6a6e73] hover:text-[#151515] dark:hover:text-white p-[4px]" aria-label="Close">
-                <X className="size-[16px]" />
-              </button>
-            </div>
-            <div className="px-[24px] py-[16px] space-y-[12px]">
-              <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">
-                You are about to approve the agent plan and <span className="font-medium">start the cluster update</span> from{" "}
-                <span className="font-mono font-semibold">{AGENT_CLUSTER_CURRENT_VERSION}</span> to{" "}
-                <span className="font-mono font-semibold">{selectedVersion}</span> on channel <span className="font-medium">{selectedChannel}</span>.
-              </p>
-              <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
-                The console will open the in-progress update experience. Ensure maintenance is communicated and workloads are ready.
-              </p>
-              <label className="flex items-start gap-[10px] cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={approveAcknowledged}
-                  onChange={(e) => setApproveAcknowledged(e.target.checked)}
-                  className="mt-[3px] size-[16px] shrink-0 accent-[#0066cc]"
-                />
-                <span className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">
-                  I have reviewed this plan and authorize the cluster update to proceed for target version {selectedVersion}.
-                </span>
-              </label>
-            </div>
-            <div className="flex items-center justify-end gap-[10px] px-[24px] py-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
-              <button
-                type="button"
-                onClick={() => setShowApproveModal(false)}
-                className="text-[14px] px-[16px] py-[8px] rounded-[999px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-transparent text-[#151515] dark:text-white cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={!approveAcknowledged}
-                onClick={confirmApproveAndStart}
-                className="flex items-center gap-[6px] text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 bg-[var(--pf-color-blue-50)] hover:bg-[var(--pf-color-blue-60)] dark:bg-[var(--pf-color-blue-50)] dark:hover:bg-[var(--pf-color-blue-60)] text-white !text-white [&_svg]:text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium"
-              >
-                <Play className="size-[14px]" aria-hidden /> Start update
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
+            <Button
+              variant="link"
+              onClick={() => {
+                setShowApproveModal(false);
+                setShowApproveAgentLogs(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button variant="primary" icon={<Play aria-hidden />} onClick={confirmApproveAndStart}>
+              Start update
+            </Button>
+          </Flex>
+        </ModalFooter>
+      </Modal>
 
-      {showRejectModal && createPortal(
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-[16px]" onClick={() => setShowRejectModal(false)}>
-          <div
-            className="bg-white dark:bg-[#1a1a1a] rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.2)] max-w-[480px] w-full"
-            onClick={(e: React.MouseEvent) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="agent-reject-title"
-          >
-            <div className="flex items-center justify-between px-[24px] py-[16px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
-              <h3 id="agent-reject-title" className="text-[16px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#c9190b]">
-                Reject this plan?
-              </h3>
-              <button type="button" onClick={() => setShowRejectModal(false)} className="bg-transparent border-0 cursor-pointer text-[#6a6e73] hover:text-[#151515] dark:hover:text-white p-[4px]" aria-label="Close">
-                <X className="size-[16px]" />
-              </button>
-            </div>
-            <div className="px-[24px] py-[16px] space-y-[12px]">
-              <p className="text-[14px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">
-                Rejecting stops this proposed update for <span className="font-mono font-semibold">{selectedVersion}</span>. No changes will be applied until you approve a new plan.
-              </p>
-              <label className="flex items-start gap-[10px] cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={rejectAcknowledged}
-                  onChange={(e) => setRejectAcknowledged(e.target.checked)}
-                  className="mt-[3px] size-[16px] shrink-0 accent-[#0066cc]"
-                />
-                <span className="text-[13px] text-[#151515] dark:text-white font-['Red_Hat_Text:Regular',sans-serif]">
-                  I understand this plan will be rejected and no update will run for this approval request.
-                </span>
-              </label>
-            </div>
-            <div className="flex items-center justify-end gap-[10px] px-[24px] py-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
-              <button
-                type="button"
-                onClick={() => setShowRejectModal(false)}
-                className="text-[14px] px-[16px] py-[8px] rounded-[999px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-transparent text-[#151515] dark:text-white cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={!rejectAcknowledged}
-                onClick={confirmRejectPlan}
-                className="text-[14px] px-[16px] py-[8px] rounded-[999px] border border-[#c9190b] text-[#c9190b] hover:bg-[rgba(201,25,11,0.06)] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium"
-              >
-                Reject plan
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
+      <AgentExecutionLogsPanel
+        isOpen={showApproveAgentLogs}
+        version={selectedVersion}
+        onClose={() => setShowApproveAgentLogs(false)}
+      />
 
-      {showScheduleModal && createPortal(
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-[16px]" onClick={() => setShowScheduleModal(false)}>
-          <div
-            className="bg-white dark:bg-[#1a1a1a] rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.2)] max-w-[520px] w-full max-h-[90vh] overflow-y-auto"
-            onClick={(e: React.MouseEvent) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="agent-schedule-title"
-          >
-            <div className="flex items-center justify-between px-[24px] py-[16px] border-b border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
-              <h3 id="agent-schedule-title" className="text-[16px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white">
-                Schedule update window
-              </h3>
-              <button type="button" onClick={() => setShowScheduleModal(false)} className="bg-transparent border-0 cursor-pointer text-[#6a6e73] hover:text-[#151515] dark:hover:text-white p-[4px]" aria-label="Close">
-                <X className="size-[16px]" />
-              </button>
-            </div>
-            <div className="px-[24px] py-[16px] space-y-[16px]">
-              <p className="text-[13px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">
-                Choose when the agent should target execution. You can pick a preset or set a custom date and time.
-              </p>
-              <div className="flex flex-wrap gap-[8px]">
-                <button
-                  type="button"
-                  onClick={() => applySchedulePreset("2026-04-15", "02:00", "Eastern Time (ET)")}
-                  className="text-[12px] px-[12px] py-[6px] rounded-[999px] border border-[#0066cc] dark:border-[#4dabf7] text-[#0066cc] dark:text-[#4dabf7] bg-transparent hover:bg-[rgba(0,102,204,0.06)] font-['Red_Hat_Text:Regular',sans-serif]"
-                >
-                  Agent recommendation
-                </button>
-                <button
-                  type="button"
-                  onClick={() => applySchedulePreset("2026-04-12", "23:00", "Eastern Time (ET)")}
-                  className="text-[12px] px-[12px] py-[6px] rounded-[999px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] text-[#151515] dark:text-white bg-transparent hover:bg-[rgba(0,0,0,0.04)] font-['Red_Hat_Text:Regular',sans-serif]"
-                >
-                  This weekend · 11:00 PM
-                </button>
-                <button
-                  type="button"
-                  onClick={() => applySchedulePreset("2026-04-18", "06:00", "UTC")}
-                  className="text-[12px] px-[12px] py-[6px] rounded-[999px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] text-[#151515] dark:text-white bg-transparent hover:bg-[rgba(0,0,0,0.04)] font-['Red_Hat_Text:Regular',sans-serif]"
-                >
-                  Next week · 6:00 AM UTC
-                </button>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
-                <label className="flex flex-col gap-[4px]">
-                  <span className="text-[11px] font-semibold uppercase tracking-wide text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif]">Date</span>
-                  <input
-                    type="date"
+      <Modal
+        className="ocs-cluster-update-modal"
+        variant="medium"
+        isOpen={showRejectModal}
+        onClose={() => setShowRejectModal(false)}
+        aria-labelledby="agent-reject-title"
+        aria-describedby="agent-reject-desc"
+      >
+        <ModalHeader labelId="agent-reject-title" title="Reject this plan?" />
+        <ModalBody id="agent-reject-desc">
+          <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
+            <Content component="p" style={{ margin: 0 }}>
+              Rejecting stops this proposed update for <code>{selectedVersion}</code>. No changes will be applied until you approve a new plan.
+            </Content>
+          </Flex>
+        </ModalBody>
+        <ModalFooter>
+          <Flex justifyContent={{ default: "justifyContentFlexEnd" }} gap={{ default: "gapMd" }}>
+            <Button variant="link" onClick={() => setShowRejectModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={confirmRejectPlan}>
+              Reject plan
+            </Button>
+          </Flex>
+        </ModalFooter>
+      </Modal>
+
+      <Modal
+        className="ocs-cluster-update-modal"
+        variant="large"
+        isOpen={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+        aria-labelledby="agent-schedule-title"
+        aria-describedby="agent-schedule-desc"
+      >
+        <ModalHeader labelId="agent-schedule-title" title="Schedule update window" />
+        <ModalBody id="agent-schedule-desc">
+          <Flex direction={{ default: "column" }} gap={{ default: "gapLg" }}>
+            <Content component="p" style={{ margin: 0 }}>
+              Choose when the agent should target execution. You can pick a preset or set a custom date and time.
+            </Content>
+            <Flex gap={{ default: "gapSm" }} flexWrap={{ default: "wrap" }}>
+              <Button
+                variant="secondary"
+                onClick={() => applySchedulePreset("2026-04-15", "02:00", "Eastern Time (ET)")}
+              >
+                Agent recommendation
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => applySchedulePreset("2026-04-12", "23:00", "Eastern Time (ET)")}
+              >
+                This weekend · 11:00 PM
+              </Button>
+              <Button variant="secondary" onClick={() => applySchedulePreset("2026-04-18", "06:00", "UTC")}>
+                Next week · 6:00 AM UTC
+              </Button>
+            </Flex>
+            <Flex
+              direction={{ default: "column", md: "row" }}
+              gap={{ default: "gapMd", md: "gapLg" }}
+              alignItems={{ default: "alignItemsFlexStart" }}
+              flexWrap={{ default: "wrap" }}
+              className="ocs-schedule-modal-fields"
+            >
+              <FlexItem className="ocs-schedule-modal-field">
+                <FormGroup label="Date" fieldId="schedule-date">
+                  <DatePicker
                     value={scheduleDate}
-                    onChange={(e) => setScheduleDate(e.target.value)}
-                    className="rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-white dark:bg-[#1a1a1a] text-[#151515] dark:text-white text-[14px] px-[10px] py-[8px] font-['Red_Hat_Text:Regular',sans-serif]"
+                    onChange={(_event, value) => {
+                      if (value) setScheduleDate(value);
+                    }}
+                    placeholder="YYYY-MM-DD"
+                    aria-label="Schedule date"
+                    appendTo={() => document.body}
+                    inputProps={{ id: "schedule-date" }}
                   />
-                </label>
-                <label className="flex flex-col gap-[4px]">
-                  <span className="text-[11px] font-semibold uppercase tracking-wide text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif]">Time</span>
-                  <input
-                    type="time"
-                    value={scheduleTime}
-                    onChange={(e) => setScheduleTime(e.target.value)}
-                    className="rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-white dark:bg-[#1a1a1a] text-[#151515] dark:text-white text-[14px] px-[10px] py-[8px] font-['Red_Hat_Text:Regular',sans-serif]"
+                </FormGroup>
+              </FlexItem>
+              <FlexItem className="ocs-schedule-modal-field">
+                <FormGroup label="Time" fieldId="schedule-time">
+                  <TimePicker
+                    time={scheduleTime}
+                    onChange={(_event, time) => setScheduleTime(time)}
+                    is24Hour
+                    placeholder="HH:MM"
+                    aria-label="Schedule time"
+                    menuAppendTo={() => document.body}
+                    width="10rem"
+                    inputProps={{ id: "schedule-time" }}
                   />
-                </label>
-              </div>
-              <label className="flex flex-col gap-[4px]">
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif]">Timezone</span>
-                <select
-                  value={scheduleTzLabel}
-                  onChange={(e) => setScheduleTzLabel(e.target.value)}
-                  className="rounded-[6px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-white dark:bg-[#1a1a1a] text-[#151515] dark:text-white text-[14px] px-[10px] py-[8px] font-['Red_Hat_Text:Regular',sans-serif]"
-                >
-                  <option>Eastern Time (ET)</option>
-                  <option>Central Time (CT)</option>
-                  <option>Pacific Time (PT)</option>
-                  <option>UTC</option>
-                </select>
-              </label>
-              <p className="text-[12px] text-[#6a6e73] dark:text-[#8a8d90] font-['Red_Hat_Text:Regular',sans-serif]">
-                Preview: <span className="text-[#151515] dark:text-white font-medium">{formatAgentScheduleLine(scheduleDate, scheduleTime, scheduleTzLabel)}</span>
-              </p>
-            </div>
-            <div className="flex items-center justify-end gap-[10px] px-[24px] py-[16px] border-t border-[#e0e0e0] dark:border-[rgba(255,255,255,0.1)]">
-              <button
-                type="button"
-                onClick={() => setShowScheduleModal(false)}
-                className="text-[14px] px-[16px] py-[8px] rounded-[999px] border border-[#d2d2d2] dark:border-[rgba(255,255,255,0.2)] bg-transparent text-[#151515] dark:text-white cursor-pointer hover:bg-[rgba(0,0,0,0.03)] transition-colors font-['Red_Hat_Text:Regular',sans-serif]"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmScheduleWindow}
-                className="flex items-center gap-[6px] text-[14px] px-[16px] py-[8px] rounded-[999px] border-0 bg-[var(--pf-color-blue-50)] hover:bg-[var(--pf-color-blue-60)] dark:bg-[var(--pf-color-blue-50)] dark:hover:bg-[var(--pf-color-blue-60)] text-white !text-white [&_svg]:text-white cursor-pointer transition-colors font-['Red_Hat_Text:Regular',sans-serif] font-medium"
-              >
-                <Calendar className="size-[14px]" aria-hidden /> Save schedule
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
+                </FormGroup>
+              </FlexItem>
+              <FlexItem className="ocs-schedule-modal-field ocs-schedule-modal-field--timezone">
+                <FormGroup label="Timezone" fieldId="schedule-tz">
+                  <FormSelect
+                    id="schedule-tz"
+                    value={scheduleTzLabel}
+                    onChange={(_e, value) => setScheduleTzLabel(value)}
+                    aria-label="Timezone"
+                  >
+                    <option value="Eastern Time (ET)">Eastern Time (ET)</option>
+                    <option value="Central Time (CT)">Central Time (CT)</option>
+                    <option value="Pacific Time (PT)">Pacific Time (PT)</option>
+                    <option value="UTC">UTC</option>
+                  </FormSelect>
+                </FormGroup>
+              </FlexItem>
+            </Flex>
+            <Content component="p" style={{ margin: 0 }}>
+              Preview: <strong>{formatAgentScheduleLine(scheduleDate, scheduleTime, scheduleTzLabel)}</strong>
+            </Content>
+          </Flex>
+        </ModalBody>
+        <ModalFooter>
+          <Flex justifyContent={{ default: "justifyContentFlexEnd" }} gap={{ default: "gapMd" }}>
+            <Button variant="link" onClick={() => setShowScheduleModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" icon={<Calendar aria-hidden />} onClick={confirmScheduleWindow}>
+              Save schedule
+            </Button>
+          </Flex>
+        </ModalFooter>
+      </Modal>
     </>
   );
 }
