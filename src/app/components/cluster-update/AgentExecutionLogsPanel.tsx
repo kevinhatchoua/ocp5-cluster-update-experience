@@ -21,48 +21,107 @@ const AGENT_ANALYSIS_LINES: string[] = [
   "2026-04-15T17:31:05.661098773Z [sdk:analysis] thinking: Compatibility summary built; emitting proposed plan with maintenance window and risk score.",
 ];
 
-const CLUSTER_PROGRESS_LINES: { ts: string; level: string; msg: string }[] = [
-  { ts: "00:00:01", level: "info", msg: "ClusterVersion operator initiated update to {version}" },
-  { ts: "00:00:02", level: "info", msg: "Setting desiredUpdate.version={version}, channel=fast-5.1" },
-  { ts: "00:00:03", level: "info", msg: "Reconciling ClusterVersion: status=Progressing" },
-  { ts: "00:00:05", level: "info", msg: "Downloading release image quay.io/openshift-release-dev/ocp-release:{version}-x86_64" },
-  { ts: "00:00:12", level: "info", msg: "Release image verified. Signature OK." },
-  { ts: "00:00:14", level: "info", msg: "Beginning control plane update…" },
-  { ts: "00:00:16", level: "info", msg: "Updating kube-apiserver to {version}" },
-  { ts: "00:00:24", level: "info", msg: "kube-apiserver rollout progressing (1/3 nodes updated)" },
-  { ts: "00:00:38", level: "info", msg: "kube-apiserver rollout progressing (2/3 nodes updated)" },
-  { ts: "00:00:52", level: "info", msg: "kube-apiserver rollout complete" },
-  { ts: "00:01:01", level: "info", msg: "Updating kube-controller-manager to {version}" },
-  { ts: "00:01:15", level: "info", msg: "kube-controller-manager rollout complete" },
-  { ts: "00:01:20", level: "info", msg: "Updating kube-scheduler to {version}" },
-  { ts: "00:01:32", level: "info", msg: "kube-scheduler rollout complete" },
-  { ts: "00:01:35", level: "info", msg: "Updating etcd to {version}" },
-  { ts: "00:01:55", level: "warn", msg: "etcd member etcd-master-2 slow: latency 218ms exceeds threshold" },
-  { ts: "00:02:10", level: "info", msg: "etcd rollout complete" },
-  { ts: "00:02:12", level: "info", msg: "Control plane update complete. Starting operator updates…" },
-  { ts: "00:02:14", level: "info", msg: "Updating operator: Abot Operator-v3.0.0 → 3.2.5" },
-  { ts: "00:02:20", level: "info", msg: "Updating operator: Airflow Helm Operator → 3.5" },
-  { ts: "00:02:28", level: "info", msg: "Updating operator: Ansible Automation Platform → 3.25" },
-  { ts: "00:02:35", level: "warn", msg: "Operator Bare Metal Event Relay: waiting for dependency resolution" },
-  { ts: "00:02:48", level: "info", msg: "Operator Abot Operator-v3.0.0 update complete" },
-  { ts: "00:03:02", level: "info", msg: "Operator Airflow Helm Operator update complete" },
-  { ts: "00:03:10", level: "info", msg: "Operator Ansible Automation Platform update complete" },
-  { ts: "00:03:18", level: "info", msg: "Beginning worker node updates…" },
-  { ts: "00:03:20", level: "info", msg: "Cordoning worker-east-1. Draining pods…" },
-  { ts: "00:03:45", level: "info", msg: "Worker worker-east-1 drained. Applying update…" },
-  { ts: "00:04:10", level: "info", msg: "Worker worker-east-1 rebooting with new OS image" },
-  { ts: "00:04:55", level: "info", msg: "Worker worker-east-1 update complete. Uncordoning." },
-  { ts: "00:05:06", level: "info", msg: "Node worker-east-1 Ready. Continuing worker pool rollout…" },
-  { ts: "00:05:18", level: "info", msg: "Operator Bare Metal Event Relay: dependency resolved; update complete" },
-  { ts: "00:05:35", level: "info", msg: "Cordoning worker-east-2. Draining pods…" },
-  { ts: "00:05:58", level: "info", msg: "Worker worker-east-2 drained. Applying update…" },
-  { ts: "00:06:22", level: "info", msg: "Worker worker-east-2 rebooting with new OS image" },
-  { ts: "00:06:48", level: "info", msg: "Worker worker-east-2 update complete. Uncordoning." },
-  { ts: "00:07:02", level: "info", msg: "MachineConfigPool worker: all nodes updated and Ready" },
-  { ts: "00:07:18", level: "info", msg: "Cluster operators: Available=True, Progressing=False" },
-  { ts: "00:07:35", level: "info", msg: "ClusterVersion: status=Available; desired version {version} reconciled" },
-  { ts: "00:07:48", level: "info", msg: "Cluster update finished successfully. OpenShift {version} is active." },
-];
+/**
+ * Platform cluster operator reconcile order (no run-level grouping) — must complete before catalog operators in logs.
+ * Names align with OpenShift clusteroperator resources.
+ */
+const PLATFORM_CLUSTER_OPERATORS = [
+  "config-operator",
+  "etcd",
+  "kube-apiserver",
+  "kube-controller-manager",
+  "kube-scheduler",
+  "cloud-controller-manager",
+  "control-plane-machine-set",
+  "machine-api",
+  "baremetal",
+  "cloud-credential",
+  "authentication",
+  "cluster-autoscaler",
+  "csi-snapshot-controller",
+  "image-registry",
+  "ingress",
+  "kube-storage-version-migrator",
+  "machine-approver",
+  "monitoring",
+  "node-tuning",
+  "openshift-apiserver",
+  "openshift-controller-manager",
+  "openshift-samples",
+  "storage",
+  "console",
+  "insights",
+  "operator-lifecycle-manager",
+  "operator-lifecycle-manager-catalog",
+  "operator-lifecycle-manager-packageserver",
+  "marketplace",
+  "service-ca",
+  "network",
+  "dns",
+  "machine-config",
+] as const;
+
+function formatElapsedSec(totalSec: number): string {
+  const mm = Math.floor(totalSec / 60);
+  const ss = totalSec % 60;
+  return `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
+}
+
+function buildClusterProgressLines(): { ts: string; level: string; msg: string }[] {
+  const rows: { ts: string; level: string; msg: string }[] = [];
+  let elapsed = 1;
+
+  const push = (level: string, msg: string, stepSec = 2) => {
+    rows.push({ ts: formatElapsedSec(elapsed), level, msg });
+    elapsed += stepSec;
+  };
+
+  push("info", "ClusterVersion operator initiated update to {version}", 1);
+  push("info", "Setting desiredUpdate.version={version}, channel=fast-5.1", 1);
+  push("info", "Reconciling ClusterVersion: status=Progressing", 2);
+  push("info", "Downloading release image quay.io/openshift-release-dev/ocp-release:{version}-x86_64", 7);
+  push("info", "Release image verified. Signature OK.", 2);
+  push("info", "Beginning cluster operator updates (platform payload order; catalog operators follow).", 2);
+
+  for (const name of PLATFORM_CLUSTER_OPERATORS) {
+    push("info", `Updating cluster operator: ${name}`, 2);
+    push("info", `Cluster operator ${name}: reconcile complete`, 1);
+  }
+
+  push(
+    "info",
+    "All platform cluster operators reconciled. Beginning catalog operator and subscription updates…",
+    3,
+  );
+
+  push("info", "Updating catalog operator: Abot Operator-v3.0.0 → 3.2.5", 2);
+  push("info", "Updating catalog operator: Airflow Helm Operator → 3.5", 2);
+  push("info", "Updating catalog operator: Ansible Automation Platform → 3.25", 2);
+  push("warn", "Catalog operator Bare Metal Event Relay: waiting for dependency resolution", 2);
+  push("info", "Catalog operator Abot Operator-v3.0.0 update complete", 2);
+  push("info", "Catalog operator Airflow Helm Operator update complete", 2);
+  push("info", "Catalog operator Ansible Automation Platform update complete", 2);
+  push("info", "Catalog operator Bare Metal Event Relay: dependency resolved; update complete", 2);
+
+  push("info", "Beginning worker node updates…", 3);
+  push("info", "Cordoning worker-east-1. Draining pods…", 3);
+  push("info", "Worker worker-east-1 drained. Applying update…", 4);
+  push("info", "Worker worker-east-1 rebooting with new OS image", 5);
+  push("info", "Worker worker-east-1 update complete. Uncordoning.", 3);
+  push("info", "Node worker-east-1 Ready. Continuing worker pool rollout…", 2);
+  push("info", "Cordoning worker-east-2. Draining pods…", 3);
+  push("info", "Worker worker-east-2 drained. Applying update…", 4);
+  push("info", "Worker worker-east-2 rebooting with new OS image", 5);
+  push("info", "Worker worker-east-2 update complete. Uncordoning.", 3);
+  push("info", "MachineConfigPool worker: all nodes updated and Ready", 2);
+  push("info", "Cluster operators: Available=True, Progressing=False", 3);
+  push("info", "ClusterVersion: status=Available; desired version {version} reconciled", 3);
+  push("info", "Cluster update finished successfully. OpenShift {version} is active.", 3);
+
+  return rows;
+}
+
+const CLUSTER_PROGRESS_LINES: { ts: string; level: string; msg: string }[] = buildClusterProgressLines();
 
 /** Last N lines declare full cluster success — withheld until UI progress catches up (in-progress page). */
 export const CLUSTER_PROGRESS_FINALE_LINE_COUNT = 4;
