@@ -38,7 +38,16 @@ html:not(.no-glass) .pf-v6-c-expandable-section.ocp-cluster-expandable--plain.pf
   padding: var(--pf-t--global--spacer--md);
 }
 
-/* Cluster Update AI privacy alert: vertically align custom (AI) icon with title row */
+/**
+ * Cluster Update AI privacy alert: pin custom icon to the title row (not vertical center of title + body).
+ * Update details slide-over: tighter inset so the teal frame does not float with excess top padding.
+ */
 .ocs-cluster-update-ai-privacy-alert.pf-v6-c-alert .pf-v6-c-alert__icon {
-  align-self: center;
+  align-self: flex-start;
+  margin-block-start: 0.1875rem; /* optical alignment with title cap-height vs square icon box */
+}
+
+.ocs-update-details-panel .ocs-cluster-update-ai-privacy-alert.pf-v6-c-alert {
+  padding-block-start: var(--pf-t--global--spacer--xs);
+  padding-block-end: var(--pf-t--global--spacer--sm);
 }

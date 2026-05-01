@@ -318,7 +318,7 @@ export default function AgentExecutionLogsPanel({
     <div
       className="fixed inset-0 z-[1100] flex items-stretch justify-end"
       role="dialog"
-      aria-label="Update details and agent analysis logs"
+      aria-label="Update details and agent logs"
     >
       <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden />
       {/** min-h-0: flex item must shrink below content min-height so inner flex-1 + overflow-y-auto creates a scroll region */}
@@ -330,7 +330,7 @@ export default function AgentExecutionLogsPanel({
             </Title>
             <Content
               component="div"
-              className="ocs-update-details-panel__subtitle pf-v6-u-mt-sm"
+              className="ocs-update-details-panel__subtitle pf-v6-u-mt-xs"
               style={{ marginBottom: 0 }}
             >
               <ClusterUpdateAiImportantPrivacyPanelNotice />

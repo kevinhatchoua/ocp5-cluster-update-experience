@@ -62,8 +62,7 @@ import {
 import EllipsisVIcon from "@patternfly/react-icons/dist/esm/icons/ellipsis-v-icon";
 import { InnerScrollContainer, Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import { usePatternFlyGlassActive } from "@/lib/usePatternFlyGlassActive";
-import { ExternalLink, Sparkles, ArrowRight, CheckCircle, AlertTriangle, AlertCircle, HelpCircle, Info, X, Loader2, Shield, Bot, Settings, RotateCcw, Play, Pause, Calendar, Bell, Clock, FileText, User, Zap, Eye, RefreshCw, Check } from "@/lib/pfIcons";
-import AgentExecutionLogsPanel from "../../components/cluster-update/AgentExecutionLogsPanel";
+import { ExternalLink, Sparkles, ArrowRight, CheckCircle, AlertTriangle, AlertCircle, HelpCircle, Info, X, Loader2, Shield, Bot, Settings, RotateCcw, Play, Pause, Calendar, Bell, Clock, User, Zap, Eye, RefreshCw, Check } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import FavoriteButton from "../../components/FavoriteButton";
 import { AiAssessmentSection } from "../../components/AiAssessmentSection";
@@ -608,7 +607,7 @@ export default function ClusterUpdatePlanPage() {
 
               <InstalledOperatorsSection selectedVersion={selectedVersion} operators={operators} navigate={navigate} />
 
-              <WorkerNodesSection />
+              <WorkerNodesSection targetClusterVersion={selectedVersion} />
             </>
           ) : (
             <UpdateAgentTab
@@ -2049,7 +2048,6 @@ function UpdateAgentTab({
   });
 
   const [showApproveModal, setShowApproveModal] = useState(false);
-  const [showApproveAgentLogs, setShowApproveAgentLogs] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [scheduleDate, setScheduleDate] = useState("2026-04-15");
@@ -2738,10 +2736,7 @@ function UpdateAgentTab({
         className="ocs-cluster-update-modal"
         variant="medium"
         isOpen={showApproveModal}
-        onClose={() => {
-          setShowApproveModal(false);
-          setShowApproveAgentLogs(false);
-        }}
+        onClose={() => setShowApproveModal(false)}
         aria-labelledby="agent-approve-title"
         aria-describedby="agent-approve-desc"
       >
@@ -2753,9 +2748,6 @@ function UpdateAgentTab({
               <code>{AGENT_CLUSTER_CURRENT_VERSION}</code> to <code>{selectedVersion}</code> on channel{" "}
               <strong>{selectedChannel}</strong>.
             </Content>
-            <Button variant="link" isInline icon={<FileText aria-hidden />} onClick={() => setShowApproveAgentLogs(true)}>
-              View agent analysis logs
-            </Button>
           </Flex>
         </ModalBody>
         <ModalFooter>
@@ -2764,13 +2756,7 @@ function UpdateAgentTab({
             flexWrap={{ default: "wrap" }}
             gap={{ default: "gapMd" }}
           >
-            <Button
-              variant="link"
-              onClick={() => {
-                setShowApproveModal(false);
-                setShowApproveAgentLogs(false);
-              }}
-            >
+            <Button variant="link" onClick={() => setShowApproveModal(false)}>
               Cancel
             </Button>
             <Button variant="primary" icon={<Play aria-hidden />} onClick={confirmApproveAndStart}>
@@ -2779,13 +2765,6 @@ function UpdateAgentTab({
           </Flex>
         </ModalFooter>
       </Modal>
-
-      <AgentExecutionLogsPanel
-        isOpen={showApproveAgentLogs}
-        version={selectedVersion}
-        planSerial={planSerial}
-        onClose={() => setShowApproveAgentLogs(false)}
-      />
 
       <Modal
         className="ocs-cluster-update-modal"
@@ -2984,16 +2963,47 @@ function OperatorsOnClusterSection({ selectedVersion, operators, navigate }: { s
 }
 
 /* ─── Worker Nodes on this cluster ─── */
-const WORKER_NODE_POOLS = [
-  { pool: "worker", status: "Update required", version: "5.0.0", targetVersion: "5.1.10", compatibility: "compatible" as const, nodes: 4, readyNodes: 4 },
-  { pool: "infra", status: "Up to date", version: "5.0.0", targetVersion: null, compatibility: "compatible" as const, nodes: 2, readyNodes: 2 },
-];
+type WorkerPoolRow = {
+  pool: string;
+  status: "Update required" | "Up to date";
+  version: string;
+  targetVersion: string | null;
+  compatibility: "compatible";
+  nodes: number;
+  readyNodes: number;
+};
 
-function WorkerNodesSection() {
+function WorkerNodesSection({ targetClusterVersion }: { targetClusterVersion: string }) {
   const [sectionExpanded, setSectionExpanded] = useState(true);
   const [updateAll, setUpdateAll] = useState(false);
-  const poolsNeedingUpdate = WORKER_NODE_POOLS.filter((p) => p.status === "Update required").length;
   const isGlass = usePatternFlyGlassActive();
+
+  const workerPools: WorkerPoolRow[] = useMemo(() => {
+    const current = AGENT_CLUSTER_CURRENT_VERSION;
+    const needsUpdate = targetClusterVersion !== current;
+    return [
+      {
+        pool: "worker",
+        status: needsUpdate ? ("Update required" as const) : ("Up to date" as const),
+        version: current,
+        targetVersion: needsUpdate ? targetClusterVersion : null,
+        compatibility: "compatible" as const,
+        nodes: 4,
+        readyNodes: 4,
+      },
+      {
+        pool: "infra",
+        status: needsUpdate ? ("Update required" as const) : ("Up to date" as const),
+        version: current,
+        targetVersion: needsUpdate ? targetClusterVersion : null,
+        compatibility: "compatible" as const,
+        nodes: 2,
+        readyNodes: 2,
+      },
+    ];
+  }, [targetClusterVersion]);
+
+  const poolsNeedingUpdate = workerPools.filter((p) => p.status === "Update required").length;
 
   return (
     <Card
@@ -3040,7 +3050,7 @@ function WorkerNodesSection() {
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {WORKER_NODE_POOLS.map((pool) => (
+                  {workerPools.map((pool) => (
                     <Tr key={pool.pool}>
                       <Td dataLabel="Pool">
                         <Content component="p">
@@ -3065,9 +3075,23 @@ function WorkerNodesSection() {
                         )}
                       </Td>
                       <Td dataLabel="Version">
-                        <Content component="small">
-                          <code>{pool.version}</code>
-                        </Content>
+                        <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
+                          <Content component="small" style={{ margin: 0 }}>
+                            <code>{pool.version}</code>
+                            {pool.targetVersion ? (
+                              <>
+                                {" "}
+                                <span className="text-[#6a6e73] dark:text-[#8a8d90]">→</span>{" "}
+                                <code>{pool.targetVersion}</code>
+                              </>
+                            ) : null}
+                          </Content>
+                          {pool.targetVersion ? (
+                            <Content component="small" style={{ margin: 0 }} className="pf-v6-u-font-size-xs">
+                              Matches cluster update target
+                            </Content>
+                          ) : null}
+                        </Flex>
                       </Td>
                       <Td dataLabel="Nodes">
                         {pool.readyNodes}/{pool.nodes} ready

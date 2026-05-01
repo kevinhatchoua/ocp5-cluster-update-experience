@@ -13,8 +13,8 @@ export const CLUSTER_UPDATE_DEMO_VARIANT_KEY = "ocp5-cluster-update-demo-variant
 
 function readVariant(): ClusterUpdateDemoVariant {
   try {
-    const raw = localStorage.getItem(CLUSTER_UPDATE_DEMO_VARIANT_KEY);
-    /** Explicit opt-in keeps the Manual + Agent storyline; default is agent-first (matches current prototype). */
+    /** Session-scoped: new tab/window starts on agent-led; choice persists while navigating in-session. */
+    const raw = sessionStorage.getItem(CLUSTER_UPDATE_DEMO_VARIANT_KEY);
     if (raw === "manual-and-agent") return "manual-and-agent";
     if (raw === "agent-only") return "agent-only";
   } catch {
@@ -42,7 +42,7 @@ export function ClusterUpdateDemoProvider({ children }: { children: ReactNode })
   const setDemoVariant = useCallback((v: ClusterUpdateDemoVariant) => {
     setDemoVariantState(v);
     try {
-      localStorage.setItem(CLUSTER_UPDATE_DEMO_VARIANT_KEY, v === "agent-only" ? "agent-only" : "manual-and-agent");
+      sessionStorage.setItem(CLUSTER_UPDATE_DEMO_VARIANT_KEY, v === "agent-only" ? "agent-only" : "manual-and-agent");
     } catch {
       /* ignore */
     }
@@ -51,9 +51,11 @@ export function ClusterUpdateDemoProvider({ children }: { children: ReactNode })
   const performClusterUpdateDemoReset = useCallback(() => {
     try {
       localStorage.removeItem("clusterUpdateInProgress");
+      sessionStorage.setItem(CLUSTER_UPDATE_DEMO_VARIANT_KEY, "agent-only");
     } catch {
       /* ignore */
     }
+    setDemoVariantState("agent-only");
     setClusterUpdateDemoResetEpoch((n) => n + 1);
     navigate("/administration/cluster-update", { replace: true });
   }, [navigate]);
