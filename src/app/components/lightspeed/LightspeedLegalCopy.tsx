@@ -1,6 +1,7 @@
 import { Alert, Content, Flex } from "@patternfly/react-core";
 import { css } from "@patternfly/react-styles";
 import textStyles from "@patternfly/react-styles/css/utilities/Text/text.mjs";
+import { Sparkles } from "@/lib/pfIcons";
 
 export const LIGHTSPEED_AI_RESPONSE_FOOTER =
   "Always check AI/LLM generated responses for accuracy prior to use.";
@@ -36,18 +37,32 @@ export function ClusterUpdateAiPrivacyDisclaimerBody() {
   );
 }
 
-/** Non-dismissible info banner for Cluster Update (Update plan tab). */
+/** Non-dismissible banner for Cluster Update (Update plan tab — shown for manual and agent-based flows). Uses PatternFly custom alert styling. */
 export function ClusterUpdateAiImportantPrivacyBanner() {
   return (
-    <Alert variant="info" isInline={false} title={CLUSTER_UPDATE_AI_IMPORTANT_TITLE}>
+    <Alert
+      variant="custom"
+      className="ocs-cluster-update-ai-privacy-alert"
+      customIcon={<Sparkles aria-hidden />}
+      title={CLUSTER_UPDATE_AI_IMPORTANT_TITLE}
+    >
       <ClusterUpdateAiPrivacyDisclaimerBody />
     </Alert>
   );
 }
 
-/** Same disclaimer as {@link ClusterUpdateAiImportantPrivacyBanner}, for slide-over panel chrome (no title). */
+/** Same disclaimer as {@link ClusterUpdateAiImportantPrivacyBanner}, for agent logs panel chrome. */
 export function ClusterUpdateAiImportantPrivacyPanelNotice() {
-  return <ClusterUpdateAiPrivacyDisclaimerBody />;
+  return (
+    <Alert
+      variant="custom"
+      className="ocs-cluster-update-ai-privacy-alert"
+      customIcon={<Sparkles aria-hidden />}
+      title={CLUSTER_UPDATE_AI_IMPORTANT_TITLE}
+    >
+      <ClusterUpdateAiPrivacyDisclaimerBody />
+    </Alert>
+  );
 }
 
 export function LightspeedHeaderNotice() {

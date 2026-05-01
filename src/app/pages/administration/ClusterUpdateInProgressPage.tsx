@@ -17,7 +17,9 @@ import EllipsisVIcon from "@patternfly/react-icons/dist/esm/icons/ellipsis-v-ico
 import { InnerScrollContainer, Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import { CheckCircle, Loader2, FileText, Clock } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
-import AgentExecutionLogsPanel from "../../components/cluster-update/AgentExecutionLogsPanel";
+import AgentExecutionLogsPanel, {
+  PLATFORM_CLUSTER_OPERATORS,
+} from "../../components/cluster-update/AgentExecutionLogsPanel";
 
 type TabKey = "update-plan" | "active-update-plans" | "update-history";
 
@@ -111,6 +113,11 @@ export default function ClusterUpdateInProgressPage() {
     status: slotStatus(i, WORKER_POOLS_BASE.length, workerProgress),
   }));
 
+  const clusterOperatorRows = PLATFORM_CLUSTER_OPERATORS.map((name, i) => ({
+    name,
+    status: slotStatus(i, PLATFORM_CLUSTER_OPERATORS.length, controlProgress),
+  }));
+
   const updateFullyComplete = operatorProgress >= 100 && controlProgress >= 100 && workerProgress >= 100;
 
   const tabs: { key: TabKey; label: string }[] = [
@@ -177,110 +184,10 @@ export default function ClusterUpdateInProgressPage() {
 
       {/* Progress Bars */}
       <div className="grid grid-cols-3 gap-[24px] mb-[32px]">
-        <ProgressSection label="Operators" percentage={opPct} />
-        <ProgressSection label="Control Plane" percentage={cpPct} />
-        <ProgressSection label="Worker Nodes" percentage={wnPct} />
+        <ProgressSection label="Installed operators" percentage={opPct} />
+        <ProgressSection label="Cluster operators" percentage={cpPct} />
+        <ProgressSection label="Worker nodes" percentage={wnPct} />
       </div>
-
-      <Card className="mb-[var(--pf-t--global--spacer--lg)]">
-        <CardHeader>
-          <CardTitle>
-            <Title headingLevel="h2" size="lg">
-              Operators on this cluster
-            </Title>
-          </CardTitle>
-        </CardHeader>
-        <CardBody style={{ padding: 0 }}>
-          <PageSection aria-label="Operators on this cluster during update" padding={{ default: "noPadding" }}>
-            <InnerScrollContainer>
-              <Table
-                aria-label="Operators on this cluster"
-                borders
-                variant="compact"
-                className="ocs-io-operator-table"
-              >
-                <Thead>
-                  <Tr>
-                    <Th dataLabel="Name">Name</Th>
-                    <Th dataLabel="Status">Status</Th>
-                    <Th dataLabel="Version">Version</Th>
-                    <Th dataLabel="Cluster compatibility">Cluster compatibility</Th>
-                    <Th dataLabel="Last updated">Last updated</Th>
-                    <Th modifier="fitContent" dataLabel="Actions">
-                      Actions
-                    </Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {operatorRows.map((op) => (
-                    <Tr key={op.name}>
-                      <Td dataLabel="Name">
-                        <Content component="span" style={{ fontWeight: 600 }}>
-                          {op.name}
-                        </Content>
-                      </Td>
-                      <Td dataLabel="Status">
-                        {op.status === "Updating" ? (
-                          <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
-                            <span
-                              className="inline-flex h-4 w-4 shrink-0 items-center justify-center overflow-visible"
-                              aria-hidden
-                            >
-                              <span className="inline-flex origin-center scale-[0.2]">
-                                <Icon>
-                                  <Loader2 className="text-[var(--pf-t--global--palette--blue-50)]" aria-hidden />
-                                </Icon>
-                              </span>
-                            </span>
-                            Updating
-                          </Flex>
-                        ) : op.status === "Updated" ? (
-                          <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
-                            <Icon status="success">
-                              <CheckCircle aria-hidden />
-                            </Icon>
-                            Updated
-                          </Flex>
-                        ) : (
-                          <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
-                            <Icon status="warning">
-                              <Clock aria-hidden />
-                            </Icon>
-                            Pending
-                          </Flex>
-                        )}
-                      </Td>
-                      <Td dataLabel="Version">
-                        <Content component="small">
-                          <code>{op.version}</code>
-                        </Content>
-                      </Td>
-                      <Td dataLabel="Cluster compatibility">
-                        {op.compatibility === "compatible" ? (
-                          <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
-                            <Icon status="success">
-                              <CheckCircle aria-hidden />
-                            </Icon>
-                            Compatible
-                          </Flex>
-                        ) : (
-                          <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
-                            Incompatible
-                          </Flex>
-                        )}
-                      </Td>
-                      <Td dataLabel="Last updated">{op.lastUpdated}</Td>
-                      <Td dataLabel="Actions" isActionCell>
-                        <Button variant="plain" aria-label={`Actions for ${op.name}`} icon={<EllipsisVIcon />} />
-                      </Td>
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
-            </InnerScrollContainer>
-          </PageSection>
-        </CardBody>
-      </Card>
 
       <Card className="mb-[var(--pf-t--global--spacer--lg)]">
         <CardHeader>
@@ -370,6 +277,198 @@ export default function ClusterUpdateInProgressPage() {
                       </Td>
                       <Td dataLabel="Actions" isActionCell>
                         <Button variant="plain" aria-label={`Actions for pool ${pool.pool}`} icon={<EllipsisVIcon />} />
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </InnerScrollContainer>
+          </PageSection>
+        </CardBody>
+      </Card>
+
+      <Card className="mb-[var(--pf-t--global--spacer--lg)]">
+        <CardHeader>
+          <CardTitle>
+            <Title headingLevel="h2" size="lg">
+              Cluster operators
+            </Title>
+          </CardTitle>
+        </CardHeader>
+        <CardBody style={{ padding: 0 }}>
+          <PageSection aria-label="Cluster operators during update" padding={{ default: "noPadding" }}>
+            <InnerScrollContainer>
+              <Table
+                aria-label="Cluster operators"
+                borders
+                variant="compact"
+                className="ocs-io-operator-table"
+              >
+                <Thead>
+                  <Tr>
+                    <Th dataLabel="Name">Name</Th>
+                    <Th dataLabel="Status">Status</Th>
+                    <Th dataLabel="Version">Version</Th>
+                    <Th dataLabel="Cluster compatibility">Cluster compatibility</Th>
+                    <Th modifier="fitContent" dataLabel="Actions">
+                      Actions
+                    </Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {clusterOperatorRows.map((row) => (
+                    <Tr key={row.name}>
+                      <Td dataLabel="Name">
+                        <Content component="span" style={{ fontWeight: 600 }}>
+                          {row.name}
+                        </Content>
+                      </Td>
+                      <Td dataLabel="Status">
+                        {row.status === "Updating" ? (
+                          <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                            <span
+                              className="inline-flex h-4 w-4 shrink-0 items-center justify-center overflow-visible"
+                              aria-hidden
+                            >
+                              <span className="inline-flex origin-center scale-[0.2]">
+                                <Icon>
+                                  <Loader2 className="text-[var(--pf-t--global--palette--blue-50)]" aria-hidden />
+                                </Icon>
+                              </span>
+                            </span>
+                            Updating
+                          </Flex>
+                        ) : row.status === "Updated" ? (
+                          <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                            <Icon status="success">
+                              <CheckCircle aria-hidden />
+                            </Icon>
+                            Updated
+                          </Flex>
+                        ) : (
+                          <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                            <Icon status="warning">
+                              <Clock aria-hidden />
+                            </Icon>
+                            Pending
+                          </Flex>
+                        )}
+                      </Td>
+                      <Td dataLabel="Version">
+                        <Content component="small">
+                          <code>{row.status === "Updated" ? version : "—"}</code>
+                        </Content>
+                      </Td>
+                      <Td dataLabel="Cluster compatibility">
+                        <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                          <Icon status="success">
+                            <CheckCircle aria-hidden />
+                          </Icon>
+                          Compatible
+                        </Flex>
+                      </Td>
+                      <Td dataLabel="Actions" isActionCell>
+                        <Button variant="plain" aria-label={`Actions for cluster operator ${row.name}`} icon={<EllipsisVIcon />} />
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </InnerScrollContainer>
+          </PageSection>
+        </CardBody>
+      </Card>
+
+      <Card className="mb-[var(--pf-t--global--spacer--lg)]">
+        <CardHeader>
+          <CardTitle>
+            <Title headingLevel="h2" size="lg">
+              Installed operators
+            </Title>
+          </CardTitle>
+        </CardHeader>
+        <CardBody style={{ padding: 0 }}>
+          <PageSection aria-label="Installed operators during update" padding={{ default: "noPadding" }}>
+            <InnerScrollContainer>
+              <Table
+                aria-label="Installed operators"
+                borders
+                variant="compact"
+                className="ocs-io-operator-table"
+              >
+                <Thead>
+                  <Tr>
+                    <Th dataLabel="Name">Name</Th>
+                    <Th dataLabel="Status">Status</Th>
+                    <Th dataLabel="Version">Version</Th>
+                    <Th dataLabel="Cluster compatibility">Cluster compatibility</Th>
+                    <Th dataLabel="Last updated">Last updated</Th>
+                    <Th modifier="fitContent" dataLabel="Actions">
+                      Actions
+                    </Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {operatorRows.map((op) => (
+                    <Tr key={op.name}>
+                      <Td dataLabel="Name">
+                        <Content component="span" style={{ fontWeight: 600 }}>
+                          {op.name}
+                        </Content>
+                      </Td>
+                      <Td dataLabel="Status">
+                        {op.status === "Updating" ? (
+                          <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                            <span
+                              className="inline-flex h-4 w-4 shrink-0 items-center justify-center overflow-visible"
+                              aria-hidden
+                            >
+                              <span className="inline-flex origin-center scale-[0.2]">
+                                <Icon>
+                                  <Loader2 className="text-[var(--pf-t--global--palette--blue-50)]" aria-hidden />
+                                </Icon>
+                              </span>
+                            </span>
+                            Updating
+                          </Flex>
+                        ) : op.status === "Updated" ? (
+                          <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                            <Icon status="success">
+                              <CheckCircle aria-hidden />
+                            </Icon>
+                            Updated
+                          </Flex>
+                        ) : (
+                          <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                            <Icon status="warning">
+                              <Clock aria-hidden />
+                            </Icon>
+                            Pending
+                          </Flex>
+                        )}
+                      </Td>
+                      <Td dataLabel="Version">
+                        <Content component="small">
+                          <code>{op.version}</code>
+                        </Content>
+                      </Td>
+                      <Td dataLabel="Cluster compatibility">
+                        {op.compatibility === "compatible" ? (
+                          <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                            <Icon status="success">
+                              <CheckCircle aria-hidden />
+                            </Icon>
+                            Compatible
+                          </Flex>
+                        ) : (
+                          <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
+                            Incompatible
+                          </Flex>
+                        )}
+                      </Td>
+                      <Td dataLabel="Last updated">{op.lastUpdated}</Td>
+                      <Td dataLabel="Actions" isActionCell>
+                        <Button variant="plain" aria-label={`Actions for ${op.name}`} icon={<EllipsisVIcon />} />
                       </Td>
                     </Tr>
                   ))}

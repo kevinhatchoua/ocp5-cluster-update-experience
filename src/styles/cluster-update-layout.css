@@ -37,3 +37,8 @@ html:not(.no-glass) .pf-v6-c-expandable-section.ocp-cluster-expandable--plain.pf
   border-top: 1px solid var(--pf-t--global--border--color--default);
   padding: var(--pf-t--global--spacer--md);
 }
+
+/* Cluster Update AI privacy alert: vertically align custom (AI) icon with title row */
+.ocs-cluster-update-ai-privacy-alert.pf-v6-c-alert .pf-v6-c-alert__icon {
+  align-self: center;
+}

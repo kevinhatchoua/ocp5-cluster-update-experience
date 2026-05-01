@@ -25,7 +25,7 @@ const AGENT_ANALYSIS_LINES: string[] = [
  * Platform cluster operator reconcile order (no run-level grouping) — must complete before catalog operators in logs.
  * Names align with OpenShift clusteroperator resources.
  */
-const PLATFORM_CLUSTER_OPERATORS = [
+export const PLATFORM_CLUSTER_OPERATORS = [
   "config-operator",
   "etcd",
   "kube-apiserver",
@@ -161,6 +161,8 @@ export interface AgentExecutionLogsPanelProps {
   onClose: () => void;
   /** When false, panel is not mounted (parent controls visibility). */
   isOpen: boolean;
+  /** Plan number shown in log header (e.g. matches proposed plan # on Cluster Update). */
+  planSerial?: number;
   /**
    * When false, finale lines stay queued until the cluster UI reports full completion (all phases done).
    * Default true — full stream for update-plan / approvals.
@@ -176,6 +178,7 @@ export default function AgentExecutionLogsPanel({
   version,
   onClose,
   isOpen,
+  planSerial = 13,
   releaseCompletionLogLines = true,
 }: AgentExecutionLogsPanelProps) {
   const agentLen = AGENT_ANALYSIS_LINES.length;
@@ -359,6 +362,9 @@ export default function AgentExecutionLogsPanel({
           aria-label="Agent and cluster update log output"
         >
           <div ref={logContentRef}>
+            <div className="pb-[var(--pf-t--global--spacer--sm)] font-semibold text-[#151515] dark:text-white font-[family-name:var(--pf-t--global--FontFamily--text)] text-[0.8125rem]">
+              Agent executing update plan #{planSerial}
+            </div>
             {agentSlice.map((line, i) => (
               <div key={`a-${i}`} className="break-words pb-[var(--pf-t--global--spacer--xs)]">
                 {line}

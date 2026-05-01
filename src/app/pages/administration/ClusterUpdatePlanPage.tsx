@@ -71,7 +71,6 @@ import { OlsChatbot } from "../../components/OlsChatbot";
 import {
   ClusterUpdateAiImportantPrivacyBanner,
   LightspeedAiContentBanner,
-  LightspeedAiAccuracyInline,
 } from "../../components/lightspeed/LightspeedLegalCopy";
 import { useClusterUpdateDemoVariant } from "../../contexts/ClusterUpdateDemoContext";
 
@@ -481,12 +480,6 @@ export default function ClusterUpdatePlanPage() {
           <Flex direction={{ default: "column" }} gap={{ default: "gapLg" }}>
           <ClusterUpdateAiImportantPrivacyBanner />
 
-          <AiAssessmentSection
-            openChatbot={openChatbot}
-            selectedVersion={selectedVersion}
-            clusterUpdateDemoVariant={demoVariant}
-          />
-
           {/* Update Method — hidden in agent-only demo variant */}
           {demoVariant === "manual-and-agent" && (
             <Card
@@ -594,6 +587,12 @@ export default function ClusterUpdatePlanPage() {
 
           {demoVariant === "manual-and-agent" && updateMode === "manual" ? (
             <>
+              <AiAssessmentSection
+                openChatbot={openChatbot}
+                selectedVersion={selectedVersion}
+                clusterUpdateDemoVariant={demoVariant}
+              />
+
               <AvailableUpdatesSection
                 channelData={channelData}
                 expandedGroups={expandedGroups}
@@ -2637,7 +2636,6 @@ function UpdateAgentTab({
                 variant={agentRiskProgressVariant(planProfile.riskLabel)}
                 aria-labelledby="ai-risk-score-label"
               />
-              <LightspeedAiAccuracyInline className="mt-[0.5rem]" />
             </Flex>
 
             {planDecision === "pending" && (
@@ -2793,6 +2791,7 @@ function UpdateAgentTab({
       <AgentExecutionLogsPanel
         isOpen={showApproveAgentLogs}
         version={selectedVersion}
+        planSerial={planSerial}
         onClose={() => setShowApproveAgentLogs(false)}
       />
 
