@@ -84,8 +84,8 @@ function buildClusterProgressLines(): { ts: string; level: string; msg: string }
   push("info", "Beginning cluster operator updates (platform payload order; catalog operators follow).", 2);
 
   for (const name of PLATFORM_CLUSTER_OPERATORS) {
-    push("info", `Updating cluster operator: ${name}`, 2);
-    push("info", `Cluster operator ${name}: reconcile complete`, 1);
+    push("info", `Updating cluster operator: ${name} (5.0.0 → {version})`, 2);
+    push("info", `Cluster operator ${name}: reconcile complete — now at {version}`, 1);
   }
 
   push(
