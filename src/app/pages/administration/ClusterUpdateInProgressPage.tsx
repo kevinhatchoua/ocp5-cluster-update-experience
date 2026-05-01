@@ -10,18 +10,12 @@ import {
   Content,
   Flex,
   Icon,
-  List,
-  ListItem,
-  Modal,
-  ModalBody,
-  ModalFooter,
-  ModalHeader,
   PageSection,
   Title,
 } from "@patternfly/react-core";
 import EllipsisVIcon from "@patternfly/react-icons/dist/esm/icons/ellipsis-v-icon";
 import { InnerScrollContainer, Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
-import { CheckCircle, Loader2, Play, Pause, FileText, Clock } from "@/lib/pfIcons";
+import { CheckCircle, Loader2, FileText, Clock } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import AgentExecutionLogsPanel from "../../components/cluster-update/AgentExecutionLogsPanel";
 
@@ -53,6 +47,9 @@ const OPERATORS_BASE: OperatorRowModel[] = [
 const WORKER_POOLS_BASE: WorkerPoolModel[] = [
   { pool: "worker-east", baseVersion: "4.18.16", compatibility: "compatible" },
   { pool: "worker-west", baseVersion: "4.18.15", compatibility: "compatible" },
+  { pool: "worker-central", baseVersion: "4.18.16", compatibility: "compatible" },
+  { pool: "worker-north", baseVersion: "4.18.14", compatibility: "compatible" },
+  { pool: "worker-south", baseVersion: "4.18.15", compatibility: "compatible" },
 ];
 
 /** Maps overall phase % to per-row status so tables stay aligned with progress bars. */
@@ -71,8 +68,6 @@ export default function ClusterUpdateInProgressPage() {
   const [activeTab, setActiveTab] = useState<TabKey>("update-plan");
 
   const [progress, setProgress] = useState({ op: 0, cp: 0, wn: 0 });
-  const [paused, setPaused] = useState(false);
-  const [showAbortModal, setShowAbortModal] = useState(false);
   const [showLogsPanel, setShowLogsPanel] = useState(false);
 
   const operatorProgress = progress.op;
@@ -84,7 +79,6 @@ export default function ClusterUpdateInProgressPage() {
   }, [version]);
 
   useEffect(() => {
-    if (paused) return;
     const timer = setInterval(() => {
       setProgress((s) => {
         const cp = Math.min(100, s.cp + 1.5);
@@ -94,7 +88,7 @@ export default function ClusterUpdateInProgressPage() {
       });
     }, 300);
     return () => clearInterval(timer);
-  }, [paused]);
+  }, []);
 
   useEffect(() => {
     if (operatorProgress >= 100 && controlProgress >= 100 && workerProgress >= 100) {
@@ -163,32 +157,14 @@ export default function ClusterUpdateInProgressPage() {
         <Alert variant="info" isInline title="Estimated update time 2 hours 12 minutes">
           <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
             <Content component="p" style={{ margin: 0 }}>
-              This is a rough estimate and will vary based on resource availability and usage.
+              This is a rough estimate and will vary based on resource availability and usage. After launch, this update
+              runs to completion; pause, resume, and abort are not available.
             </Content>
-            {paused ? (
-              <Content component="p" style={{ margin: 0 }} className="pf-v6-u-font-weight-bold">
-                Update is paused. Choose Resume update to continue.
-              </Content>
-            ) : null}
-            <Flex
-              gap={{ default: "gapMd" }}
-              flexWrap={{ default: "wrap" }}
-              alignItems={{ default: "alignItemsCenter" }}
-            >
-              <Button
-                variant="primary"
-                icon={paused ? <Play aria-hidden /> : <Pause aria-hidden />}
-                onClick={() => setPaused(!paused)}
-              >
-                {paused ? "Resume update" : "Pause update"}
+            <div>
+              <Button variant="primary" icon={<FileText aria-hidden />} onClick={() => setShowLogsPanel(true)}>
+                View agent logs
               </Button>
-              <Button variant="secondary" isDanger onClick={() => setShowAbortModal(true)}>
-                Abort update
-              </Button>
-              <Button variant="link" icon={<FileText aria-hidden />} onClick={() => setShowLogsPanel(true)}>
-                View update details
-              </Button>
-            </Flex>
+            </div>
           </Flex>
         </Alert>
       </div>
@@ -246,7 +222,16 @@ export default function ClusterUpdateInProgressPage() {
                       <Td dataLabel="Status">
                         {op.status === "Updating" ? (
                           <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
-                            <Loader2 className="size-[14px] animate-spin text-[var(--pf-t--global--palette--blue-50)]" aria-hidden />
+                            <span
+                              className="inline-flex h-4 w-4 shrink-0 items-center justify-center overflow-visible"
+                              aria-hidden
+                            >
+                              <span className="inline-flex origin-center scale-[0.2]">
+                                <Icon>
+                                  <Loader2 className="text-[var(--pf-t--global--palette--blue-50)]" aria-hidden />
+                                </Icon>
+                              </span>
+                            </span>
                             Updating
                           </Flex>
                         ) : op.status === "Updated" ? (
@@ -336,7 +321,16 @@ export default function ClusterUpdateInProgressPage() {
                       <Td dataLabel="Status">
                         {pool.status === "Updating" ? (
                           <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
-                            <Loader2 className="size-[14px] animate-spin text-[var(--pf-t--global--palette--blue-50)]" aria-hidden />
+                            <span
+                              className="inline-flex h-4 w-4 shrink-0 items-center justify-center overflow-visible"
+                              aria-hidden
+                            >
+                              <span className="inline-flex origin-center scale-[0.2]">
+                                <Icon>
+                                  <Loader2 className="text-[var(--pf-t--global--palette--blue-50)]" aria-hidden />
+                                </Icon>
+                              </span>
+                            </span>
                             Updating
                           </Flex>
                         ) : pool.status === "Updated" ? (
@@ -386,52 +380,7 @@ export default function ClusterUpdateInProgressPage() {
         </CardBody>
       </Card>
 
-      <div className="pf-v6-u-mb-md">
-        <Button variant="danger" onClick={() => setShowAbortModal(true)}>
-          Abort update
-        </Button>
-      </div>
       </Breadcrumbs>
-
-      <Modal
-        className="ocs-cluster-update-modal"
-        variant="medium"
-        isOpen={showAbortModal}
-        onClose={() => setShowAbortModal(false)}
-        aria-labelledby="abort-update-title"
-        aria-describedby="abort-update-desc"
-      >
-        <ModalHeader labelId="abort-update-title" title="Abort update?" />
-        <ModalBody id="abort-update-desc">
-          <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
-            <Content component="p" style={{ margin: 0 }}>
-              <strong>This action cannot be undone.</strong> Aborting the update to <code>{version}</code> will:
-            </Content>
-            <List isPlain>
-              <ListItem>Stop all in-progress operator updates</ListItem>
-              <ListItem>Halt control plane rollout</ListItem>
-              <ListItem>Cancel pending worker node updates</ListItem>
-              <ListItem>Roll back partially updated components to the previous version</ListItem>
-            </List>
-          </Flex>
-        </ModalBody>
-        <ModalFooter>
-          <Flex justifyContent={{ default: "justifyContentFlexEnd" }} gap={{ default: "gapMd" }}>
-            <Button variant="link" onClick={() => setShowAbortModal(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              onClick={() => {
-                localStorage.removeItem("clusterUpdateInProgress");
-                navigate("/administration/cluster-update/failed", { state: { version } });
-              }}
-            >
-              Abort update
-            </Button>
-          </Flex>
-        </ModalFooter>
-      </Modal>
 
       <AgentExecutionLogsPanel
         isOpen={showLogsPanel}

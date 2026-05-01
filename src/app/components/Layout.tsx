@@ -116,6 +116,17 @@ function ClusterUpdateDemoMastheadSwitch() {
   );
 }
 
+function ClusterUpdateDemoResetMastheadButton() {
+  const { performClusterUpdateDemoReset } = useClusterUpdateDemoVariant();
+  return (
+    <ToolbarItem className="ocs-masthead-toolbar-item ocs-masthead-toolbar-reset-demo">
+      <Button variant="secondary" type="button" size="sm" onClick={performClusterUpdateDemoReset}>
+        Reset demo
+      </Button>
+    </ToolbarItem>
+  );
+}
+
 function subPathMatches(pathname: string, basePath: string): boolean {
   return pathname === basePath || pathname.startsWith(`${basePath}/`);
 }
@@ -423,6 +434,7 @@ export default function Layout() {
               <ToolbarItem className="ocs-masthead-toolbar-item ocs-masthead-toolbar-cluster-switch">
                 <ClusterUpdateDemoMastheadSwitch />
               </ToolbarItem>
+              <ClusterUpdateDemoResetMastheadButton />
               <ToolbarItem className="ocs-masthead-toolbar-item">
                 <MastheadIconButton label="Application launcher" icon={<ThIcon aria-hidden />} />
               </ToolbarItem>

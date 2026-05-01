@@ -8,6 +8,7 @@ import {
   Title,
 } from "@patternfly/react-core";
 import { X } from "@/lib/pfIcons";
+import { ClusterUpdateAiImportantPrivacyPanelNotice } from "../lightspeed/LightspeedLegalCopy";
 
 /** Simulated agent analysis lines (tool_use / thinking), aligned with console-style agent output. */
 const AGENT_ANALYSIS_LINES: string[] = [
@@ -265,8 +266,12 @@ export default function AgentExecutionLogsPanel({
             <Title headingLevel="h2" size="lg" className="ocs-update-details-panel__title">
               Update details
             </Title>
-            <Content component="p" className="ocs-update-details-panel__subtitle pf-v6-u-mt-sm" style={{ marginBottom: 0 }}>
-              Agent analysis output (tool use and reasoning) and cluster update activity. Prototype sample data.
+            <Content
+              component="div"
+              className="ocs-update-details-panel__subtitle pf-v6-u-mt-sm"
+              style={{ marginBottom: 0 }}
+            >
+              <ClusterUpdateAiImportantPrivacyPanelNotice />
             </Content>
           </div>
           <Button variant="plain" onClick={onClose} aria-label="Close update details">

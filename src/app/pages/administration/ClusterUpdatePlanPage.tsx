@@ -68,7 +68,11 @@ import Breadcrumbs from "../../components/Breadcrumbs";
 import FavoriteButton from "../../components/FavoriteButton";
 import { AiAssessmentSection } from "../../components/AiAssessmentSection";
 import { OlsChatbot } from "../../components/OlsChatbot";
-import { LightspeedAiContentBanner, LightspeedAiAccuracyInline } from "../../components/lightspeed/LightspeedLegalCopy";
+import {
+  ClusterUpdateAiImportantPrivacyBanner,
+  LightspeedAiContentBanner,
+  LightspeedAiAccuracyInline,
+} from "../../components/lightspeed/LightspeedLegalCopy";
 import { useClusterUpdateDemoVariant } from "../../contexts/ClusterUpdateDemoContext";
 
 /** Disclosure (displaySize lg) — strip secondary panel chrome inside glass surfaces; see cluster-update-layout.css */
@@ -316,6 +320,11 @@ export default function ClusterUpdatePlanPage() {
   const isGlass = usePatternFlyGlassActive();
 
   useEffect(() => {
+    /** User chose another Cluster Update tab from the in-progress page — allow viewing those tabs instead of forcing redirect. */
+    const tabFromNav = (location.state as { tab?: TabKey } | null)?.tab;
+    if (tabFromNav === "active-update-plans" || tabFromNav === "update-history") {
+      return;
+    }
     const stored = localStorage.getItem("clusterUpdateInProgress");
     if (stored) {
       try {
@@ -323,14 +332,14 @@ export default function ClusterUpdatePlanPage() {
         navigate("/administration/cluster-update/in-progress", { state: { version: data.version }, replace: true });
       } catch { /* ignore */ }
     }
-  }, [navigate]);
+  }, [navigate, location.state]);
 
   const [selectedChannel, setSelectedChannel] = useState("fast-5.1");
   const [activeTab, setActiveTab] = useState<TabKey>("update-plan");
   const [selectedVersion, setSelectedVersion] = useState<string>("5.1.10");
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({ "5.1": true });
   
-  const { demoVariant } = useClusterUpdateDemoVariant();
+  const { demoVariant, clusterUpdateDemoResetEpoch } = useClusterUpdateDemoVariant();
   const [updateMode, setUpdateMode] = useState<"manual" | "agent">(
     () => (demoVariant === "agent-only" ? "agent" : "manual")
   );
@@ -338,6 +347,22 @@ export default function ClusterUpdatePlanPage() {
   const [chatbotContext, setChatbotContext] = useState("");
 
   const [operators, setOperators] = useState<InstalledOperator[]>(() => [...installedOperators]);
+  const [agentTabResetKey, setAgentTabResetKey] = useState(0);
+  const lastAppliedResetEpochRef = useRef(-1);
+
+  useEffect(() => {
+    if (clusterUpdateDemoResetEpoch < 1) return;
+    if (lastAppliedResetEpochRef.current === clusterUpdateDemoResetEpoch) return;
+    lastAppliedResetEpochRef.current = clusterUpdateDemoResetEpoch;
+
+    setSelectedVersion("5.1.10");
+    setSelectedChannel("fast-5.1");
+    setOperators([...installedOperators]);
+    setExpandedGroups({ "5.1": true });
+    setActiveTab("update-plan");
+    setAgentTabResetKey((k) => k + 1);
+    setUpdateMode(demoVariant === "agent-only" ? "agent" : "manual");
+  }, [clusterUpdateDemoResetEpoch, demoVariant]);
 
   useEffect(() => {
     if (location.state?.updatedOperator) {
@@ -454,6 +479,8 @@ export default function ClusterUpdatePlanPage() {
       >
         <Tab eventKey="update-plan" title={<TabTitleText>Update plan</TabTitleText>}>
           <Flex direction={{ default: "column" }} gap={{ default: "gapLg" }}>
+          <ClusterUpdateAiImportantPrivacyBanner />
+
           <AiAssessmentSection
             openChatbot={openChatbot}
             selectedVersion={selectedVersion}
@@ -586,6 +613,7 @@ export default function ClusterUpdatePlanPage() {
             </>
           ) : (
             <UpdateAgentTab
+              key={agentTabResetKey}
               openChatbot={openChatbot}
               selectedVersion={selectedVersion}
               onSelectedVersionChange={setSelectedVersion}
@@ -1963,9 +1991,9 @@ function getAgentPlanProfile(version: string): AgentPlanProfile {
   ];
   const risks = [
     { pct: 20, label: "2 / 10 — Low", color: "#3e8635", detail: "AI risk score: 2/10 · No PDB violations or blocking conditions detected" },
-    { pct: 32, label: "3 / 10 — Low", color: "#3e8635", detail: "AI risk score: 3/10 · Minor cordon delay on one node pool" },
+    { pct: 22, label: "2 / 10 — Low", color: "#3e8635", detail: "AI risk score: 2/10 · Minor cordon delay on one node pool" },
     { pct: 45, label: "4 / 10 — Moderate", color: "#f0ab00", detail: "AI risk score: 4/10 · Review PDBs and surge settings before execution" },
-    { pct: 28, label: "3 / 10 — Low", color: "#3e8635", detail: "AI risk score: 3/10 · etcd backup verified within policy" },
+    { pct: 24, label: "2 / 10 — Low", color: "#3e8635", detail: "AI risk score: 2/10 · etcd backup verified within policy" },
   ];
   const storageDetails = [
     "Sufficient capacity (68% used)",
