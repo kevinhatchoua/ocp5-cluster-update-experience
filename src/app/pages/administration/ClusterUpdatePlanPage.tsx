@@ -62,15 +62,37 @@ import {
 import EllipsisVIcon from "@patternfly/react-icons/dist/esm/icons/ellipsis-v-icon";
 import { InnerScrollContainer, Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import { usePatternFlyGlassActive } from "@/lib/usePatternFlyGlassActive";
-import { ExternalLink, Sparkles, ArrowRight, CheckCircle, AlertTriangle, AlertCircle, HelpCircle, Info, X, Loader2, Shield, Bot, Settings, RotateCcw, Play, Pause, Calendar, Bell, Clock, User, Zap, Eye, RefreshCw, Check } from "@/lib/pfIcons";
+import {
+  AiExperienceIcon,
+  ExternalLink,
+  Sparkles,
+  ArrowRight,
+  CheckCircle,
+  AlertTriangle,
+  AlertCircle,
+  HelpCircle,
+  Info,
+  X,
+  Loader2,
+  Shield,
+  Settings,
+  RotateCcw,
+  Play,
+  Pause,
+  Calendar,
+  Bell,
+  Clock,
+  User,
+  Zap,
+  Eye,
+  RefreshCw,
+  Check,
+} from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import FavoriteButton from "../../components/FavoriteButton";
 import { AiAssessmentSection } from "../../components/AiAssessmentSection";
 import { OlsChatbot } from "../../components/OlsChatbot";
-import {
-  ClusterUpdateAiImportantPrivacyBanner,
-  LightspeedAiContentBanner,
-} from "../../components/lightspeed/LightspeedLegalCopy";
+import { AiGeneratedPlanMarker } from "../../components/lightspeed/LightspeedLegalCopy";
 import { useClusterUpdateDemoVariant } from "../../contexts/ClusterUpdateDemoContext";
 
 /** Disclosure (displaySize lg) — strip secondary panel chrome inside glass surfaces; see cluster-update-layout.css */
@@ -473,8 +495,6 @@ export default function ClusterUpdatePlanPage() {
       >
         <Tab eventKey="update-plan" title={<TabTitleText>Update plan</TabTitleText>}>
           <Flex direction={{ default: "column" }} gap={{ default: "gapLg" }}>
-          <ClusterUpdateAiImportantPrivacyBanner />
-
           {/* Update Method — hidden in agent-only demo variant */}
           {demoVariant === "manual-and-agent" && (
             <Card
@@ -556,7 +576,7 @@ export default function ClusterUpdatePlanPage() {
                             <CardTitle>
                               <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsCenter" }}>
                                 <Icon size="lg" status="custom">
-                                  <Bot aria-hidden />
+                                  <AiExperienceIcon aria-hidden />
                                 </Icon>
                                 <Title headingLevel="h4" size="md">
                                   Agent-based updates
@@ -792,7 +812,7 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
               agentStatus === "rolling-back" ? "bg-[#c58c00] animate-pulse" :
               "bg-[#8a8d90]"
             }`} />
-            <Bot className="size-[20px] text-[#6753ac]" />
+            <AiExperienceIcon className="size-[20px] text-[#151515] dark:text-[#e8e8e8]" aria-hidden />
             <span className="text-[15px] font-['Red_Hat_Display:SemiBold',sans-serif] font-semibold text-[#151515] dark:text-white">
               {agentStatus === "active" ? "Update Agent Active" :
                agentStatus === "paused" ? "Update Agent Paused" :
@@ -1078,10 +1098,7 @@ function AgentModePanel({ openChatbot, setActiveTab, navigate }: { openChatbot: 
             </div>
             <span className="text-[12px] text-[#4d4d4d] dark:text-[#b0b0b0] font-['Red_Hat_Text:Regular',sans-serif]">Generated Mar 30, 2026 02:15 UTC</span>
           </div>
-          <p className="text-[#4d4d4d] dark:text-[#b0b0b0] text-[14px] mb-[16px] font-['Red_Hat_Text:Regular',sans-serif]">AI-generated update plan for your cluster</p>
-          <div className="mb-[16px]">
-            <LightspeedAiContentBanner />
-          </div>
+          <AiGeneratedPlanMarker className="mb-[16px]" />
 
           <div className="space-y-[20px]">
             {/* Pre-Checks Module */}
@@ -2177,18 +2194,13 @@ function UpdateAgentTab({
       <Card id="ai-update-agent-card" isGlass={isGlass}>
         <CardBody>
           <Flex direction={{ default: "column" }} gap={{ default: "gapLg" }}>
-            <Flex gap={{ default: "gapMd" }} alignItems={{ default: "alignItemsFlexStart" }}>
-              <Icon size="lg" status="custom">
-                <Bot />
-              </Icon>
-              <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
-                <Title headingLevel="h2" size="xl">
-                  AI Update Agent
-                </Title>
-                <Content component="p">
-                  Activity summary and the current proposed plan · {selectedChannel} channel
-                </Content>
-              </Flex>
+            <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+              <Title headingLevel="h2" size="xl">
+                AI Update Agent
+              </Title>
+              <Content component="p">
+                Activity summary and the current proposed plan · {selectedChannel} channel
+              </Content>
             </Flex>
 
             <Panel variant="bordered">
@@ -2266,7 +2278,7 @@ function UpdateAgentTab({
                             isPlanLoading ? (
                               <Spinner size="sm" aria-label="Generating plan" />
                             ) : (
-                              <RefreshCw aria-hidden />
+                              <Sparkles aria-hidden className="ocs-ai-sparkle-cta-icon" />
                             )
                           }
                         >
@@ -2339,10 +2351,12 @@ function UpdateAgentTab({
           >
             <FlexItem>
               <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+                <AiGeneratedPlanMarker />
                 <Content
                   component="p"
                   style={{
                     margin: 0,
+                    marginBottom: "var(--pf-t--global--spacer--md)",
                     fontSize: "var(--pf-t--global--FontSize--xs)",
                     color: "var(--pf-t--global--text--Color--200)",
                   }}
@@ -2743,9 +2757,13 @@ function UpdateAgentTab({
         <ModalBody id="agent-approve-desc">
           <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
             <Content component="p" style={{ margin: 0 }}>
-              You are about to approve the agent plan and <strong>start the cluster update</strong> from{" "}
+              You are about to approve the AI-generated plan and start the cluster update from{" "}
               <code>{AGENT_CLUSTER_CURRENT_VERSION}</code> to <code>{selectedVersion}</code> on channel{" "}
               <strong>{selectedChannel}</strong>.
+            </Content>
+            <Content component="p" style={{ margin: 0 }}>
+              By clicking &quot;Start update,&quot; you are confirming that you have reviewed the plan and understand its
+              potential outcomes.
             </Content>
           </Flex>
         </ModalBody>
@@ -4255,7 +4273,9 @@ function UpdateHistoryTab() {
                 </span>
                 <span>
                   {entry.method === "Agent" ? (
-                    <span className="flex items-center gap-[3px] text-[11px] text-[#6753ac] font-semibold"><Bot className="size-[11px]" /> Agent</span>
+                    <span className="flex items-center gap-[3px] text-[11px] text-[#151515] dark:text-[#e0e0e0] font-semibold">
+                      <AiExperienceIcon className="size-[11px] shrink-0 opacity-90" aria-hidden /> Agent
+                    </span>
                   ) : (
                     <span className="flex items-center gap-[3px] text-[11px] text-[#4d4d4d] dark:text-[#b0b0b0]"><User className="size-[11px]" /> Manual</span>
                   )}

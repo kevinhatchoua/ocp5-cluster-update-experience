@@ -51,3 +51,76 @@ html:not(.no-glass) .pf-v6-c-expandable-section.ocp-cluster-expandable--plain.pf
   padding-block-start: var(--pf-t--global--spacer--xs);
   padding-block-end: var(--pf-t--global--spacer--sm);
 }
+
+/* AI-enabled features: icon size tracks label text (em); color matches adjacent copy via currentColor. */
+.ocs-ai-sparkle-label {
+  color: var(--pf-t--global--text--color--regular);
+  font-size: var(--pf-t--global--FontSize--xl);
+  line-height: var(--pf-t--global--LineHeight--heading);
+}
+
+.ocs-ai-sparkle-label__icon {
+  color: currentColor;
+  width: 1.25em;
+  height: 1.25em;
+  min-width: 1.25em;
+  min-height: 1.25em;
+  flex-shrink: 0;
+}
+
+.ocs-ai-sparkle-label__text {
+  font-size: inherit;
+}
+
+/* Agent logs drawer: Title wraps sparkle row — match heading scale + inherit Title color. */
+.ocs-update-details-panel__title .ocs-ai-sparkle-label {
+  font-size: inherit;
+  color: inherit;
+}
+
+/**
+ * AI sparkle on PatternFly Buttons: readable size and vertical center in the icon slot.
+ * RhAiExperienceIcon defaults to 1em (tiny next to button label); this overrides for CTAs.
+ *
+ * PatternFly `.pf-v6-c-button` uses `align-items: baseline` so label baselines line up.
+ * SVG icons do not share text baselines the same way, so the glyph reads high vs. the label.
+ * Buttons that contain this icon switch to center alignment and a flex icon wrapper.
+ */
+.pf-v6-c-button:has(.ocs-ai-sparkle-cta-icon) {
+  align-items: center;
+}
+
+.pf-v6-c-button:has(.ocs-ai-sparkle-cta-icon) .pf-v6-c-button__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.ocs-ai-sparkle-cta-icon {
+  box-sizing: content-box;
+  width: 1.75rem !important;
+  height: 1.75rem !important;
+  min-width: 1.75rem;
+  min-height: 1.75rem;
+  flex-shrink: 0;
+  display: block;
+  vertical-align: middle;
+}
+
+/* Proposed-plan card: sparkle aligns with “AI-generated plan” Title (h2 xl) */
+.ocs-ai-generated-plan-marker {
+  color: var(--pf-t--global--text--color--regular);
+}
+
+.ocs-ai-generated-plan-marker__icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  min-width: 1.75rem;
+  min-height: 1.75rem;
+  color: currentColor;
+  flex-shrink: 0;
+  align-self: center;
+  display: block;
+}
+

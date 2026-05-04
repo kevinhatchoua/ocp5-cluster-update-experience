@@ -3,12 +3,11 @@ import { createPortal } from "react-dom";
 import {
   Button,
   Content,
-  Flex,
   Switch,
   Title,
 } from "@patternfly/react-core";
 import { X } from "@/lib/pfIcons";
-import { ClusterUpdateAiImportantPrivacyPanelNotice } from "../lightspeed/LightspeedLegalCopy";
+import { AiAgentLogsHeading } from "../lightspeed/LightspeedLegalCopy";
 
 /** Simulated agent analysis lines (tool_use / thinking), aligned with console-style agent output. */
 const AGENT_ANALYSIS_LINES: string[] = [
@@ -548,7 +547,7 @@ export default function AgentExecutionLogsPanel({
     <div
       className="fixed inset-0 z-[1100] flex items-stretch justify-end"
       role="dialog"
-      aria-label="Agent logs"
+      aria-label="AI-agent logs"
     >
       <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden />
       {/** min-h-0: flex item must shrink below content min-height so inner flex-1 + overflow-y-auto creates a scroll region */}
@@ -556,15 +555,8 @@ export default function AgentExecutionLogsPanel({
         <div className="ocs-update-details-panel__chrome flex shrink-0 items-start justify-between gap-[var(--pf-t--global--spacer--md)] border-b border-[var(--pf-t--global--border--color--default)] px-[var(--pf-t--global--spacer--lg)] py-[var(--pf-t--global--spacer--md)]">
           <div>
             <Title headingLevel="h2" size="lg" className="ocs-update-details-panel__title">
-              Agent logs
+              <AiAgentLogsHeading />
             </Title>
-            <Content
-              component="div"
-              className="ocs-update-details-panel__subtitle pf-v6-u-mt-xs"
-              style={{ marginBottom: 0 }}
-            >
-              <ClusterUpdateAiImportantPrivacyPanelNotice />
-            </Content>
           </div>
           <Button variant="plain" onClick={onClose} aria-label="Close agent logs">
             <X className="size-[18px]" aria-hidden />
@@ -572,12 +564,9 @@ export default function AgentExecutionLogsPanel({
         </div>
 
         <div className="ocs-update-details-panel__chrome flex shrink-0 flex-wrap items-center gap-x-[var(--pf-t--global--spacer--lg)] gap-y-[var(--pf-t--global--spacer--sm)] border-b border-[var(--pf-t--global--border--color--default)] px-[var(--pf-t--global--spacer--lg)] py-[var(--pf-t--global--spacer--sm)]">
-          <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
-            <span className="inline-block size-2 shrink-0 rounded-full bg-[var(--pf-t--global--palette--green--40)]" aria-hidden />
-            <span className="ocs-update-details-panel__toolbar-label text-sm font-semibold">Live</span>
-          </Flex>
           <Switch
             id="agent-logs-autoscroll"
+            isReversed
             label="Auto-scroll"
             isChecked={autoScroll}
             onChange={(_e, checked) => setAutoScroll(checked)}

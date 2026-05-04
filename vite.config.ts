@@ -19,6 +19,10 @@ function figmaAssetPlugin(): Plugin {
 }
 
 export default defineConfig({
+  server: {
+    /** Listen on IPv4 + IPv6 so `127.0.0.1` and embedded browsers don’t hit CONNECTION_REFUSED (-102). */
+    host: true,
+  },
   plugins: [
     figmaAssetPlugin(),
     react(),

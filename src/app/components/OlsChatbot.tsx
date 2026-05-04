@@ -13,7 +13,7 @@ import {
   Bookmark,
   Volume2,
   Paperclip,
-  Sparkles,
+  Bot,
 } from "@/lib/pfIcons";
 import {
   Button,
@@ -326,8 +326,8 @@ export function OlsChatbot({
           >
             <DrawerHead>
               <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
-                <Icon size="lg" status="danger">
-                  <Sparkles />
+                <Icon size="lg" status="custom">
+                  <Bot aria-hidden className="text-[var(--pf-t--global--danger-color--100,#c9190b)]" />
                 </Icon>
                 <Title headingLevel="h2" size="md">
                   OpenShift LightSpeed

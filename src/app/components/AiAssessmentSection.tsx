@@ -11,6 +11,7 @@ import {
   Flex,
 } from "@patternfly/react-core";
 import { Sparkles } from "@/lib/pfIcons";
+import { AiSparkleLabel } from "./lightspeed/LightspeedLegalCopy";
 import { usePatternFlyGlassActive } from "@/lib/usePatternFlyGlassActive";
 
 export type AiAssessmentVariant = "cluster-update" | "installed-operators";
@@ -53,7 +54,9 @@ export function AiAssessmentSection({
   return (
     <Card id="ai-assessment-section-card" isExpanded={expanded} isGlass={isGlass}>
       <CardHeader onExpand={onExpand}>
-        <CardTitle component="h2">AI Assessment</CardTitle>
+        <CardTitle component="h2">
+          <AiSparkleLabel aria-label="AI Assessment">AI Assessment</AiSparkleLabel>
+        </CardTitle>
       </CardHeader>
       <CardExpandableContent>
         <CardBody>
@@ -107,7 +110,7 @@ export function AiAssessmentSection({
             <Flex>
               <Button
                 variant="secondary"
-                icon={<Sparkles />}
+                icon={<Sparkles aria-hidden className="ocs-ai-sparkle-cta-icon" />}
                 iconPosition="end"
                 onClick={() => openChatbot(precheckContext)}
               >

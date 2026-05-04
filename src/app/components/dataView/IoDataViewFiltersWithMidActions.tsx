@@ -53,25 +53,32 @@ export function IoDataViewFiltersWithMidActions<T extends Record<string, unknown
   const attributeToggleRef = useRef<HTMLButtonElement>(null);
   const attributeMenuRef = useRef<HTMLDivElement>(null);
   const attributeContainerRef = useRef<HTMLDivElement>(null);
-  const childrenHash = useMemo(
-    () =>
-      JSON.stringify(
-        Children.map(children, (c) => (isValidElement(c) ? { type: c.type, key: c.key, props: c.props } : c))
-      ),
-    [children]
-  );
-  const filterItems = useMemo(
+  /** Primitives only — never JSON.stringify element props (can include context / circular refs). */
+  const filterStructureKey = useMemo(
     () =>
       Children.toArray(children)
         .map((c) => {
           if (isValidElement<FilterChildProps>(c) && c.props?.filterId != null && c.props?.title != null) {
-            return { filterId: String(c.props.filterId), title: String(c.props.title) };
+            return `${String(c.props.filterId)}\u0001${String(c.props.title)}`;
           }
-          return undefined;
+          return null;
         })
-        .filter((item): item is { filterId: string; title: string } => item != null),
-    [childrenHash] // eslint-disable-line react-hooks/exhaustive-deps -- same as upstream DataViewFilters
+        .filter((x): x is string => x != null)
+        .join("\u0002"),
+    [children]
   );
+  const filterItems = useMemo(() => {
+    return Children.toArray(children)
+      .map((c) => {
+        if (isValidElement<FilterChildProps>(c) && c.props?.filterId != null && c.props?.title != null) {
+          return { filterId: String(c.props.filterId), title: String(c.props.title) };
+        }
+        return undefined;
+      })
+      .filter((item): item is { filterId: string; title: string } => item != null);
+    // filterStructureKey mirrors filter id/title pairs; omitting `children` avoids recomputing on new element refs only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterStructureKey]);
   useEffect(() => {
     if (filterItems.length > 0) {
       setActiveAttributeMenu(filterItems[0].title);

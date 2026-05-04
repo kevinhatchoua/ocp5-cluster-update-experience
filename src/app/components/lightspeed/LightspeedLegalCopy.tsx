@@ -1,4 +1,5 @@
-import { Alert, Content, Flex } from "@patternfly/react-core";
+import type { ReactNode } from "react";
+import { Alert, Content, Flex, Title } from "@patternfly/react-core";
 import { css } from "@patternfly/react-styles";
 import textStyles from "@patternfly/react-styles/css/utilities/Text/text.mjs";
 import { Sparkles } from "@/lib/pfIcons";
@@ -101,6 +102,60 @@ export function LightspeedAiContentBanner() {
         {LIGHTSPEED_AI_RESPONSE_FOOTER}
       </Content>
     </Alert>
+  );
+}
+
+/**
+ * Design language — AI-enabled features: sparkles icon immediately left of the label (see PM guideline slides).
+ * Use anywhere AI-generated or AI-assisted output is introduced (plans, logs, assessment).
+ */
+export function AiSparkleLabel({
+  children,
+  className,
+  "aria-label": ariaLabel,
+}: {
+  children: ReactNode;
+  className?: string;
+  "aria-label"?: string;
+}) {
+  return (
+    <Flex
+      alignItems={{ default: "alignItemsCenter" }}
+      gap={{ default: "gapSm" }}
+      className={className ? `ocs-ai-sparkle-label ${className}` : "ocs-ai-sparkle-label"}
+      role="group"
+      aria-label={ariaLabel}
+    >
+      <Sparkles aria-hidden className="ocs-ai-sparkle-label__icon shrink-0" />
+      <span className={`ocs-ai-sparkle-label__text ${css(textStyles.fontWeightBold)}`}>{children}</span>
+    </Flex>
+  );
+}
+
+/** Agent proposed-plan section — same heading scale as “AI Update Agent” + leading sparkle. */
+export function AiGeneratedPlanMarker({ className }: { className?: string }) {
+  return (
+    <Flex
+      alignItems={{ default: "alignItemsCenter" }}
+      gap={{ default: "gapSm" }}
+      className={className ? `ocs-ai-generated-plan-marker ${className}` : "ocs-ai-generated-plan-marker"}
+      role="group"
+      aria-label="AI-generated plan"
+    >
+      <Sparkles aria-hidden className="ocs-ai-generated-plan-marker__icon" />
+      <Title headingLevel="h2" size="xl" style={{ margin: 0 }}>
+        AI-generated plan
+      </Title>
+    </Flex>
+  );
+}
+
+/** Agent execution log drawer heading — sparkles + “AI-agent logs”. */
+export function AiAgentLogsHeading({ className }: { className?: string }) {
+  return (
+    <AiSparkleLabel className={className} aria-label="AI-agent logs">
+      AI-agent logs
+    </AiSparkleLabel>
   );
 }
 

@@ -15,7 +15,7 @@ import {
 } from "@patternfly/react-core";
 import EllipsisVIcon from "@patternfly/react-icons/dist/esm/icons/ellipsis-v-icon";
 import { InnerScrollContainer, Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
-import { CheckCircle, Loader2, FileText, Clock } from "@/lib/pfIcons";
+import { CheckCircle, Loader2, Clock, Sparkles } from "@/lib/pfIcons";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import AgentExecutionLogsPanel, {
   PLATFORM_CLUSTER_OPERATORS,
@@ -185,7 +185,11 @@ export default function ClusterUpdateInProgressPage() {
               runs to completion; pause, resume, and abort are not available.
             </Content>
             <div>
-              <Button variant="primary" icon={<FileText aria-hidden />} onClick={() => setShowLogsPanel(true)}>
+              <Button
+                variant="primary"
+                icon={<Sparkles aria-hidden className="ocs-ai-sparkle-cta-icon" />}
+                onClick={() => setShowLogsPanel(true)}
+              >
                 View agent logs
               </Button>
             </div>
