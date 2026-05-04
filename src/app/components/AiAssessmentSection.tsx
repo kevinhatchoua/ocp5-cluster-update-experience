@@ -111,7 +111,6 @@ export function AiAssessmentSection({
               <Button
                 variant="secondary"
                 icon={<Sparkles aria-hidden className="ocs-ai-sparkle-cta-icon" />}
-                iconPosition="end"
                 onClick={() => openChatbot(precheckContext)}
               >
                 Pre-check with AI

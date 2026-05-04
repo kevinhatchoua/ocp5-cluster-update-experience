@@ -537,7 +537,7 @@ export default function ClusterUpdatePlanPage() {
                           >
                             <CardTitle>
                               <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsCenter" }}>
-                                <Icon size="lg">
+                                <Icon size="lg" iconSize="lg">
                                   <Settings aria-hidden />
                                 </Icon>
                                 <Title headingLevel="h4" size="md">
@@ -575,9 +575,7 @@ export default function ClusterUpdatePlanPage() {
                           >
                             <CardTitle>
                               <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsCenter" }}>
-                                <Icon size="lg" status="custom">
-                                  <AiExperienceIcon aria-hidden />
-                                </Icon>
+                                <AiExperienceIcon aria-hidden className="ocs-cluster-update-method-agent-icon" />
                                 <Title headingLevel="h4" size="md">
                                   Agent-based updates
                                 </Title>
