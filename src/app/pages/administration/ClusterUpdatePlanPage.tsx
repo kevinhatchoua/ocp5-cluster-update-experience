@@ -92,7 +92,7 @@ import Breadcrumbs from "../../components/Breadcrumbs";
 import FavoriteButton from "../../components/FavoriteButton";
 import { AiAssessmentSection } from "../../components/AiAssessmentSection";
 import { OlsChatbot } from "../../components/OlsChatbot";
-import { AiGeneratedPlanMarker } from "../../components/lightspeed/LightspeedLegalCopy";
+import { AiGeneratedPlanMarker, AI_GENERATED_PLAN_HEADING } from "../../components/lightspeed/LightspeedLegalCopy";
 import { useClusterUpdateDemoVariant } from "../../contexts/ClusterUpdateDemoContext";
 
 /** Disclosure (displaySize lg) — strip secondary panel chrome inside glass surfaces; see cluster-update-layout.css */
@@ -2755,7 +2755,7 @@ function UpdateAgentTab({
         <ModalBody id="agent-approve-desc">
           <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
             <Content component="p" style={{ margin: 0 }}>
-              You are about to approve the AI generated plan and start the cluster update from{" "}
+              You are about to approve the {AI_GENERATED_PLAN_HEADING} and start the cluster update from{" "}
               <code>{AGENT_CLUSTER_CURRENT_VERSION}</code> to <code>{selectedVersion}</code> on channel{" "}
               <strong>{selectedChannel}</strong>.
             </Content>

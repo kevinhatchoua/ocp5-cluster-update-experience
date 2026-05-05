@@ -20,6 +20,9 @@ export const CLUSTER_UPDATE_AI_PRIVACY_LINK_LABEL = "Red Hat Privacy Statement";
 
 export const CLUSTER_UPDATE_AI_PRIVACY_LINK_HREF = "https://www.redhat.com/en/about/privacy-policy";
 
+/** Section heading for the agent proposed plan (use spaces, not a hyphen, per product copy). */
+export const AI_GENERATED_PLAN_HEADING = "AI generated plan";
+
 /** Shared body (paragraphs + link) for banner and agent logs panel. */
 export function ClusterUpdateAiPrivacyDisclaimerBody() {
   return (
@@ -138,13 +141,13 @@ export function AiGeneratedPlanMarker({ className }: { className?: string }) {
     <Flex
       alignItems={{ default: "alignItemsCenter" }}
       gap={{ default: "gapSm" }}
-      className={className ? `ocs-ai-generated-plan-marker ${className}` : "ocs-ai-generated-plan-marker"}
+      className={className ? `ocs-ai-plan-marker ${className}` : "ocs-ai-plan-marker"}
       role="group"
-      aria-label="AI generated plan"
+      aria-label={AI_GENERATED_PLAN_HEADING}
     >
-      <Sparkles aria-hidden className="ocs-ai-generated-plan-marker__icon" />
-      <Title headingLevel="h2" size="xl" style={{ margin: 0 }}>
-        AI generated plan
+      <Sparkles aria-hidden className="ocs-ai-plan-marker__icon" />
+      <Title headingLevel="h2" size="xl" style={{ margin: 0, hyphens: "none" }}>
+        {AI_GENERATED_PLAN_HEADING}
       </Title>
     </Flex>
   );

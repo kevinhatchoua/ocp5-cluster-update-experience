@@ -108,7 +108,7 @@ html:not(.no-glass) .pf-v6-c-expandable-section.ocp-cluster-expandable--plain.pf
   vertical-align: middle;
 }
 
-/* Proposed-plan card: sparkle aligns with “AI generated plan” Title (h2 xl) */
+/* Proposed-plan card: sparkle aligns with agent plan heading Title (h2 xl); see AI_GENERATED_PLAN_HEADING */
 /**
  * Agent-based updates card: same sparkle scale + color treatment as “Pre-check with AI” (not PF status.teal).
  * Avoid wrapping in `<Icon status="custom">` — that forces custom/teal; use currentColor with title text.
@@ -126,11 +126,17 @@ html:not(.no-glass) .pf-v6-c-expandable-section.ocp-cluster-expandable--plain.pf
   vertical-align: middle;
 }
 
-.ocs-ai-generated-plan-marker {
+.ocs-ai-plan-marker {
   color: var(--pf-t--global--text--color--regular);
 }
 
-.ocs-ai-generated-plan-marker__icon {
+/* Prevent automatic hyphenation from inserting hyphens inside “AI generated …” */
+.ocs-ai-plan-marker h2 {
+  hyphens: none;
+  -webkit-hyphens: none;
+}
+
+.ocs-ai-plan-marker__icon {
   width: 1.75rem;
   height: 1.75rem;
   min-width: 1.75rem;
