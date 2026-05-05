@@ -150,11 +150,11 @@ export function AiGeneratedPlanMarker({ className }: { className?: string }) {
   );
 }
 
-/** Agent execution log drawer heading — sparkles + “AI-agent logs”. */
+/** Agent execution log drawer heading — sparkles + “AI agent logs”. */
 export function AiAgentLogsHeading({ className }: { className?: string }) {
   return (
-    <AiSparkleLabel className={className} aria-label="AI-agent logs">
-      AI-agent logs
+    <AiSparkleLabel className={className} aria-label="AI agent logs">
+      AI agent logs
     </AiSparkleLabel>
   );
 }

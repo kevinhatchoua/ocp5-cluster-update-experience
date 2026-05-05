@@ -547,7 +547,7 @@ export default function AgentExecutionLogsPanel({
     <div
       className="fixed inset-0 z-[1100] flex items-stretch justify-end"
       role="dialog"
-      aria-label="AI-agent logs"
+      aria-label="AI agent logs"
     >
       <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden />
       {/** min-h-0: flex item must shrink below content min-height so inner flex-1 + overflow-y-auto creates a scroll region */}
