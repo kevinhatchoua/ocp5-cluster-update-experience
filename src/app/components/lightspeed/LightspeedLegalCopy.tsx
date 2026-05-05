@@ -94,10 +94,10 @@ export function LightspeedAiMessageFooter() {
   );
 }
 
-/** Inline PatternFly alert for AI-generated plan / assessment surfaces (uses approved accuracy copy). */
+/** Inline PatternFly alert for AI generated plan / assessment surfaces (uses approved accuracy copy). */
 export function LightspeedAiContentBanner() {
   return (
-    <Alert variant="info" isInline title="AI-generated content">
+    <Alert variant="info" isInline title="AI generated content">
       <Content component="p" style={{ margin: 0 }}>
         {LIGHTSPEED_AI_RESPONSE_FOOTER}
       </Content>
@@ -107,7 +107,7 @@ export function LightspeedAiContentBanner() {
 
 /**
  * Design language — AI-enabled features: sparkles icon immediately left of the label (see PM guideline slides).
- * Use anywhere AI-generated or AI-assisted output is introduced (plans, logs, assessment).
+ * Use anywhere AI generated or AI-assisted output is introduced (plans, logs, assessment).
  */
 export function AiSparkleLabel({
   children,
@@ -140,11 +140,11 @@ export function AiGeneratedPlanMarker({ className }: { className?: string }) {
       gap={{ default: "gapSm" }}
       className={className ? `ocs-ai-generated-plan-marker ${className}` : "ocs-ai-generated-plan-marker"}
       role="group"
-      aria-label="AI-generated plan"
+      aria-label="AI generated plan"
     >
       <Sparkles aria-hidden className="ocs-ai-generated-plan-marker__icon" />
       <Title headingLevel="h2" size="xl" style={{ margin: 0 }}>
-        AI-generated plan
+        AI generated plan
       </Title>
     </Flex>
   );

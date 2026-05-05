@@ -108,7 +108,7 @@ html:not(.no-glass) .pf-v6-c-expandable-section.ocp-cluster-expandable--plain.pf
   vertical-align: middle;
 }
 
-/* Proposed-plan card: sparkle aligns with “AI-generated plan” Title (h2 xl) */
+/* Proposed-plan card: sparkle aligns with “AI generated plan” Title (h2 xl) */
 /**
  * Agent-based updates card: same sparkle scale + color treatment as “Pre-check with AI” (not PF status.teal).
  * Avoid wrapping in `<Icon status="custom">` — that forces custom/teal; use currentColor with title text.

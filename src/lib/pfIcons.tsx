@@ -111,7 +111,7 @@ export const ChevronRight = AngleRightIcon;
 export const ChevronDown = AngleDownIcon;
 export const ChevronUp = AngleUpIcon;
 export const ExternalLink = ExternalLinkAltIcon;
-/** RH UI ai-experience sparkle pair — use for AI-generated / AI-assisted UI (not the legacy magic wand). */
+/** RH UI ai-experience sparkle pair — use for AI generated / AI-assisted UI (not the legacy magic wand). */
 export const Sparkles = RhAiExperienceIcon;
 export const AiExperienceIcon = RhAiExperienceIcon;
 export const Eye = EyeIcon;
