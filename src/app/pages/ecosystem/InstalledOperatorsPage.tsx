@@ -8,8 +8,10 @@ import {
 } from "react";
 import {
   CheckCircle,
+  HelpCircle,
   Info,
   AlertCircle,
+  AlertTriangle,
   ExternalLink,
   Clock,
   Columns2,
@@ -75,16 +77,20 @@ import {
 import { IoDataViewFiltersWithMidActions } from "../../components/dataView/IoDataViewFiltersWithMidActions";
 import {
   formatLifecycleDateShort,
+  getCurrentPhaseEndDateRaw,
+  getCurrentPhaseEndSortTimestamp,
   getDerivedSupportPhase,
+  getPhaseLabelStatus,
   getSupportLifecycleDateEntries,
   getSupportLifecycleSortTimestamp,
   RH_OPENSHIFT_CLUSTER_LIFECYCLE_URL,
   RH_OPERATOR_LC_DOC_URL,
   RH_PRODUCT_LIFE_CYCLES_URL,
   type OperatorSupportLifecycle,
+  type SupportPhase,
 } from "@/lib/operatorSupportLifecycle";
 
-export type { OperatorSupportLifecycle } from "@/lib/operatorSupportLifecycle";
+export type { OperatorSupportLifecycle, SupportPhase } from "@/lib/operatorSupportLifecycle";
 
 const CLUSTER_TARGET_VERSION = "5.1.10";
 const CLUSTER_CHANNEL = "fast-5.1";
@@ -103,6 +109,7 @@ type TableColumnKey =
   | "clusterCompatibility"
   | "updatePlan"
   | "support"
+  | "supportPhaseEnd"
   | "status"
   | "lastUpdated"
   | "managedNamespaces"
@@ -115,6 +122,7 @@ const TABLE_COLUMN_OPTIONS: { key: DataColumnKey; label: string }[] = [
   { key: "clusterCompatibility", label: "Cluster compatibility" },
   { key: "updatePlan", label: "Update plan" },
   { key: "support", label: "Support phase" },
+  { key: "supportPhaseEnd", label: "Support phase end date" },
   { key: "status", label: "Status" },
   { key: "lastUpdated", label: "Last updated" },
   { key: "managedNamespaces", label: "Managed namespaces" },
@@ -126,6 +134,7 @@ const DEFAULT_MANAGE_COLUMN_ORDER: { key: TableColumnKey; label: string }[] = [
   { key: "status", label: "Status" },
   { key: "clusterCompatibility", label: "Cluster compatibility" },
   { key: "support", label: "Support phase" },
+  { key: "supportPhaseEnd", label: "Support phase end date" },
   { key: "lastUpdated", label: "Last updated" },
 ];
 
@@ -140,6 +149,7 @@ const RESTORE_DEFAULT_VISIBLE: Record<TableColumnKey, boolean> = {
   status: true,
   clusterCompatibility: true,
   support: true,
+  supportPhaseEnd: true,
   lastUpdated: true,
   updatePlan: false,
   managedNamespaces: false,
@@ -249,7 +259,8 @@ type SortColumnKey =
   | "status"
   | "lastUpdated"
   | "clusterCompatibility"
-  | "support";
+  | "support"
+  | "supportPhaseEnd";
 
 const COMPAT_SORT_ORDER: Record<"Compatible" | "Incompatible", number> = {
   Compatible: 0,
@@ -402,6 +413,14 @@ function sortOperatorRows(rows: OperatorRow[], key: SortColumnKey, dir: "asc" | 
         if (ta !== tb) return ta - tb;
         if (ta === 1) cmp = 0;
         else cmp = getSupportLifecycleSortTimestamp(a) - getSupportLifecycleSortTimestamp(b);
+        break;
+      }
+      case "supportPhaseEnd": {
+        const ta = a.isOlmV1Extension ? 1 : 0;
+        const tb = b.isOlmV1Extension ? 1 : 0;
+        if (ta !== tb) return ta - tb;
+        if (ta === 1) cmp = 0;
+        else cmp = getCurrentPhaseEndSortTimestamp(a) - getCurrentPhaseEndSortTimestamp(b);
         break;
       }
       default:
@@ -685,53 +704,19 @@ const INITIAL_CATALOG_OPERATORS: CatalogOperator[] = [
   },
 ];
 
-function SupportLifecyclePopoverContents({ op }: { op: OperatorRow }) {
-  const entries = getSupportLifecycleDateEntries(op);
-
-  if (op.isUnsupported) {
-    return (
-      <>
-        <Content component="p" className="pf-v6-u-mb-md">
-          This install is not represented as entitled Red Hat support for this prototype row. Confirm your subscription,
-          catalog source, and support agreement in your real environment.
-        </Content>
-        <Divider className="pf-v6-u-my-md" />
-        <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
-          <Button
-            variant="link"
-            isInline
-            icon={<ExternalLink />}
-            iconPosition="right"
-            component="a"
-            target="_blank"
-            rel="noopener noreferrer"
-            href={RH_OPERATOR_LC_DOC_URL}
-          >
-            OpenShift Operator life cycles
-          </Button>
-        </Flex>
-      </>
-    );
-  }
-
+/** Shared caveat for Support phase column popovers (SKU / extended support may differ from displayed phase). */
+function SupportPhaseSkuPopoverNote() {
   return (
-    <>
-      {entries.length > 0 ? (
-        <DescriptionList isCompact isHorizontal termWidth="12rem">
-          {entries.map((row) => (
-            <DescriptionListGroup key={row.term}>
-              <DescriptionListTerm>{row.term}</DescriptionListTerm>
-              <DescriptionListDescription>{row.description}</DescriptionListDescription>
-            </DescriptionListGroup>
-          ))}
-        </DescriptionList>
-      ) : (
-        <Content component="p" className="pf-v6-u-mb-md">
-          Published lifecycle dates are not shown for this operator in this view. Use Red Hat Customer Portal
-          documentation for authoritative timelines for your version line.
-        </Content>
-      )}
-      <Divider className="pf-v6-u-my-md" />
+    <Content component="p" className="pf-v6-u-font-size-sm pf-v6-u-mb-md">
+      May not reflect your actual SKU. Check your actual SKU for extended support.
+    </Content>
+  );
+}
+
+/** Lifecycle context + docs links — shown from Support phase column header help trigger only. */
+function SupportPhaseColumnContextHelpBody() {
+  return (
+    <div className="ocs-io-support-phase-col-help-popover-body">
       <Content component="p" className="pf-v6-u-font-size-sm pf-v6-u-mb-md">
         Review together with your cluster OpenShift version: operator policy and cluster life cycle both affect what is
         supported.
@@ -774,6 +759,59 @@ function SupportLifecyclePopoverContents({ op }: { op: OperatorRow }) {
           Red Hat product life cycles
         </Button>
       </Flex>
+    </div>
+  );
+}
+
+function SupportLifecyclePopoverContents({ op }: { op: OperatorRow }) {
+  const entries = getSupportLifecycleDateEntries(op);
+
+  if (op.isUnsupported) {
+    return (
+      <>
+        <Content component="p" className="pf-v6-u-mb-md">
+          This install is not represented as entitled Red Hat support for this prototype row. Confirm your subscription,
+          catalog source, and support agreement in your real environment.
+        </Content>
+        <SupportPhaseSkuPopoverNote />
+        <Divider className="pf-v6-u-my-md" />
+        <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
+          <Button
+            variant="link"
+            isInline
+            icon={<ExternalLink />}
+            iconPosition="right"
+            component="a"
+            target="_blank"
+            rel="noopener noreferrer"
+            href={RH_OPERATOR_LC_DOC_URL}
+          >
+            OpenShift Operator life cycles
+          </Button>
+        </Flex>
+      </>
+    );
+  }
+
+  return (
+    <>
+      {entries.length > 0 ? (
+        <DescriptionList isCompact isHorizontal termWidth="12rem">
+          {entries.map((row) => (
+            <DescriptionListGroup key={row.term}>
+              <DescriptionListTerm>{row.term}</DescriptionListTerm>
+              <DescriptionListDescription>{row.description}</DescriptionListDescription>
+            </DescriptionListGroup>
+          ))}
+        </DescriptionList>
+      ) : (
+        <Content component="p" className="pf-v6-u-mb-md">
+          Published lifecycle dates are not shown for this operator in this view. Use Red Hat Customer Portal
+          documentation for authoritative timelines for your version line.
+        </Content>
+      )}
+      <Divider className="pf-v6-u-my-md" />
+      <SupportPhaseSkuPopoverNote />
     </>
   );
 }
@@ -786,62 +824,70 @@ function OlmV1ExtensionSupportPopoverContents() {
         <strong>OLM v1</strong> cluster extensions use different packaging; use the same policy references and your
         extension version on the portal to confirm dates.
       </Content>
-      <Divider className="pf-v6-u-my-md" />
-      <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
-        <Button
-          variant="link"
-          isInline
-          icon={<ExternalLink />}
-          iconPosition="right"
-          component="a"
-          target="_blank"
-          rel="noopener noreferrer"
-          href={RH_OPERATOR_LC_DOC_URL}
-        >
-          OpenShift Operator life cycles
-        </Button>
-        <Button
-          variant="link"
-          isInline
-          icon={<ExternalLink />}
-          iconPosition="right"
-          component="a"
-          target="_blank"
-          rel="noopener noreferrer"
-          href={RH_OPENSHIFT_CLUSTER_LIFECYCLE_URL}
-        >
-          OpenShift life cycle (cluster version)
-        </Button>
-      </Flex>
+      <SupportPhaseSkuPopoverNote />
     </>
   );
 }
 
-/** Whole purple label opens the lifecycle popover; info icon is decorative. Date stays on the same row. */
+function patternFlyPhaseLabelColor(status: ReturnType<typeof getPhaseLabelStatus>): "green" | "orange" | "red" {
+  switch (status) {
+    case "success":
+      return "green";
+    case "warning":
+      return "orange";
+    case "danger":
+      return "red";
+    default:
+      return "green";
+  }
+}
+
+/** Lifecycle phase pill — PatternFly semantic colors (green / gold / red) + status icons. */
+function PhaseStatusLabelPill({ phase }: { phase: SupportPhase }) {
+  const status = getPhaseLabelStatus(phase);
+  const color = patternFlyPhaseLabelColor(status);
+  const Glyph = status === "success" ? CheckCircle : status === "warning" ? AlertTriangle : AlertCircle;
+
+  return (
+    <Label
+      className="ocs-io-support-phase-pill"
+      color={color}
+      isCompact
+      variant="outline"
+      /* Raw SVG only — avoid nesting Icon inside Label icon slot (extra pf-v6-c-icon box overflows the pill border). */
+      icon={<Glyph aria-hidden />}
+    >
+      {phase}
+    </Label>
+  );
+}
+
+/** Whole label opens the lifecycle popover; OLM v1 placeholder uses neutral styling. */
 function SupportPhaseLabelWithInfo({
-  phaseText,
+  phase,
   popoverAriaLabel,
   headerContent,
   bodyContent,
-  dateLine,
 }: {
-  phaseText: string;
+  phase: SupportPhase | null;
   popoverAriaLabel: string;
   headerContent: ReactNode;
   bodyContent: ReactNode;
-  dateLine?: string | null;
 }) {
-  const pill = (
-    <Label
-      className="ocs-io-support-phase-pill"
-      color="purple"
-      isCompact
-      variant="outline"
-      icon={<Info aria-hidden />}
-    >
-      {phaseText}
-    </Label>
-  );
+  const pill =
+    phase === null ? (
+      <Label
+        className="ocs-io-support-phase-pill"
+        color="grey"
+        isCompact
+        variant="outline"
+        icon={<Info aria-hidden />}
+      >
+        —
+      </Label>
+    ) : (
+      <PhaseStatusLabelPill phase={phase} />
+    );
 
   return (
     <Flex
@@ -870,25 +916,17 @@ function SupportPhaseLabelWithInfo({
           {pill}
         </Button>
       </Popover>
-      {dateLine ? (
-        <Content component="small" className="pf-v6-u-color-200">
-          {dateLine}
-        </Content>
-      ) : null}
     </Flex>
   );
 }
 
 function InstalledOperatorSupportPhaseCell({ op }: { op: OperatorRow }) {
   const phase = getDerivedSupportPhase(op);
-  const L = op.supportLifecycle;
-  const eolDisplay =
-    !op.isUnsupported && L ? formatLifecycleDateShort(L.eolEndDate ?? L.maintenanceEndDate) : null;
 
   if (op.isUnsupported) {
     return (
       <SupportPhaseLabelWithInfo
-        phaseText={phase}
+        phase={phase}
         popoverAriaLabel={`Support details for ${op.name}`}
         headerContent={<Title headingLevel="h6">Support</Title>}
         bodyContent={<SupportLifecyclePopoverContents op={op} />}
@@ -899,7 +937,7 @@ function InstalledOperatorSupportPhaseCell({ op }: { op: OperatorRow }) {
   if (op.isOlmV1Extension) {
     return (
       <SupportPhaseLabelWithInfo
-        phaseText="—"
+        phase={null}
         popoverAriaLabel="Support phase and OLM v1 extensions"
         headerContent={<Title headingLevel="h6">Support phase</Title>}
         bodyContent={<OlmV1ExtensionSupportPopoverContents />}
@@ -909,13 +947,28 @@ function InstalledOperatorSupportPhaseCell({ op }: { op: OperatorRow }) {
 
   return (
     <SupportPhaseLabelWithInfo
-      phaseText={phase}
+      phase={phase}
       popoverAriaLabel={`Lifecycle dates for ${op.name}`}
       headerContent={<Title headingLevel="h6">Lifecycle dates</Title>}
       bodyContent={<SupportLifecyclePopoverContents op={op} />}
-      dateLine={eolDisplay}
     />
   );
+}
+
+function InstalledOperatorSupportPhaseEndCell({ op }: { op: OperatorRow }) {
+  if (op.isOlmV1Extension) {
+    return (
+      <Tooltip content="Support phase dates apply to OLM v0 managed operators (CSV) only." position="top">
+        <Content component="small">—</Content>
+      </Tooltip>
+    );
+  }
+  if (op.isUnsupported) {
+    return "—";
+  }
+  const raw = getCurrentPhaseEndDateRaw(op);
+  const formatted = raw ? formatLifecycleDateShort(raw) : "—";
+  return <Content component="small">{formatted}</Content>;
 }
 
 type InstalledCatalogKindTab = "olmv0" | "olmv1";
@@ -980,7 +1033,7 @@ export default function InstalledOperatorsPage() {
       TABLE_COLUMN_OPTIONS.filter(({ key }) => {
         if (
           !showOlmV0ListColumns &&
-          (key === "clusterCompatibility" || key === "support")
+          (key === "clusterCompatibility" || key === "support" || key === "supportPhaseEnd")
         ) {
           return false;
         }
@@ -994,7 +1047,9 @@ export default function InstalledOperatorsPage() {
       DEFAULT_MANAGE_COLUMN_ORDER.filter(
         (col) =>
           showOlmV0ListColumns ||
-          (col.key !== "clusterCompatibility" && col.key !== "support")
+          (col.key !== "clusterCompatibility" &&
+            col.key !== "support" &&
+            col.key !== "supportPhaseEnd")
       ),
     [showOlmV0ListColumns]
   );
@@ -1065,10 +1120,10 @@ export default function InstalledOperatorsPage() {
   }, [sortColumn]);
 
   const renderSortableHeader = useCallback(
-    (label: string, col: SortColumnKey) => {
+    (label: string, col: SortColumnKey, trailing?: ReactNode) => {
       const active = sortColumn === col;
       const isDesc = active && sortDirection === "desc";
-      return (
+      const sortBtn = (
         <Button
           className="ocs-operator-table-sort"
           variant="plain"
@@ -1091,8 +1146,42 @@ export default function InstalledOperatorsPage() {
           {label}
         </Button>
       );
+      if (!trailing) return sortBtn;
+      return (
+        <Flex
+          direction={{ default: "row" }}
+          alignItems={{ default: "alignItemsCenter" }}
+          gap={{ default: "gapXs" }}
+          flexWrap={{ default: "nowrap" }}
+          style={{ display: "inline-flex", minWidth: 0 }}
+          className="ocs-io-support-phase-th-inner"
+        >
+          {sortBtn}
+          {trailing}
+        </Flex>
+      );
     },
     [sortColumn, sortDirection, toggleSort]
+  );
+
+  const supportPhaseColumnHelpTrigger = (
+    <Popover
+      aria-label="Support phase lifecycle references"
+      headerContent={<Title headingLevel="h6">Lifecycle references</Title>}
+      bodyContent={<SupportPhaseColumnContextHelpBody />}
+      position="auto"
+      maxWidth="min(22rem, 90vw)"
+      appendTo={() => document.body}
+    >
+      <Button
+        variant="plain"
+        type="button"
+        className="ocs-io-support-phase-col-help-trigger"
+        aria-label="Lifecycle references for support phase"
+        hasNoPadding
+        icon={<HelpCircle aria-hidden />}
+      />
+    </Popover>
   );
 
   /** Non-sortable headers: same <Button plain isInline> shell as sortable columns for consistent type size. */
@@ -1444,7 +1533,12 @@ export default function InstalledOperatorsPage() {
                       )}
                       {showOlmV0ListColumns && visibleColumns.support && (
                         <Th dataLabel="Support phase">
-                          {renderSortableHeader("Support phase", "support")}
+                          {renderSortableHeader("Support phase", "support", supportPhaseColumnHelpTrigger)}
+                        </Th>
+                      )}
+                      {showOlmV0ListColumns && visibleColumns.supportPhaseEnd && (
+                        <Th dataLabel="Support phase end date">
+                          {renderSortableHeader("Support phase end date", "supportPhaseEnd")}
                         </Th>
                       )}
                       {visibleColumns.lastUpdated && (
@@ -1571,6 +1665,11 @@ export default function InstalledOperatorsPage() {
                               <InstalledOperatorSupportPhaseCell op={op} />
                             </Td>
                           )}
+                          {showOlmV0ListColumns && visibleColumns.supportPhaseEnd && (
+                            <Td dataLabel="Support phase end date" modifier="nowrap">
+                              <InstalledOperatorSupportPhaseEndCell op={op} />
+                            </Td>
+                          )}
                           {visibleColumns.lastUpdated && (
                             <Td dataLabel="Last updated" modifier="nowrap">
                               {op.lastUpdated && op.lastUpdated !== "—" ? (
@@ -1682,7 +1781,7 @@ export default function InstalledOperatorsPage() {
           labelId="io-manage-cols-title"
           descriptorId="io-manage-cols-body"
           title="Manage columns"
-          description="Default columns are shown by default. Additional columns include update plan, managed namespaces, and optional row actions. Cluster compatibility and Support phase apply to OLM v0 managed operators only. Operator is always shown."
+          description="Default columns are shown by default. Additional columns include update plan, managed namespaces, and optional row actions. Cluster compatibility, Support phase, and Support phase end date apply to OLM v0 managed operators only. Operator is always shown."
         />
         <ModalBody id="io-manage-cols-body">
           <Flex

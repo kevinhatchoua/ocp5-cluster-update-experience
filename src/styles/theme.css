@@ -1108,6 +1108,39 @@ html.dark .ocs-io-operator-table .ocs-operator-table-sort.pf-v6-c-button.pf-m-pl
   outline-color: var(--pf-t--global--border--color--hover, #a3a3a3);
 }
 
+/* Support phase pills — plain SVG in Label icon slot sizes with label text; trigger must not clip outline */
+.ocs-io-support-phase-popover-btn.pf-v6-c-button.pf-m-plain {
+  overflow: visible;
+}
+
+/*
+ * Plain Popover trigger inherits button text color (often primary/on-dark white).
+ * Pin Label outline tokens so SVG fill="currentColor" matches border/text semantics.
+ */
+.ocs-io-support-phase-pill.pf-v6-c-label .pf-v6-c-label__icon {
+  color: var(--pf-v6-c-label__icon--Color);
+}
+.ocs-io-support-phase-pill.pf-v6-c-label .pf-v6-c-label__icon svg {
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
+  fill: currentColor;
+}
+.ocs-io-support-phase-pill.pf-v6-c-label .pf-v6-c-label__text {
+  color: var(--pf-v6-c-label--Color);
+}
+
+/* Support phase column header — inline help + lifecycle doc links */
+.ocs-io-support-phase-col-help-trigger.pf-v6-c-button.pf-m-plain {
+  line-height: 1;
+  color: var(--pf-t--global--text--color--subtle, var(--pf-t--global--text--color--secondary));
+}
+.ocs-io-support-phase-col-help-popover-body .pf-v6-c-button.pf-m-link.pf-m-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pf-t--global--spacer--xs);
+}
+
 /**
  * All pages: main column aligns with nav; single chrome inset (no top stack); glass gap unchanged.
  */
