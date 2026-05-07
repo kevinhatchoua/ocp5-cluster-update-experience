@@ -26,7 +26,7 @@ type FilterChildProps = { filterId: string; title: string };
 /**
  * {@link https://github.com/patternfly/react-data-view | @patternfly/react-data-view} `DataViewFilters`
  * with a slot for toolbar actions between the attribute (Name / Status / …) menu and the active
- * value control. Used for Installed Operators: advanced filter, manage columns, bulk approve, catalog
+ * value control. Used for Installed Operators: advanced filter, manage columns, catalog
  * link sit to the left of the search field while the attribute control stays on the left.
  */
 export function IoDataViewFiltersWithMidActions<T extends Record<string, unknown>>({
@@ -53,32 +53,31 @@ export function IoDataViewFiltersWithMidActions<T extends Record<string, unknown
   const attributeToggleRef = useRef<HTMLButtonElement>(null);
   const attributeMenuRef = useRef<HTMLDivElement>(null);
   const attributeContainerRef = useRef<HTMLDivElement>(null);
-  /** Primitives only — never JSON.stringify element props (can include context / circular refs). */
-  const filterStructureKey = useMemo(
+  /** Stable key from filter primitives only — never stringify full `props` (React elements / context are circular). */
+  const childrenHash = useMemo(
     () =>
       Children.toArray(children)
         .map((c) => {
           if (isValidElement<FilterChildProps>(c) && c.props?.filterId != null && c.props?.title != null) {
-            return `${String(c.props.filterId)}\u0001${String(c.props.title)}`;
+            return `${String(c.props.filterId)}\0${String(c.props.title)}`;
           }
-          return null;
+          return "";
         })
-        .filter((x): x is string => x != null)
-        .join("\u0002"),
+        .join("|"),
     [children]
   );
-  const filterItems = useMemo(() => {
-    return Children.toArray(children)
-      .map((c) => {
-        if (isValidElement<FilterChildProps>(c) && c.props?.filterId != null && c.props?.title != null) {
-          return { filterId: String(c.props.filterId), title: String(c.props.title) };
-        }
-        return undefined;
-      })
-      .filter((item): item is { filterId: string; title: string } => item != null);
-    // filterStructureKey mirrors filter id/title pairs; omitting `children` avoids recomputing on new element refs only.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterStructureKey]);
+  const filterItems = useMemo(
+    () =>
+      Children.toArray(children)
+        .map((c) => {
+          if (isValidElement<FilterChildProps>(c) && c.props?.filterId != null && c.props?.title != null) {
+            return { filterId: String(c.props.filterId), title: String(c.props.title) };
+          }
+          return undefined;
+        })
+        .filter((item): item is { filterId: string; title: string } => item != null),
+    [childrenHash] // eslint-disable-line react-hooks/exhaustive-deps -- same as upstream DataViewFilters
+  );
   useEffect(() => {
     if (filterItems.length > 0) {
       setActiveAttributeMenu(filterItems[0].title);

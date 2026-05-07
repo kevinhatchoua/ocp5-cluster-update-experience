@@ -1,8 +1,10 @@
 import {
   useState,
   useEffect,
+  useLayoutEffect,
   useCallback,
   useMemo,
+  useRef,
   type CSSProperties,
   type ReactNode,
 } from "react";
@@ -11,7 +13,6 @@ import {
   HelpCircle,
   Info,
   AlertCircle,
-  AlertTriangle,
   ExternalLink,
   Clock,
   Columns2,
@@ -842,23 +843,60 @@ function patternFlyPhaseLabelColor(status: ReturnType<typeof getPhaseLabelStatus
   }
 }
 
-/** Lifecycle phase pill — PatternFly semantic colors (green / gold / red) + status icons. */
+/** Lifecycle phase pill — PatternFly semantic colors (green / orange / red), outline variant. */
 function PhaseStatusLabelPill({ phase }: { phase: SupportPhase }) {
   const status = getPhaseLabelStatus(phase);
   const color = patternFlyPhaseLabelColor(status);
-  const Glyph = status === "success" ? CheckCircle : status === "warning" ? AlertTriangle : AlertCircle;
 
   return (
-    <Label
-      className="ocs-io-support-phase-pill"
-      color={color}
-      isCompact
-      variant="outline"
-      /* Raw SVG only — avoid nesting Icon inside Label icon slot (extra pf-v6-c-icon box overflows the pill border). */
-      icon={<Glyph aria-hidden />}
-    >
+    <Label className="ocs-io-support-phase-pill" color={color} isCompact variant="outline">
       {phase}
     </Label>
+  );
+}
+
+/** Samples widest pills off-screen; sets shared pixel width on the operators table (before paint). */
+function SupportPhasePillMeasure({ onMeasuredWidth }: { onMeasuredWidth: (px: number) => void }) {
+  const shellRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const root = shellRef.current;
+    if (!root) return;
+
+    const measureMax = () => {
+      const labels = root.querySelectorAll<HTMLElement>(".pf-v6-c-label");
+      let max = 0;
+      labels.forEach((el) => {
+        max = Math.max(max, el.getBoundingClientRect().width);
+      });
+      if (max > 0) {
+        onMeasuredWidth(Math.ceil(max));
+      }
+    };
+
+    measureMax();
+
+    const labels = [...root.querySelectorAll<HTMLElement>(".pf-v6-c-label")];
+    if (labels.length === 0) return;
+
+    const ro = new ResizeObserver(() => measureMax());
+    labels.forEach((el) => ro.observe(el));
+    return () => ro.disconnect();
+  }, [onMeasuredWidth]);
+
+  return (
+    <div ref={shellRef} className="ocs-io-support-phase-pill-measure-shell" aria-hidden>
+      <PhaseStatusLabelPill phase="Full Support" />
+      <PhaseStatusLabelPill phase="Maintenance" />
+      <PhaseStatusLabelPill phase="EUS1" />
+      <PhaseStatusLabelPill phase="EUS2" />
+      <PhaseStatusLabelPill phase="EUS3" />
+      <PhaseStatusLabelPill phase="Unsupported" />
+      <PhaseStatusLabelPill phase="End of life" />
+      <Label className="ocs-io-support-phase-pill" color="grey" isCompact variant="outline">
+        —
+      </Label>
+    </div>
   );
 }
 
@@ -876,13 +914,7 @@ function SupportPhaseLabelWithInfo({
 }) {
   const pill =
     phase === null ? (
-      <Label
-        className="ocs-io-support-phase-pill"
-        color="grey"
-        isCompact
-        variant="outline"
-        icon={<Info aria-hidden />}
-      >
+      <Label className="ocs-io-support-phase-pill" color="grey" isCompact variant="outline">
         —
       </Label>
     ) : (
@@ -1005,6 +1037,11 @@ export default function InstalledOperatorsPage() {
     setChatbotContext(context);
     setOlsMountKey((k) => k + 1);
     setChatbotOpen(true);
+  }, []);
+
+  const [supportPhasePillWidthPx, setSupportPhasePillWidthPx] = useState<number | null>(null);
+  const handleSupportPhasePillMeasured = useCallback((px: number) => {
+    setSupportPhasePillWidthPx((prev) => (prev === px ? prev : px));
   }, []);
 
   const handleChatAction = useCallback(
@@ -1227,6 +1264,7 @@ export default function InstalledOperatorsPage() {
         onAction={handleChatAction}
       >
       <div className="ocs-app-page-outer flex-1 min-h-0 min-w-0 overflow-y-auto">
+            <SupportPhasePillMeasure onMeasuredWidth={handleSupportPhasePillMeasured} />
             <Breadcrumbs
               items={[
                 { label: "Home", path: "/" },
@@ -1465,20 +1503,6 @@ export default function InstalledOperatorsPage() {
                       filterId="updatePlan"
                       options={FILTER_VALUE_OPTIONS.updatePlan}
                     />
-                    {showOlmV0ListColumns ? (
-                      <>
-                        <DataViewCheckboxFilter
-                          title="Cluster compatibility"
-                          filterId="clusterCompatibility"
-                          options={FILTER_VALUE_OPTIONS.clusterCompatibility}
-                        />
-                        <DataViewCheckboxFilter
-                          title="Support phase"
-                          filterId="support"
-                          options={FILTER_VALUE_OPTIONS.support}
-                        />
-                      </>
-                    ) : null}
                   </IoDataViewFiltersWithMidActions>
                 }
                 pagination={
@@ -1514,6 +1538,14 @@ export default function InstalledOperatorsPage() {
                   borders
                   variant="compact"
                   className="ocs-io-operator-table"
+                  data-io-phase-pills-sized={supportPhasePillWidthPx ?? undefined}
+                  {...(supportPhasePillWidthPx != null
+                    ? {
+                        style: {
+                          "--ocs-io-support-phase-pill-width": `${supportPhasePillWidthPx}px`,
+                        } as CSSProperties,
+                      }
+                    : {})}
                 >
                   <Thead>
                     <Tr>
